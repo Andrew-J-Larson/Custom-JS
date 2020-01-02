@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.2
+// @version      1.3
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @match        http*://*/
@@ -40,15 +40,15 @@ for (i = 0; i < dark_sites.length; i++) {
 
     // check dark url for special characters $ or *
     if (dark_url.includes('$')) {
-        // string compare both urls for a match
-        if (current_url.localeCompare(dark_url.split('$')[0]) == 0) is_dark = true;
+        // string compare both urls for a match without trailing /
+        if (current_url.localeCompare(dark_url.split('$')[0].replace(/\/$/, "")) == 0) is_dark = true;
     } else if (dark_url.includes('*')) {
         // string compare both urls without special character
         if (current_url.localeCompare(dark_url.split('*')[0]) == 0) is_dark = true;
         // only if the current_url is still possible
         else if (current_url.length > dark_url.length - 1) {
-            // string compare both urls substringed current_url and without trailing *
-            if (current_url.substring(0, dark_url.length).localeCompare(dark_url.split('*')[0]) == 0) is_dark = true;
+            // string compare both urls substringed current_url and without trailing * and /
+            if (current_url.substring(0, dark_url.length).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) is_dark = true;
         }
     } else if (dark_url.includes('/')) { // comparing to full link
         // compare strings without possible trailing slash on dark_url
