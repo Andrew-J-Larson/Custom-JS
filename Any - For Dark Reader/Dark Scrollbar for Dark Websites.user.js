@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.3.2
+// @version      1.3.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
-// @match        http*://*/
+// @match        http*://*/*
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
@@ -55,7 +55,7 @@ for (i = 0; i < dark_sites.length; i++) {
         // compare strings without possible trailing slash on dark_url
         var dark_verify = dark_url.replace(/\/$/, "");
         // string compare both urls for a match
-        if (current_url == dark_verify) is_dark = true;
+        if (current_url.localeCompare(dark_verify) == 0) is_dark = true;
         // only if the current_url is still possible
         else if (current_url.length > dark_verify.length) {
             // string compare both urls substringed current_url and without trailing slash
