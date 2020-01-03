@@ -49,7 +49,7 @@ for (i = 0; i < dark_sites.length; i++) {
         // only if the current_url is still possible
         else if (current_url.length > dark_url.length - 1) {
             // string compare both urls substringed current_url and without trailing * and /
-            if (current_url.substring(0, dark_url.length).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) is_dark = true;
+            if (current_url.substring(0, dark_url.length - 1).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) is_dark = true;
         }
     } else if (dark_url.includes('/')) { // comparing to full link
         // compare strings without possible trailing slash on dark_url
@@ -59,7 +59,7 @@ for (i = 0; i < dark_sites.length; i++) {
         // only if the current_url is still possible
         else if (current_url.length > dark_verify.length) {
             // string compare both urls substringed current_url and without trailing slash
-            if (current_url.substring(0, dark_verify.length - 1).localeCompare(dark_verify) == 0) is_dark = true;
+            if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) is_dark = true;
         }
     } else { // comparing to domain
         // compare strings without first slash
