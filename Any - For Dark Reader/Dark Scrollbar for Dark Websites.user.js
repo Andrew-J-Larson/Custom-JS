@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.3.4
+// @version      1.3.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
@@ -19,7 +19,7 @@
 // required variables
 const dark_scrollbar = GM_getResourceText('css').split('\n'); // gets updated dark scrollbar source (so I don't have to manually update this script all the time) and puts each line into an array
 const dark_sites = GM_getResourceText('config').split('\n'); // gets all sites and puts them in an array
-const current_url = window.location.href.replace(/(^\w+:|^)\/\//, '').replace(/^www\./, "").replace(/\/$/, ""); // removes protocol, 'www.', and trailing slash
+const current_url = window.location.href.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, ""); // removes protocol and trailing slash
 var is_dark = false;
 // required functions
 function addStyleString(str) {
@@ -62,9 +62,8 @@ for (i = 0; i < dark_sites.length; i++) {
             if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) is_dark = true;
         }
     } else { // comparing to domain
-        // compare strings without first slash
-        var current_verify = current_url.split('/')[0];
-        if (current_verify.localeCompare(dark_url) == 0) is_dark = true;
+        // find dark_url in the current_url
+        if (current_url.indexOf(dark_url, 0) != -1) is_dark = true;
     }
 }
 
