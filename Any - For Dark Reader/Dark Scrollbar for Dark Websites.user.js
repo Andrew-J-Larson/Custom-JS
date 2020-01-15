@@ -27,43 +27,44 @@ function addStyleString(str) {
     node.innerHTML = str;
     document.body.appendChild(node);
 }
+var dark_sites_lines = dark_sites.length;
+// remove any and all blank lines from the end of the file in the line count
+while (!dark_sites[dark_sites_lines - 1]) { dark_sites_lines--; }
 
 // loop through dark_sites and see if the current URL matches
-var i;
-for (i = 0; i < dark_sites.length; i++) {
+for (let i = 0; i < dark_sites_lines; i++) {
     // note:
     // `$` = end of url; must match to end
     // `*` = url can end in any way; preceeding must match
     // `/` = it must match beyond the domain; url can end in any way
 
     const dark_url = dark_sites[i];
-    // check length against both urls are the same
 
     // check dark url for special characters $ or *
     if (dark_url.includes('$')) {
         // string compare both urls for a match without trailing /
-        if (current_url.localeCompare(dark_url.split('$')[0].replace(/\/$/, "")) == 0) is_dark = true;
+        if (current_url.localeCompare(dark_url.split('$')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
     } else if (dark_url.includes('*')) {
         // string compare both urls without special character
-        if (current_url.localeCompare(dark_url.split('*')[0]) == 0) is_dark = true;
+        if (current_url.localeCompare(dark_url.split('*')[0]) == 0) { is_dark = true; }
         // only if the current_url is still possible
         else if (current_url.length > dark_url.length - 1) {
             // string compare both urls substringed current_url and without trailing * and /
-            if (current_url.substring(0, dark_url.length - 1).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) is_dark = true;
+            if (current_url.substring(0, dark_url.length - 1).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
         }
     } else if (dark_url.includes('/')) { // comparing to full link
         // compare strings without possible trailing slash on dark_url
         var dark_verify = dark_url.replace(/\/$/, "");
         // string compare both urls for a match
-        if (current_url.localeCompare(dark_verify) == 0) is_dark = true;
+        if (current_url.localeCompare(dark_verify) == 0) { is_dark = true; }
         // only if the current_url is still possible
         else if (current_url.length > dark_verify.length) {
             // string compare both urls substringed current_url and without trailing slash
-            if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) is_dark = true;
+            if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) { is_dark = true; }
         }
     } else { // comparing to domain
         // find dark_url in the current_url
-        if (current_url.indexOf(dark_url, 0) != -1) is_dark = true;
+        if (current_url.search(dark_url) >= 0) { is_dark = true; }
     }
 }
 
