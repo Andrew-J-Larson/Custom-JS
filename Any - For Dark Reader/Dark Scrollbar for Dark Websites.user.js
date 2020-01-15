@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.3.6
+// @version      1.3.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
@@ -9,11 +9,11 @@
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
-// @resource     css https://userstyles.org/styles/169873.css
+// @resource     css https://userstyles.org/styles/179150.css
 // @resource     config https://github.com/darkreader/darkreader/raw/master/src/config/dark-sites.config
 // ==/UserScript==
 
-// dark scrollbar via https://userstyles.org/styles/169873
+// dark scrollbar via https://userstyles.org/styles/179150
 // dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
 
 // required variables
