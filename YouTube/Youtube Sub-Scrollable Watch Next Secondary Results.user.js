@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.5
+// @version      1.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
-// @match        http*://www.youtube.com/watch?v=*
+// @include      /^https?://www.youtube\.com/watch\?v=*
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // ==/UserScript==
 
