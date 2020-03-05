@@ -73,7 +73,7 @@ function createScrollable() {
 
 // wait until panel exists to make it scrollable
 function waitForWatchNextToDisplay(time) {
-    if(document.getElementsByTagName("ytd-watch-next-secondary-results-renderer")[0]!=null) {
+    if($("ytd-watch-next-secondary-results-renderer")!=null) {
         createScrollable()
             return;
     } else {
