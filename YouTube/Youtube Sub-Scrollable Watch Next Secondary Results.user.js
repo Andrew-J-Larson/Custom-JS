@@ -20,21 +20,6 @@ function pxTOvh(height, pixels) {
   return (100*pixels)/height;
 }
 
-// detect position changes; change size
-function fixWatchNextSize() {
-    var screenHeight  = $(window).height(),
-        elemRect      = $("ytd-watch-next-secondary-results-renderer"),
-        elemHeight    = elemRect.position().top,
-        elemPadding   = $("#primary").css("padding-top").replace("px",""),
-        newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
-
-    if (watchNextHeight != elemHeight) {
-        watchNextHeight = elemHeight;
-        addStyleString("ytd-watch-next-secondary-results-renderer { height: " + newViewHeight + "vh;}");
-    }
-    setTimeout(fixWatchNextSize, 100);
-}
-
 // append css styling to html page
 function addStyleString(str) {
     var node = document.createElement('style');
@@ -44,6 +29,21 @@ function addStyleString(str) {
 
 // create the scrollable side panel
 function createScrollable() {
+    // detect position changes; change size
+    function fixWatchNextSize() {
+        var screenHeight  = $(window).height(),
+            elemRect      = $("ytd-watch-next-secondary-results-renderer"),
+            elemHeight    = elemRect.position().top,
+            elemPadding   = $("#primary").css("padding-top").replace("px",""),
+            newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
+
+        if (watchNextHeight != elemHeight) {
+            watchNextHeight = elemHeight;
+            addStyleString("ytd-watch-next-secondary-results-renderer { height: " + newViewHeight + "vh;}");
+        }
+        setTimeout(fixWatchNextSize, 100);
+    }
+    
     // code via https://stackoverflow.com/questions/33672479/prevent-page-scrolling-while-scrolling-a-div-element/33672757
     elemRect.on('DOMMouseScroll mousewheel', function(ev) {
         var $this = $(this),
