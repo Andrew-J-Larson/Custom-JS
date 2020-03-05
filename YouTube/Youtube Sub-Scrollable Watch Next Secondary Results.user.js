@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.0
+// @version      1.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -10,6 +10,8 @@
 // ==/UserScript==
 
 var $ = window.jQuery;
+
+ var watchNextHeight
 
 // required functions
 
@@ -33,6 +35,8 @@ function createScrollable() {
         elemHeight    = elemRect.position().top,
         elemPadding   = $("#primary").css("padding-top").replace("px",""),
         newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
+
+    watchNextHeight = elemHeight;
 
     // convert new view height
     var cssStyleString = "ytd-watch-next-secondary-results-renderer { overflow-y: auto !important; height: " + newViewHeight + "vh;}"
@@ -71,10 +75,26 @@ function createScrollable() {
     return;
 }
 
+// detect position changes; fix size
+function fixWatchNextSize() {
+    var screenHeight  = $(window).height(),
+        elemRect      = $("ytd-watch-next-secondary-results-renderer"),
+        elemHeight    = elemRect.position().top,
+        elemPadding   = $("#primary").css("padding-top").replace("px",""),
+        newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
+
+    if (watchNextHeight != elemHeight) {
+        watchNextHeight = elemHeight;
+        addStyleString("ytd-watch-next-secondary-results-renderer { height: " + newViewHeight + "vh;}");
+    }
+    setTimeout(fixWatchNextSize, 100);
+}
+
+
 // wait until panel exists to make it scrollable
 function waitForWatchNextToDisplay(time) {
-    if($("ytd-watch-next-secondary-results-renderer")!=null) {
-        createScrollable()
+    if ($("ytd-watch-next-secondary-results-renderer") != null) {
+        createScrollable();
             return;
     } else {
         setTimeout(function() {
@@ -84,3 +104,4 @@ function waitForWatchNextToDisplay(time) {
 }
 
 waitForWatchNextToDisplay(100);
+setTimeout(fixWatchNextSize, 100);
