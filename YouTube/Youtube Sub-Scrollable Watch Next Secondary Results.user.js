@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.2
+// @version      1.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -9,8 +9,9 @@
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // ==/UserScript==
 
+const sidePanelHTMLTag = "ytd-watch-next-secondary-results-renderer";
+const pageContainerID = "#primary";
 var $ = window.jQuery;
-
 var watchNextHeight = 0;
 
 // required functions
@@ -27,25 +28,24 @@ function addStyleString(str) {
     document.body.appendChild(node);
 }
 
+// detect position changes; change size
+function fixWatchNextSize() {
+    var screenHeight  = $(window).height(),
+        elemHeight    = $(sidePanelHTMLTag).position().top,
+        elemPadding   = $(pageContainerID).css("padding-top").replace("px",""),
+        newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
+
+    if (watchNextHeight != elemHeight) {
+        watchNextHeight = elemHeight;
+        addStyleString(sidePanelHTMLTag + " { height: " + newViewHeight + "vh;}");
+    }
+    setTimeout(fixWatchNextSize, 100);
+}
+
 // create the scrollable side panel
 function createScrollable() {
-    // detect position changes; change size
-    function fixWatchNextSize() {
-        var screenHeight  = $(window).height(),
-            elemRect      = $("ytd-watch-next-secondary-results-renderer"),
-            elemHeight    = elemRect.position().top,
-            elemPadding   = $("#primary").css("padding-top").replace("px",""),
-            newViewHeight = (((screenHeight - elemHeight) / screenHeight) * 100) - pxTOvh(screenHeight, elemPadding);
-
-        if (watchNextHeight != elemHeight) {
-            watchNextHeight = elemHeight;
-            addStyleString("ytd-watch-next-secondary-results-renderer { height: " + newViewHeight + "vh;}");
-        }
-        setTimeout(fixWatchNextSize, 100);
-    }
-    
     // code via https://stackoverflow.com/questions/33672479/prevent-page-scrolling-while-scrolling-a-div-element/33672757
-    elemRect.on('DOMMouseScroll mousewheel', function(ev) {
+    $(sidePanelHTMLTag).on('DOMMouseScroll mousewheel', function(ev) {
         var $this = $(this),
             scrollTop = this.scrollTop,
             scrollHeight = this.scrollHeight,
@@ -73,7 +73,7 @@ function createScrollable() {
         }
     });
 
-    addStyleString("ytd-watch-next-secondary-results-renderer { overflow-y: auto !important; }");
+    addStyleString(sidePanelHTMLTag + " { overflow-y: auto !important; }");
     setTimeout(fixWatchNextSize, 100);
 
     return;
@@ -81,7 +81,7 @@ function createScrollable() {
 
 // wait until panel exists to make it scrollable
 function waitForWatchNextToDisplay(time) {
-    if ($("ytd-watch-next-secondary-results-renderer") != null) {
+    if ($(sidePanelHTMLTag) != null) {
         createScrollable()
             return;
     } else {
