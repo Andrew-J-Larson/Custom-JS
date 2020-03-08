@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.8
+// @version      2.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -16,7 +16,7 @@ function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().
 
 const containerSelector = '#primary';
 const videoSelector = 'video';
-const watchNextSelector = 'ytd-watch-next-secondary-results-renderer';
+const suggestionsSelector = 'ytd-watch-next-secondary-results-renderer';
 const autoPlaySelector = 'ytd-compact-autoplay-renderer';
 const itemsSelector = '#items .ytd-watch-next-secondary-results-renderer:nth-child(2)';
 const scrollbarWidth = 17;
@@ -32,7 +32,7 @@ var panelWidth    = 0,
 // these change once found
 var container = null,
     video     = null,
-    watchNext = null,
+    suggestions = null,
     autoPlay  = null,
     items     = null;
 
@@ -89,7 +89,7 @@ function fixDynamicSizes() {
     if (visibility == 'visible') {
         var scrHeight  = $(window).height(),
             vidHeight  = video.height(),
-            elemPosTop = watchNext.position().top,
+            elemPosTop = suggestions.position().top,
             elemPad    = container.css('padding-top').replace('px',''),
             minHeight  = (((scrHeight - (vidHeight / 2)) / scrHeight) * 100),
             calcHeight = (((scrHeight - elemPosTop) / scrHeight) * 100) - pxTOvh(scrHeight, elemPad),
@@ -97,16 +97,16 @@ function fixDynamicSizes() {
 
         if (panelHeight != elemPosTop) {
             panelHeight = elemPosTop;
-            addStyleString(watchNextSelector + ' { height: ' + viewHeight + 'vh;}');
+            addStyleString(suggestionsSelector + ' { height: ' + viewHeight + 'vh;}');
         }
 
-        var watchNextWidth = watchNext.outerWidth(),
+        var suggestionsWidth = suggestions.outerWidth(),
             autoPlayHeight = 0;
         if (autoPlay != null) autoPlayHeight = autoPlay.outerHeight(true);
 
-        if (scrollbarWidth != 0 && panelWidth != watchNextWidth) {
-            panelWidth = watchNextWidth;
-            addStyleString(autoPlaySelector + ' { width: ' + (watchNextWidth - scrollbarWidth) + 'px; }');
+        if (scrollbarWidth != 0 && panelWidth != suggestionsWidth) {
+            panelWidth = suggestionsWidth;
+            addStyleString(autoPlaySelector + ' { width: ' + (suggestionsWidth - scrollbarWidth) + 'px; }');
         }
 
         if (autoVidHeight != autoPlayHeight) {
@@ -118,9 +118,9 @@ function fixDynamicSizes() {
     }
 }
 
-// wait until watch next panel is given a position to start sizing
+// wait until suggestions panel is given a position to start sizing
 function waitForPanelPosition(time) {
-    if (watchNext.position() != null) {
+    if (suggestions.position() != null) {
         fixDynamicSizes()
         return;
     } else {
@@ -130,18 +130,18 @@ function waitForPanelPosition(time) {
     }
 }
 
-// enabled scrollbar on watch next panel, and start sizing
+// enabled scrollbar on suggestions panel, and start sizing
 waitForKeyElements(itemsSelector, function () {
     container = $(containerSelector);
     video = $(videoSelector);
-    watchNext = $(watchNextSelector);
+    suggestions = $(suggestionsSelector);
     autoPlay = $(autoPlaySelector);
     items = $(itemsSelector);
 
-    disablePageScrolling(watchNext);
+    disablePageScrolling(suggestions);
     disablePageScrolling(autoPlay);
 
-    addStyleString(watchNextSelector + ' { overflow-y: scroll !important; }');
+    addStyleString(suggestionsSelector + ' { overflow-y: scroll !important; }');
     addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; background-color: rgba(0,0,0,0.9); }');
 
     waitForPanelPosition(100);
