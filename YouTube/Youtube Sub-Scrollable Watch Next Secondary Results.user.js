@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.6
+// @version      2.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -34,6 +34,37 @@ var autoVidHeight = 0;
 d.addEventListener('visibilitychange', function() {
     visibility = d.visibilityState;
 });
+
+// prevent page from scolling when trying to scroll on an element
+// code via https://stackoverflow.com/a/33672757/7312536
+function disablePageScrolling (element) {
+    element.on('DOMMouseScroll mousewheel', function(ev) {
+        var $this = $(this),
+            scrollTop = this.scrollTop,
+            scrollHeight = this.scrollHeight,
+            height = $this.height(),
+            delta = (ev.type == 'DOMMouseScroll' ?
+                     ev.originalEvent.detail * -40 :
+                     ev.originalEvent.wheelDelta),
+            up = delta > 0;
+
+        var prevent = function() {
+            ev.stopPropagation();
+            ev.preventDefault();
+            ev.returnValue = false;
+            return false;
+        }
+                if (!up && -delta > scrollHeight - height - scrollTop) {
+            // Scrolling down, but this will take us past the bottom.
+            $this.scrollTop(scrollHeight);
+            return prevent();
+        } else if (up && delta > scrollTop) {
+            // Scrolling up, but this will take us past the top.
+            $this.scrollTop(0);
+            return prevent();
+        }
+    });
+}
 
 // change pixels to viewheight
 function pxTOvh(height, pixels) {
@@ -96,35 +127,8 @@ function waitForPanelPosition(time) {
 
 // enabled scrollbar on watch next panel, and start sizing
 waitForKeyElements(itemsSelector, function () {
-    // prevent page from scolling when using panel scrolling
-    // code via https://stackoverflow.com/a/33672757/7312536
-    $(watchNextSelector).on('DOMMouseScroll mousewheel', function(ev) {
-        var $this = $(this),
-            scrollTop = this.scrollTop,
-            scrollHeight = this.scrollHeight,
-            height = $this.height(),
-            delta = (ev.type == 'DOMMouseScroll' ?
-                     ev.originalEvent.detail * -40 :
-                     ev.originalEvent.wheelDelta),
-            up = delta > 0;
-
-        var prevent = function() {
-            ev.stopPropagation();
-            ev.preventDefault();
-            ev.returnValue = false;
-            return false;
-        }
-
-        if (!up && -delta > scrollHeight - height - scrollTop) {
-            // Scrolling down, but this will take us past the bottom.
-            $this.scrollTop(scrollHeight);
-            return prevent();
-        } else if (up && delta > scrollTop) {
-            // Scrolling up, but this will take us past the top.
-            $this.scrollTop(0);
-            return prevent();
-        }
-    });
+    disablePageScrolling($(watchNextSelector));
+    disablePageScrolling($(autoPlaySelector));
 
     addStyleString(watchNextSelector + ' { overflow-y: scroll !important; }');
     addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; background-color: rgba(0,0,0,0.9); }');
