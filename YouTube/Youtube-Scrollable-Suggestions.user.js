@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.9
+// @version      3.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -14,13 +14,15 @@
 // Date code was added: March 8th, 2020 - From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
 function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().find(e))&&o.length>0?(r=!0,o.each(function(){var e=$(this);e.data("alreadyFound")||!1||(t(e)?r=!1:e.data("alreadyFound",!0))})):r=!1;var l=waitForKeyElements.controlObj||{},i=e.replace(/[^\w]/g,"_"),c=l[i];r&&a&&c?(clearInterval(c),delete l[i]):c||(c=setInterval(function(){waitForKeyElements(e,t,a,n)},300),l[i]=c),waitForKeyElements.controlObj=l}
 
-const containerSelector = '#primary';
-const videoSelector = 'video';
+const pageSelector        = 'ytd-app';
+const containerSelector   = '#primary';
+const videoSelector       = 'video';
 const suggestionsSelector = 'ytd-watch-next-secondary-results-renderer';
-const autoPlaySelector = 'ytd-compact-autoplay-renderer';
-const itemsSelector = '#items .ytd-watch-next-secondary-results-renderer:nth-child(2)';
-const scrollbarWidth = 17;
-const timeForTimeouts = 1000;
+const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
+const itemsSelector       = '#items .ytd-watch-next-secondary-results-renderer:nth-child(2)';
+const scrollbarWidth      = 17;
+const normalTimeDelay     = 1000;
+const fastTimeDelay       = 100;
 
 var $ = window.jQuery;
 var d = document;
@@ -30,11 +32,14 @@ var panelWidth    = 0,
     panelHeight   = 0,
     autoVidHeight = 0;
 // these change once found
-var container = null,
-    video     = null,
+var page        = null,
+    container   = null,
+    video       = null,
     suggestions = null,
-    autoPlay  = null,
-    items     = null;
+    autoPlay    = null,
+    items       = null,
+    bgColor     = null,
+    autoPlayBG  = null;
 
 // don't try to do anything until page is visible
 d.addEventListener('visibilitychange', function() {
@@ -77,6 +82,17 @@ function pxTOvh(height, pixels) {
     return (100*pixels)/height;
 }
 
+// to get separate RGB values
+// code via https://stackoverflow.com/a/34980657/7312536
+function getRGB(str){
+  var match = str.match(/rgba?\((\d{1,3}), ?(\d{1,3}), ?(\d{1,3})\)?(?:, ?(\d(?:\.\d?))\))?/);
+  return match ? {
+    red: match[1],
+    green: match[2],
+    blue: match[3]
+  } : {};
+}
+
 // append css styling to html page
 function addStyleString(str) {
     var node = d.createElement('style');
@@ -93,7 +109,9 @@ function fixDynamicSizes() {
             elemPad    = container.css('padding-top').replace('px',''),
             minHeight  = (((scrHeight - (vidHeight / 2)) / scrHeight) * 100),
             calcHeight = (((scrHeight - elemPosTop) / scrHeight) * 100) - pxTOvh(scrHeight, elemPad),
-            viewHeight = Math.max(minHeight, calcHeight);
+            viewHeight = Math.max(minHeight, calcHeight),
+            bgColor    = page.css('background-color'),
+            autoPlayBG = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)';
 
         if (panelHeight != elemPosTop) {
             panelHeight = elemPosTop;
@@ -114,7 +132,11 @@ function fixDynamicSizes() {
             addStyleString(itemsSelector + ' { padding-top: ' + autoPlayHeight + 'px; }');
         }
 
-        setTimeout(fixDynamicSizes, timeForTimeouts);
+        if (autoPlay != null && autoPlay.css('background-color') != autoPlayBG) {
+            addStyleString(autoPlaySelector + ' { background-color: ' + autoPlayBG + '; }');
+        }
+
+        setTimeout(fixDynamicSizes, normalTimeDelay);
     }
 }
 
@@ -132,17 +154,21 @@ function waitForPanelPosition(time) {
 
 // enabled scrollbar on suggestions panel, and start sizing
 waitForKeyElements(itemsSelector, function () {
+    page = $(pageSelector);
     container = $(containerSelector);
     video = $(videoSelector);
     suggestions = $(suggestionsSelector);
     autoPlay = $(autoPlaySelector);
     items = $(itemsSelector);
 
+    bgColor = page.css('background-color');
+    autoPlayBG = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)';
+
     disablePageScrolling(suggestions);
     disablePageScrolling(autoPlay);
 
     addStyleString(suggestionsSelector + ' { overflow-y: scroll !important; }');
-    addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; background-color: rgba(0,0,0,0.9); }');
+    addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; }');
 
-    waitForPanelPosition(100);
+    waitForPanelPosition(fastTimeDelay);
 });
