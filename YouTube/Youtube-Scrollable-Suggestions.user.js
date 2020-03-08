@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      3.0
+// @version      3.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
-// @include      /^https?://www\.youtube\.com/watch\?v=*
+// @include      /^https?:\/\/www\.youtube\.com\/watch\?v=.*
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // ==/UserScript==
 
