@@ -30,7 +30,7 @@ var panelWidth = 0;
 var panelHeight = 0;
 var autoVidHeight = 0;
 
-// don't try to resize page isn't visible
+// don't try to do anything until page is visible
 d.addEventListener('visibilitychange', function() {
     visibility = d.visibilityState;
 });
