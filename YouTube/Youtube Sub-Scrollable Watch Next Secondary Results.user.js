@@ -1,14 +1,18 @@
 // ==UserScript==
 // @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.5
+// @version      2.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      /^https?://www\.youtube\.com/watch\?v=*
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
-// @require      https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
 // ==/UserScript==
+
+// Greasemonkey doesn't allow some external scripts, including the one I've been using to detect an element existing.
+// Because of this, I've include a minified version of the code in this script.
+// Date code was added: March 8th, 2020 - From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
+function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().find(e))&&o.length>0?(r=!0,o.each(function(){var e=$(this);e.data("alreadyFound")||!1||(t(e)?r=!1:e.data("alreadyFound",!0))})):r=!1;var l=waitForKeyElements.controlObj||{},i=e.replace(/[^\w]/g,"_"),c=l[i];r&&a&&c?(clearInterval(c),delete l[i]):c||(c=setInterval(function(){waitForKeyElements(e,t,a,n)},300),l[i]=c),waitForKeyElements.controlObj=l}
 
 const containerSelector = '#primary';
 const videoSelector = 'video';
