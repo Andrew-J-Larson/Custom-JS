@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Youtube Sub-Scrollable "Watch Next Secondary Results"
+// @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.7
-// @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube%20Sub-Scrollable%20Watch%20Next%20Secondary%20Results.user.js
+// @version      2.8
+// @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      /^https?://www\.youtube\.com/watch\?v=*
@@ -25,10 +25,16 @@ const timeForTimeouts = 1000;
 var $ = window.jQuery;
 var d = document;
 
-var visibility = d.visibilityState;
-var panelWidth = 0;
-var panelHeight = 0;
-var autoVidHeight = 0;
+var visibility    = d.visibilityState;
+var panelWidth    = 0,
+    panelHeight   = 0,
+    autoVidHeight = 0;
+// these change once found
+var container = null,
+    video     = null,
+    watchNext = null,
+    autoPlay  = null,
+    items     = null;
 
 // don't try to do anything until page is visible
 d.addEventListener('visibilitychange', function() {
@@ -82,9 +88,9 @@ function addStyleString(str) {
 function fixDynamicSizes() {
     if (visibility == 'visible') {
         var scrHeight  = $(window).height(),
-            vidHeight  = $(videoSelector).height(),
-            elemPosTop = $(watchNextSelector).position().top,
-            elemPad    = $(containerSelector).css('padding-top').replace('px',''),
+            vidHeight  = video.height(),
+            elemPosTop = watchNext.position().top,
+            elemPad    = container.css('padding-top').replace('px',''),
             minHeight  = (((scrHeight - (vidHeight / 2)) / scrHeight) * 100),
             calcHeight = (((scrHeight - elemPosTop) / scrHeight) * 100) - pxTOvh(scrHeight, elemPad),
             viewHeight = Math.max(minHeight, calcHeight);
@@ -94,13 +100,12 @@ function fixDynamicSizes() {
             addStyleString(watchNextSelector + ' { height: ' + viewHeight + 'vh;}');
         }
 
-        var watchNextWidth = $(watchNextSelector).outerWidth(),
+        var watchNextWidth = watchNext.outerWidth(),
             autoPlayHeight = 0;
-        if ($(autoPlaySelector) != null) autoPlayHeight = $(autoPlaySelector).outerHeight(true);
+        if (autoPlay != null) autoPlayHeight = autoPlay.outerHeight(true);
 
         if (scrollbarWidth != 0 && panelWidth != watchNextWidth) {
             panelWidth = watchNextWidth;
-            console.log(scrollbarWidth);
             addStyleString(autoPlaySelector + ' { width: ' + (watchNextWidth - scrollbarWidth) + 'px; }');
         }
 
@@ -115,7 +120,7 @@ function fixDynamicSizes() {
 
 // wait until watch next panel is given a position to start sizing
 function waitForPanelPosition(time) {
-    if ($(watchNextSelector).position() != null) {
+    if (watchNext.position() != null) {
         fixDynamicSizes()
         return;
     } else {
@@ -127,8 +132,14 @@ function waitForPanelPosition(time) {
 
 // enabled scrollbar on watch next panel, and start sizing
 waitForKeyElements(itemsSelector, function () {
-    disablePageScrolling($(watchNextSelector));
-    disablePageScrolling($(autoPlaySelector));
+    container = $(containerSelector);
+    video = $(videoSelector);
+    watchNext = $(watchNextSelector);
+    autoPlay = $(autoPlaySelector);
+    items = $(itemsSelector);
+
+    disablePageScrolling(watchNext);
+    disablePageScrolling(autoPlay);
 
     addStyleString(watchNextSelector + ' { overflow-y: scroll !important; }');
     addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; background-color: rgba(0,0,0,0.9); }');
