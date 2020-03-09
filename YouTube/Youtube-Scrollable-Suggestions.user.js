@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      3.1
+// @version      3.2
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -24,22 +24,11 @@ const scrollbarWidth      = 17;
 const normalTimeDelay     = 1000;
 const fastTimeDelay       = 100;
 
-var $ = window.jQuery;
 var d = document;
+var $ = window.jQuery;
+var w = $(window);
 
-var visibility    = d.visibilityState;
-var panelWidth    = 0,
-    panelHeight   = 0,
-    autoVidHeight = 0;
-// these change once found
-var page        = null,
-    container   = null,
-    video       = null,
-    suggestions = null,
-    autoPlay    = null,
-    items       = null,
-    bgColor     = null,
-    autoPlayBG  = null;
+var visibility = d.visibilityState;
 
 // don't try to do anything until page is visible
 d.addEventListener('visibilitychange', function() {
@@ -100,75 +89,77 @@ function addStyleString(str) {
     d.body.appendChild(node);
 }
 
-// detect position changes to change size accordingly
-function fixDynamicSizes() {
-    if (visibility == 'visible') {
-        var scrHeight  = $(window).height(),
-            vidHeight  = video.height(),
-            elemPosTop = suggestions.position().top,
-            elemPad    = container.css('padding-top').replace('px',''),
-            minHeight  = (((scrHeight - (vidHeight / 2)) / scrHeight) * 100),
-            calcHeight = (((scrHeight - elemPosTop) / scrHeight) * 100) - pxTOvh(scrHeight, elemPad),
-            viewHeight = Math.max(minHeight, calcHeight),
-            bgColor    = page.css('background-color'),
-            autoPlayBG = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)';
-
-        if (panelHeight != elemPosTop) {
-            panelHeight = elemPosTop;
-            addStyleString(suggestionsSelector + ' { height: ' + viewHeight + 'vh;}');
-        }
-
-        var suggestionsWidth = suggestions.outerWidth(),
-            autoPlayHeight = 0;
-        if (autoPlay != null) autoPlayHeight = autoPlay.outerHeight(true);
-
-        if (scrollbarWidth != 0 && panelWidth != suggestionsWidth) {
-            panelWidth = suggestionsWidth;
-            addStyleString(autoPlaySelector + ' { width: ' + (suggestionsWidth - scrollbarWidth) + 'px; }');
-        }
-
-        if (autoVidHeight != autoPlayHeight) {
-            autoVidHeight = autoPlayHeight;
-            addStyleString(itemsSelector + ' { padding-top: ' + autoPlayHeight + 'px; }');
-        }
-
-        if (autoPlay != null && autoPlay.css('background-color') != autoPlayBG) {
-            addStyleString(autoPlaySelector + ' { background-color: ' + autoPlayBG + '; }');
-        }
-
-        setTimeout(fixDynamicSizes, normalTimeDelay);
-    }
-}
-
-// wait until suggestions panel is given a position to start sizing
-function waitForPanelPosition(time) {
-    if (suggestions.position() != null) {
-        fixDynamicSizes()
-        return;
-    } else {
-        setTimeout(function() {
-            waitForPanelPosition(time);
-        }, time);
-    }
-}
-
 // enabled scrollbar on suggestions panel, and start sizing
 waitForKeyElements(itemsSelector, function () {
-    page = $(pageSelector);
-    container = $(containerSelector);
-    video = $(videoSelector);
-    suggestions = $(suggestionsSelector);
-    autoPlay = $(autoPlaySelector);
-    items = $(itemsSelector);
+    var page        = $(pageSelector),
+        container   = $(containerSelector),
+        video       = $(videoSelector),
+        suggestions = $(suggestionsSelector),
+        autoPlay    = $(autoPlaySelector),
+        items       = $(itemsSelector),
+        bgColor     = page.css('background-color'),
+        autoPlayBG  = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)',
+        panelWidth    = 0,
+        panelHeight   = 0,
+        autoVidHeight = 0;
 
-    bgColor = page.css('background-color');
-    autoPlayBG = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)';
+    // detect position changes to change size accordingly
+    function fixDynamicSizes() {
+        if (visibility == 'visible') {
+            var winHeight  = w.height(),
+                vidHeight  = video.height(),
+                sugPosTop  = suggestions.position().top,
+                sugPadding = container.css('padding-top').replace('px',''),
+                minHeight  = (((winHeight - (vidHeight / 2)) / winHeight) * 100),
+                calcHeight = (((winHeight - sugPosTop) / winHeight) * 100) - pxTOvh(winHeight, sugPadding),
+                viewHeight = Math.max(minHeight, calcHeight),
+                bgColor    = page.css('background-color'),
+                autoPlayBG = 'rgba(' + getRGB(bgColor).red + ',' + getRGB(bgColor).green + ',' + getRGB(bgColor).blue + ',0.9)';
+
+            if (panelHeight != sugPosTop) {
+                panelHeight = sugPosTop;
+                addStyleString(suggestionsSelector + ' { height: ' + viewHeight + 'vh;}');
+            }
+
+            var suggestionsWidth = suggestions.outerWidth(),
+                autoPlayHeight = 0;
+            if (autoPlay != null) autoPlayHeight = autoPlay.outerHeight(true);
+
+            if (scrollbarWidth != 0 && panelWidth != suggestionsWidth) {
+                panelWidth = suggestionsWidth;
+                addStyleString(autoPlaySelector + ' { width: ' + (suggestionsWidth - scrollbarWidth) + 'px; }');
+            }
+
+            if (autoVidHeight != autoPlayHeight) {
+                autoVidHeight = autoPlayHeight;
+                addStyleString(itemsSelector + ' { padding-top: ' + autoPlayHeight + 'px; }');
+            }
+
+            if (autoPlay != null && autoPlay.css('background-color') != autoPlayBG) {
+                addStyleString(autoPlaySelector + ' { background-color: ' + autoPlayBG + '; }');
+            }
+
+            setTimeout(fixDynamicSizes, normalTimeDelay);
+        }
+    }
+
+    // wait until element to show up with a position
+    function waitForPosition(element, time) {
+        if (element.position() != null) {
+            fixDynamicSizes()
+            return;
+        } else {
+            setTimeout(function() {
+                waitForPosition(time);
+            }, time);
+        }
+    }
 
     disablePageScrolling(suggestions);
     disablePageScrolling(autoPlay);
 
-    addStyleString(suggestionsSelector + ' { overflow-y: scroll !important; }');
-    addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100; }');
+    addStyleString(suggestionsSelector + ' { overflow-y: scroll }');
+    addStyleString(autoPlaySelector + ' { position: absolute; z-index: 100 }');
 
-    waitForPanelPosition(fastTimeDelay);
+    waitForPosition(suggestions, fastTimeDelay);
 });
