@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      6.0
+// @version      6.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -19,6 +19,7 @@ function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().
 
 // basic
 const scriptShortName = 'YTscrollSuggest';
+const fastDelay       = 100; // in milliseconds
 
 // selectors
 //const pageSelector        = 'ytd-app';
@@ -29,6 +30,7 @@ const rightSelector       = '#secondary';
 const rightInSelector     = rightSelector + '-inner';
 const playerSelector      = '#player-container-outer';
 const theaterSelector     = '#player-theater-container';
+const fullscreenSelector  = 'button.ytp-fullscreen-button';
 const panelsSelector      = '#panels';
 const donationsSelector   = '#donation-shelf';
 const chatSelector        = 'ytd-live-chat-frame#chat';
@@ -43,6 +45,10 @@ const radioItemSelector   = 'ytd-compact-radio-renderer';
 const movieItemSelector   = 'ytd-compact-movie-renderer';
 const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
 const spinnerSelector     = 'ytd-watch-next-secondary-results-renderer #continuations';
+
+// constant strings
+const fullscreenExit  = 'Exit full screen (f)';
+const fullscreenEnter = 'Full screen (f)';
 
 // styling
 const cssClassPrefix       = GM_info.script.author + scriptShortName;
@@ -209,7 +215,8 @@ waitForKeyElements(videoItemSelector, function () {
         minHeight   = vItemHeight,
         previousScr = 0,
         sliding     = false,
-        atSugEnd    = false;
+        atSugEnd    = false,
+        fullscreen  = false;
 
     // contains classes used to style everything
     addStyleString(cssConstantStyle);
@@ -276,8 +283,8 @@ waitForKeyElements(videoItemSelector, function () {
                     playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
                     adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
                     offerModHeight  = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
-                    fillerHeight    = theatherHeight + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
-                    oriPosTop       = contentTop + fillerHeight,
+                    fillerHeight    = (fullscreen ? 0 : theatherHeight) + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
+                    oriPosTop       = (fullscreen ? (viewHeight + standardPadding) : contentTop) + fillerHeight,
                     oriScrTop       = oriPosTop - scrTop,
                     belowTopPos     = viewHeight - oriScrTop,
                     allInView       = (belowTopPos - minHeight) >= 0;
@@ -374,11 +381,26 @@ waitForKeyElements(videoItemSelector, function () {
         }
     });
 
-    // dynamic update/event listeners must start only after the two panel view is on
+    // must know when fullscreen is turned on
+    $(function() {
+        $(fullscreenSelector).click(function() {
+            var tempTitle = 'nothing';
+            setTimeout(function() {
+                tempTitle = $(fullscreenSelector).attr('title');
+
+                if (tempTitle == fullscreenEnter) fullscreen = false;
+                else if(tempTitle == fullscreenExit) fullscreen = true;
+
+                fixDynamicSizes(true);
+            }, fastDelay);
+        });
+    });
+
+    // this must start only after the two panel view is on
     var waitForRightHaveChildren = setInterval(function() {
         if (rightCoIn.length > 1) {
             detectHeightChange(rightContn, fixDynamicSizes);
             clearInterval(waitForRightHaveChildren);
         }
-    }, 100);
+    }, fastDelay);
 });
