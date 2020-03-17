@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      6.1
+// @version      6.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -20,6 +20,7 @@ function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().
 // basic
 const scriptShortName = 'YTscrollSuggest';
 const fastDelay       = 100; // in milliseconds
+const longDelay       = 1000; // in milliseconds
 
 // selectors
 //const pageSelector        = 'ytd-app';
@@ -30,6 +31,8 @@ const rightSelector       = '#secondary';
 const rightInSelector     = rightSelector + '-inner';
 const playerSelector      = '#player-container-outer';
 const theaterSelector     = '#player-theater-container';
+const miniplayerSelector  = 'button.ytp-miniplayer-button';
+const sizeSelector        = 'button.ytp-size-button';
 const fullscreenSelector  = 'button.ytp-fullscreen-button';
 const panelsSelector      = '#panels';
 const donationsSelector   = '#donation-shelf';
@@ -47,6 +50,10 @@ const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
 const spinnerSelector     = 'ytd-watch-next-secondary-results-renderer #continuations';
 
 // constant strings
+const miniplayerExit  = 'Expand (i)';
+const miniplayerEnter = 'Miniplayer (i)';
+const sizeExit  = 'Default view (t)';
+const sizeEnter = 'Theater mode (t)';
 const fullscreenExit  = 'Exit full screen (f)';
 const fullscreenEnter = 'Full screen (f)';
 
@@ -80,9 +87,10 @@ var d = document;
 var D = $(document);
 var W = $(window);
 
-var visibility = d.visibilityState,
-    enabledYT  = false,
-    disabledYT = true;
+var visibility      = d.visibilityState,
+    enabledYT       = false,
+    disabledYT      = true,
+    extendedDisable = false;
 
 // don't try to do anything until page is visible
 D.on('visibilitychange', function() {
@@ -261,10 +269,9 @@ waitForKeyElements(videoItemSelector, function () {
                 viewWidth      = W.width(),
                 playerWidth    = hasWidth(player) ? player.width() : 0,
                 theaterEnabled = theater.children().length > 0,
-                maxVideoWidth  = viewWidth - standardPadding * 2,
-                videoBeyondX   = playerWidth >= maxVideoWidth;
+                secondaryGone  = rightCoIn.children().length <= 1;
 
-            disabledYT = videoBeyondX;
+            disabledYT = secondaryGone || extendedDisable;
 
             if (enabledYT && disabledYT) {
                 // not disabled yet, disabling
@@ -352,6 +359,8 @@ waitForKeyElements(videoItemSelector, function () {
                 enableSuggestionsScroll(true);
                 enabledYT = true;
                 fixDynamicSizes(true);
+            } else if (extendedDisable) {
+                extendedDisable = false;
             }
         }
     }
@@ -381,12 +390,24 @@ waitForKeyElements(videoItemSelector, function () {
         }
     });
 
-    // must know when fullscreen is turned on
+    // must know when miniplayer, size, and fullscreen buttons are pressed
     $(function() {
-        $(fullscreenSelector).click(function() {
-            var tempTitle = 'nothing';
+        $(miniplayerSelector).click(function() {
+            // must disable the size/position settings until back to original window
+            extendedDisable = true;
+            fixDynamicSizes(true);
+        });
+
+        $(sizeSelector).click(function() {
             setTimeout(function() {
-                tempTitle = $(fullscreenSelector).attr('title');
+                // don't need to update variables related to theater mode, since sizing for that is already handled
+                fixDynamicSizes(true);
+            }, fastDelay);
+        });
+
+        $(fullscreenSelector).click(function() {
+            setTimeout(function() {
+                var tempTitle = $(fullscreenSelector).attr('title');
 
                 if (tempTitle == fullscreenEnter) fullscreen = false;
                 else if(tempTitle == fullscreenExit) fullscreen = true;
