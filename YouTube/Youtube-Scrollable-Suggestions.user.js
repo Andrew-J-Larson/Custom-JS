@@ -1,66 +1,85 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      3.6
+// @version      6.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      /^https?:\/\/www\.youtube\.com\/watch\?v=.*
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
+// @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // ==/UserScript==
 
 // Greasemonkey doesn't allow some external scripts, including the one I've been using to detect an element existing.
 // Because of this, I've include a minified version of the code in this script.
-// Date code was added: March 8th, 2020 - From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
+// jQuery library - waitForKeyElements --- Date code was added: March 8th, 2020 -- From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
 function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().find(e))&&o.length>0?(r=!0,o.each(function(){var e=$(this);e.data("alreadyFound")||!1||(t(e)?r=!1:e.data("alreadyFound",!0))})):r=!1;var l=waitForKeyElements.controlObj||{},i=e.replace(/[^\w]/g,"_"),c=l[i];r&&a&&c?(clearInterval(c),delete l[i]):c||(c=setInterval(function(){waitForKeyElements(e,t,a,n)},300),l[i]=c),waitForKeyElements.controlObj=l}
+// jQuery library - attrchange ----------- Date code was added: March 16th, 2020 - From: https://raw.githubusercontent.com/meetselva/attrchange/master/js/attrchange.js
+!function(t){var a=window.MutationObserver||window.WebKitMutationObserver;t.fn.attrchange=function(e,n){if("object"==typeof e){var r={trackValues:!1,callback:t.noop};if("function"==typeof e?r.callback=e:t.extend(r,e),r.trackValues&&this.each(function(a,e){for(var n,r={},i=(a=0,e.attributes),c=i.length;a<c;a++)r[(n=i.item(a)).nodeName]=n.value;t(this).data("attr-old-value",r)}),a){var i={subtree:!1,attributes:!0,attributeOldValue:r.trackValues},c=new a(function(a){a.forEach(function(a){var e=a.target;r.trackValues&&(a.newValue=t(e).attr(a.attributeName)),"connected"===t(e).data("attrchange-status")&&r.callback.call(e,a)})});return this.data("attrchange-method","Mutation Observer").data("attrchange-status","connected").data("attrchange-obs",c).each(function(){c.observe(this,i)})}return function(){var t=document.createElement("p"),a=!1;if(t.addEventListener)t.addEventListener("DOMAttrModified",function(){a=!0},!1);else{if(!t.attachEvent)return!1;t.attachEvent("onDOMAttrModified",function(){a=!0})}return t.setAttribute("id","target"),a}()?this.data("attrchange-method","DOMAttrModified").data("attrchange-status","connected").on("DOMAttrModified",function(a){a.originalEvent&&(a=a.originalEvent),a.attributeName=a.attrName,a.oldValue=a.prevValue,"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):"onpropertychange"in document.body?this.data("attrchange-method","propertychange").data("attrchange-status","connected").on("propertychange",function(a){a.attributeName=window.event.propertyName,function(a,e){if(a){var n=this.data("attr-old-value");if(e.attributeName.indexOf("style")>=0){n.style||(n.style={});var r=e.attributeName.split(".");e.attributeName=r[0],e.oldValue=n.style[r[1]],e.newValue=r[1]+":"+this.prop("style")[t.camelCase(r[1])],n.style[r[1]]=e.newValue}else e.oldValue=n[e.attributeName],e.newValue=this.attr(e.attributeName),n[e.attributeName]=e.newValue;this.data("attr-old-value",n)}}.call(t(this),r.trackValues,a),"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):this}if("string"==typeof e&&t.fn.attrchange.hasOwnProperty("extensions")&&t.fn.attrchange.extensions.hasOwnProperty(e))return t.fn.attrchange.extensions[e].call(this,n)}}(jQuery);
 
 // basic
 const scriptShortName = 'YTscrollSuggest';
-const normalTimeDelay = 1000;
-const fastTimeDelay   = 100;
 
 // selectors
-const pageSelector        = 'ytd-app';
+//const pageSelector        = 'ytd-app';
 const headerSelector      = '#masthead-container';
 const leftSelector        = '#primary';
-const videoSelector       = 'video';
+const leftInSelector      = leftSelector + '-inner';
+const rightSelector       = '#secondary';
+const rightInSelector     = rightSelector + '-inner';
+const playerSelector      = '#player-container-outer';
+const theaterSelector     = '#player-theater-container';
 const panelsSelector      = '#panels';
 const donationsSelector   = '#donation-shelf';
 const chatSelector        = 'ytd-live-chat-frame#chat';
 const playlistSelector    = '#playlist';
 const adsSelector         = '#player-ads';
-const suggestionsSelector = 'ytd-watch-next-secondary-results-renderer';
+const offerModuleSelector = '#offer-module';
+const suggestionsSelector = '#items:nth-child(2)';
 const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
-const itemsSelector       = '#items .ytd-watch-next-secondary-results-renderer:nth-child(2)';
-const videoItemSelector   = 'ytd-compact-video-renderer';
-const scrollbarSelector   = suggestionsSelector + '::-webkit-scrollbar';
+const videoItemSelector   = 'ytd-compact-video-renderer:not(.ytd-compact-autoplay-renderer)';
+const videoThumbSelector  = 'ytd-thumbnail';
+const radioItemSelector   = 'ytd-compact-radio-renderer';
+const movieItemSelector   = 'ytd-compact-movie-renderer';
+const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
+const spinnerSelector     = 'ytd-watch-next-secondary-results-renderer #continuations';
 
 // styling
-const cssClassPrefix    = GM_info.script.author + scriptShortName;
-const standardPadding   = 24; // in px
-const videoItemPadding  = 8; // in px
-const scrollbarWidth    = 17; // in px
-const pageColorA        = 'var(--yt-spec-general-background-a)';
-const pageColorB        = 'var(--yt-spec-general-background-b)';
-const pageColorC        = 'var(--yt-spec-general-background-c)';
-const sideBarWidth      = 'var(--ytd-watch-flexy-sidebar-width)';
-const sideBarMinWidth   = 'var(--ytd-watch-flexy-sidebar-min-width)';
-const varSuggestionsBG     = '--' + cssClassPrefix + 'SuggestionsBG';
-const suggestionsBG  = 'var(' + varSuggestionsBG + ')';
-const cssHtmlTheme      = 'html { ' + varSuggestionsBG + ':' + pageColorA + '!important }'
-const cssScrollbarTheme = suggestionsSelector + ' { overflow-y:auto; width:' + sideBarWidth + '; min-width:' + sideBarMinWidth + ' } ' + scrollbarSelector + ' { height:auto } ' + scrollbarSelector + '-thumb { background-color:#ccc; border:2px solid ' + pageColorB + ' } ' + scrollbarSelector + '-track { background-color:' + pageColorB + '; } [dark] ' + scrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + scrollbarSelector + '-track { background-color:' + pageColorB + '; }';
-const cssAutoPlayTheme  = autoPlaySelector + ' { z-index:99; width:' + sideBarWidth + '; min-width:' + sideBarMinWidth + ' }';
+const cssClassPrefix       = GM_info.script.author + scriptShortName;
+const standardPadding      = 24; // in px
+const videoItemPadding     = 8; // in px
+const spinnerPadding       = 16; // in px
+const scrollbarWidth       = 17; // in px
+//const videoMinWidth        = 'var(--ytd-watch-flexy-min-player-width)';
+//const videoMaxWidth        = 'var(--ytd-watch-flexy-max-player-width)';
+//const sidebarWidth         = 'var(--ytd-watch-flexy-sidebar-width)';
+//const sidebarMinWidth      = 'var(--ytd-watch-flexy-sidebar-min-width)';
+const pageColorA           = 'var(--yt-spec-general-background-a)';
+const pageColorB           = 'var(--yt-spec-general-background-b)';
+const pageColorC           = 'var(--yt-spec-general-background-c)';
+const cssSuggestionsClass  = cssClassPrefix + 'Suggestions';
+const cssSpinnerClass      = cssClassPrefix + 'Spinner';
+const cssSugClassSelector  = '.' + cssSuggestionsClass;
+const cssScrollbarSelector = '.' + cssSuggestionsClass + '::-webkit-scrollbar';
+const cssSpinClassSelector = '.' + cssSpinnerClass;
+const cssSuggestionsStyle  = cssSugClassSelector + ' { overflow-y: auto }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid '+ pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
+// padding screws up the scrollbar effect, so must remove it
+const cssMovieItemStyle    = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
+// must be above everything, but not be showing so it's not awkward, and must follow scrollbar in view to activate
+const cssSpinnerStyle      = cssSpinClassSelector + ' { z-index: 999; position: fixed; opacity: 0 }';
+const cssConstantStyle     = cssSuggestionsStyle + ' ' + cssMovieItemStyle + ' ' + cssSpinnerStyle;
 
 var $ = window.jQuery;
 var d = document;
-var w = window;
 var D = $(document);
 var W = $(window);
 
-var visibility = d.visibilityState;
+var visibility = d.visibilityState,
+    enabledYT  = false,
+    disabledYT = true;
 
 // don't try to do anything until page is visible
-d.addEventListener('visibilitychange', function() {
+D.on('visibilitychange', function() {
     visibility = d.visibilityState;
 });
 
@@ -77,51 +96,78 @@ function waitForPosition(element, aFunction, time) {
 }
 
 // prevent page from scolling when trying to scroll on an element
-// code via https://stackoverflow.com/a/33672757/7312536
-function disablePageScrolling (element) {
+function disablePageScrolling(element) {
+    // code via https://stackoverflow.com/a/33672757/7312536
     element.on('DOMMouseScroll mousewheel', function(ev) {
-        var $this = $(this),
-            scrollTop = this.scrollTop,
-            scrollHeight = this.scrollHeight,
-            height = $this.height(),
-            delta = (ev.type == 'DOMMouseScroll' ?
-                     ev.originalEvent.detail * -40 :
-                     ev.originalEvent.wheelDelta),
-            up = delta > 0;
+        if (enabledYT && !disabledYT) {
+            var $this = $(this),
+                scrollTop = this.scrollTop,
+                scrollHeight = this.scrollHeight,
+                height = $this.height(),
+                delta = (ev.type == 'DOMMouseScroll' ?
+                         ev.originalEvent.detail * -40 :
+                         ev.originalEvent.wheelDelta),
+                up = delta > 0;
 
-        var prevent = function() {
-            ev.stopPropagation();
-            ev.preventDefault();
-            ev.returnValue = false;
-            return false;
-        }
+            var prevent = function() {
+                ev.stopPropagation();
+                ev.preventDefault();
+                ev.returnValue = false;
+                return false;
+            }
 
-        if (!up && -delta > scrollHeight - height - scrollTop) {
-            // Scrolling down, but this will take us past the bottom.
-            $this.scrollTop(scrollHeight);
-            return prevent();
-        } else if (up && delta > scrollTop) {
-            // Scrolling up, but this will take us past the top.
-            $this.scrollTop(0);
-            return prevent();
+            if (!up && -delta > scrollHeight - height - scrollTop) {
+                // Scrolling down, but this will take us past the bottom.
+                $this.scrollTop(scrollHeight);
+                return prevent();
+            } else if (up && delta > scrollTop) {
+                // Scrolling up, but this will take us past the top.
+                $this.scrollTop(0);
+                return prevent();
+            }
         }
     });
 }
 
-// change pixels to viewheight
-function pxTOvh(height, pixels) {
-    return (100*pixels)/height;
+// if the element gains or loses height do something
+function detectHeightChange(element, aFunction) {
+    var prevHeight = element.height();
+    element.attrchange({
+        callback: function (e) {
+            var curHeight = element.height();
+            if (prevHeight !== curHeight) {
+                aFunction(true);
+                prevHeight = curHeight;
+            }
+        }
+    }).resizable();
 }
 
-// to get separate RGB values
-// code via https://stackoverflow.com/a/34980657/7312536
-function getRGB(str){
-  var match = str.match(/rgba?\((\d{1,3}), ?(\d{1,3}), ?(\d{1,3})\)?(?:, ?(\d(?:\.\d?))\))?/);
-  return match ? {
-    red: match[1],
-    green: match[2],
-    blue: match[3]
-  } : {};
+// check if element has an attribute
+function checkAttribute(element, attribute) {
+    var attr = element.attr(attribute);
+
+    // For some browsers, `attr` is undefined; for others,
+    // `attr` is false.  Check for both.
+    if (typeof attr !== typeof undefined && attr !== false) {
+        return true;
+    } else return false;
+}
+
+// check if element has a height
+function hasHeight(element) {
+    var height = element.height();
+
+    if (typeof height === typeof undefined || isNaN(height) || height == 0) return false;
+    else return true;
+}
+
+// check if element has a width
+function hasWidth(element) {
+    var width = element.width();
+
+    if (typeof width === typeof undefined || isNaN(width) || width == 0) return false;
+    else return true;
 }
 
 // append css styling to html page
@@ -131,98 +177,208 @@ function addStyleString(str) {
     d.body.appendChild(node);
 }
 
-// enabled scrollbar on suggestions panel, and start sizing
-function startScript() {
-    var page        = $(pageSelector),
-        header      = $(headerSelector),
-        leftCon     = $(leftSelector),
-        video       = $(videoSelector),
+// begin script when page is ready
+waitForKeyElements(videoItemSelector, function () {
+    var header      = $(headerSelector),
+        leftCoIn    = $(leftInSelector),
+        rightContn  = $(rightSelector),
+        rightCoIn   = $(rightInSelector),
+        player      = $(playerSelector).first(),
+        theater     = $(theaterSelector).first(),
         panels      = $(panelsSelector),
         donations   = $(donationsSelector),
-        chat        = $(chatSelector),
+        chat        = $(chatSelector).first(),
         playlist    = $(playlistSelector),
         ads         = $(adsSelector),
-        suggestions = $(suggestionsSelector),
-        autoPlay    = $(autoPlaySelector),
-        items       = $(itemsSelector),
+        offerModule = $(offerModuleSelector),
+        suggestions = $(suggestionsSelector).first(),
+        autoPlay    = $(autoPlaySelector).first(),
         videoItem   = $(videoItemSelector),
-        sugWidth    = suggestions.width() - scrollbarWidth,
-        viewHeight  = W.height(),
+        videoThumb  = $(videoThumbSelector),
+        radioItem   = $(radioItemSelector),
+        movieItem   = $(movieItemSelector),
+        movieItemA  = $(movieItemASelector),
+        spinner     = $(spinnerSelector).first(),
         autoPHeight = autoPlay.outerHeight(true),
         vItemHeight = videoItem.height(),
+        vItemHPad   = vItemHeight + videoItemPadding,
+        vThumbWidth = videoThumb.outerWidth(true),
         headHeight  = header.height(),
         contentTop  = headHeight + standardPadding,
+        autoPlayBot = contentTop + autoPHeight,
         minHeight   = vItemHeight,
-        maxHeight   = viewHeight - (contentTop + autoPHeight + standardPadding),
-        sliding     = true; // this allows it to execute at least once to resize
+        previousScr = 0,
+        sliding     = false,
+        atSugEnd    = false;
 
+    // contains classes used to style everything
+    addStyleString(cssConstantStyle);
+
+    // disable page scrolling when scrollbar is active
     disablePageScrolling(suggestions);
     disablePageScrolling(autoPlay);
+    disablePageScrolling(spinner);
 
-    addStyleString(cssHtmlTheme);
-    addStyleString(cssScrollbarTheme);
-    addStyleString(cssAutoPlayTheme);
+    // enable/disable scrollbar function
+    function enableSuggestionsScroll(trueFalse) {
+        // readdress where elements are first
+        suggestions = $(suggestionsSelector).first();
+        autoPlay    = $(autoPlaySelector).first();
+        spinner     = $(spinnerSelector).first();
+        videoItem   = $(videoItemSelector);
+        radioItem   = $(radioItemSelector);
+        movieItem   = $(movieItemSelector);
+        movieItemA  = $(movieItemASelector);
+
+        // toggle styling
+        if (trueFalse) {
+            suggestions.addClass(cssSuggestionsClass);
+            spinner.addClass(cssSpinnerClass);
+        } else {
+            if (suggestions.classList && suggestions.classList.contains(cssSuggestionsClass)) suggestions.removeClass(cssSuggestionsClass);
+            if (spinner.classList && spinner.classList.contains(cssSpinnerClass)) spinner.removeClass(cssSpinnerClass);
+            suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
+            autoPlay.css({'width': '', 'position': '', 'top': ''});
+            spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
+            videoItem.css({'opacity': '', 'width': ''});
+            radioItem.css({'opacity': '', 'width': ''});
+            movieItem.css({'opacity': '', 'width': ''});
+            movieItemA.css({'width': ''});
+        }
+    }
 
     // detect position changes to change size accordingly
-    function fixDynamicSizes() {
+    function fixDynamicSizes(forceRun) {
         if (visibility == 'visible') {
-            var scrTop          = W.scrollTop(),
-                panelsHeight    = isNaN(panels.height()) ? 0 : panels.height(),
-                donationsHeight = isNaN(donations.height()) ? 0 : donations.height(),
-                chatHeight      = isNaN(chat.height()) ? 0 : chat.height(),
-                playlistHeight  = isNaN(playlist.height()) ? 0 : playlist.height(),
-                adsHeight       = isNaN(ads.height()) ? 0 : ads.height(),
-                fillerHeight    = panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight,
-                adjustedHeight  = (fillerHeight ? (fillerHeight + (adsHeight ? 0 : standardPadding)) : 0),
-                oriPosTop       = contentTop + adjustedHeight,
-                oriScrTop       = oriPosTop - scrTop,
-                atContent       = (adjustedHeight - scrTop) <= 0,
-                belowTopPos     = viewHeight - oriScrTop,
-                belowView       = belowTopPos < 0,
-                allInView       = (belowTopPos - minHeight) >= 0,
-                vidHeight       = video.height(),
-                newHeight       = viewHeight - (oriScrTop + autoPHeight + standardPadding);
+            var viewHeight     = W.height(),
+                viewWidth      = W.width(),
+                playerWidth    = hasWidth(player) ? player.width() : 0,
+                theaterEnabled = theater.children().length > 0,
+                maxVideoWidth  = viewWidth - standardPadding * 2,
+                videoBeyondX   = playerWidth >= maxVideoWidth;
 
-            console.log(adsHeight);
+            disabledYT = videoBeyondX;
 
-            if (newHeight < minHeight) newHeight = minHeight;
-            else if (newHeight > maxHeight) newHeight = maxHeight;
+            if (enabledYT && disabledYT) {
+                // not disabled yet, disabling
+                console.log(scriptShortName + ': disabling suggestions scrollbar...');
+                enableSuggestionsScroll(false);
+                enabledYT = false;
+                fixDynamicSizes(false);
+            } else if (enabledYT && !disabledYT) {
+                var scrTop          = W.scrollTop(),
+                    outsidePadding  = leftCoIn.position().left,
+                    resizeWidth     = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding*2)),
+                    theatherHeight  = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
+                    panelsHeight    = hasHeight(panels) ? panels.outerHeight(true) : 0,
+                    donationsHeight = hasHeight(donations) ? donations.outerHeight(true) : 0,
+                    chatHeight      = hasHeight(chat) ? chat.outerHeight(true) : 0,
+                    playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
+                    adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
+                    offerModHeight  = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
+                    fillerHeight    = theatherHeight + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
+                    oriPosTop       = contentTop + fillerHeight,
+                    oriScrTop       = oriPosTop - scrTop,
+                    belowTopPos     = viewHeight - oriScrTop,
+                    allInView       = (belowTopPos - minHeight) >= 0;
 
-            // if suggestions is moving
-            if ((scrTop && !sliding) && allInView) {
-                // ADD CLASSES
-                sliding = true;
-            }
-
-            // determine if position/size needs updating
-            if (sliding) {
-                var topPos = (atContent) ? contentTop : oriScrTop;
-
-                if (atContent) {
-                    addStyleString(suggestionsSelector + ' { position:fixed; margin-top:0; top:' + (topPos + autoPHeight) + 'px; height:' + newHeight + 'px }');
-                    addStyleString(autoPlaySelector + ' { position:fixed; top:' + topPos + 'px }');
+                // if suggestions is or not moving
+                if (!sliding && previousScr != scrTop) {
+                    previousScr = scrTop;
+                    if (scrTop && allInView) {
+                        sliding = true;
+                    }
                 } else {
-                    addStyleString(suggestionsSelector + ' { position:static; margin-top:' + (autoPHeight + (adsHeight ? 0 : standardPadding)) + 'px; top:0; height:' + newHeight + 'px }');
-                    addStyleString(autoPlaySelector + ' { position:absolute; top:' + oriPosTop + 'px }');
+                    if ((!scrTop || !allInView)) {
+                        sliding = false;
+                    }
                 }
-            }
 
-            // if suggestions is not moving
-            if ((!scrTop && sliding) || !allInView) {
-                // REMOVE CLASSES
-                sliding = false;
+                // determine if position/size needs updating
+                if (sliding || forceRun) {
+                    var maxHeight            = vItemHPad * Math.floor((viewHeight - (autoPlayBot + standardPadding)) / vItemHPad),
+                        itemsNewWidth        = resizeWidth - scrollbarWidth,
+                        movieItemANewWidth   = itemsNewWidth - vThumbWidth,
+                        atContent            = (fillerHeight - scrTop) <= 0,
+                        opacityItems         = atSugEnd ? 0.33 : 1,
+                        marginTopSuggestions = autoPHeight,
+                        posSuggestions       = 'static',
+                        topSuggestions       = 0,
+                        posAutoPlay          = 'absolute',
+                        topAutoPlay          = oriPosTop,
+                        marginTopSpinner     = 0,
+                        topSpinner           = 'auto',
+                        botSpinner           = atSugEnd ? 'auto' : (viewHeight + 'px');
+
+                    if (atContent) {
+                        marginTopSuggestions = 0;
+                        posSuggestions = 'fixed';
+                        topSuggestions = autoPlayBot;
+                        posAutoPlay = 'fixed';
+                        topAutoPlay = contentTop;
+                        if (atSugEnd) topSpinner = contentTop + 'px';
+                    } else if (atSugEnd) topSpinner = ((contentTop + fillerHeight) - scrTop) + 'px';
+
+                    // just for reference, this is how to always used fixed positions, but it yields jagged movement when the video suggestions are not at the top of the screen
+                    /*if (!atContent) {
+                        marginTopSuggestions = 0;
+                        posSuggestions = 'fixed';
+                        topSuggestions = ((contentTop + fillerHeight + autoPHeight) - scrTop);
+                        posAutoPlay = 'fixed';
+                        topAutoPlay = ((contentTop + fillerHeight) - scrTop);
+                    }*/
+
+
+                    // updates style for each that changes
+                    suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
+                    autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
+                    spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
+                    // widths of items and inside of movie items must change
+                    videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    radioItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    movieItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    movieItemA.css({'width': movieItemANewWidth + 'px'});
+                }
+            } else if (!enabledYT && !disabledYT) {
+                // not enabled yet, enabling
+                console.log(scriptShortName + ': enabling suggestions scrollbar...');
+                enableSuggestionsScroll(true);
+                enabledYT = true;
+                fixDynamicSizes(true);
             }
         }
     }
 
-    fixDynamicSizes(); // run at least once even if there hasn't been a scroll
+    // must run at least once
+    fixDynamicSizes(true);
 
-    d.addEventListener('scroll', function() {
-        fixDynamicSizes();
+    // when the screen is resized also update the sidebar width
+    D.on('scroll', function() {
+        fixDynamicSizes(false);
     });
-}
+    W.on('resize', function() {
+        fixDynamicSizes(true);
+    });
 
-// begin script
-waitForKeyElements(videoItemSelector, function () {
-    startScript();
+    // when scroll has happened and we reach a change of ending, update positions
+    suggestions.on('scroll', function() {
+        if (enabledYT && !disabledYT) {
+            var atPrevious       = atSugEnd,
+                suggestScrBottom = suggestions.scrollTop() + suggestions.innerHeight(),
+                suggestScrHeight = suggestions[0].scrollHeight;
+            if (suggestScrBottom >= suggestScrHeight && !checkAttribute(spinner, 'hidden') && hasHeight(spinner)) atSugEnd = true;
+            else atSugEnd = false;
+
+            // update changes
+            if (atPrevious != atSugEnd) fixDynamicSizes(true);
+        }
+    });
+
+    // dynamic update/event listeners must start only after the two panel view is on
+    var waitForRightHaveChildren = setInterval(function() {
+        if (rightCoIn.length > 1) {
+            detectHeightChange(rightContn, fixDynamicSizes);
+            clearInterval(waitForRightHaveChildren);
+        }
+    }, 100);
 });
