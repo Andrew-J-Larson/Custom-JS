@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      6.4
+// @version      6.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -39,7 +39,7 @@ const chatSelector        = 'ytd-live-chat-frame#chat';
 const playlistSelector    = '#playlist';
 const adsSelector         = '#player-ads';
 const offerModuleSelector = '#offer-module';
-const suggestionsSelector = '#items:nth-child(2)';
+const suggestionsSelector = '#items:nth-child(2):not(.playlist-items)';
 const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
 const videoItemSelector   = 'ytd-compact-video-renderer:not(.ytd-compact-autoplay-renderer)';
 const videoThumbSelector  = 'ytd-thumbnail';
@@ -212,7 +212,7 @@ waitForKeyElements(videoItemSelector, function () {
         movieItem   = $(movieItemSelector),
         movieItemA  = $(movieItemASelector),
         spinner     = $(spinnerSelector).first(),
-        autoPHeight = autoPlay.outerHeight(true),
+        autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
         vItemHeight = videoItem.height(),
         vItemHPad   = vItemHeight + videoItemPadding,
         vThumbWidth = videoThumb.outerWidth(true),
@@ -230,14 +230,14 @@ waitForKeyElements(videoItemSelector, function () {
 
     // disable page scrolling when scrollbar is active
     disablePageScrolling(suggestions);
-    disablePageScrolling(autoPlay);
+    if (autoPlay.length) disablePageScrolling(autoPlay);
     disablePageScrolling(spinner);
 
     // enable/disable scrollbar function
     function enableSuggestionsScroll(trueFalse) {
         // readdress where elements are first
         suggestions = $(suggestionsSelector).first();
-        autoPlay    = $(autoPlaySelector).first();
+        if (autoPlay.length) autoPlay = $(autoPlaySelector).first();
         spinner     = $(spinnerSelector).first();
         videoItem   = $(videoItemSelector);
         radioItem   = $(radioItemSelector);
@@ -252,7 +252,7 @@ waitForKeyElements(videoItemSelector, function () {
             if (suggestions.classList && suggestions.classList.contains(cssSuggestionsClass)) suggestions.removeClass(cssSuggestionsClass);
             if (spinner.classList && spinner.classList.contains(cssSpinnerClass)) spinner.removeClass(cssSpinnerClass);
             suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
-            autoPlay.css({'width': '', 'position': '', 'top': ''});
+            if (autoPlay.length) autoPlay.css({'width': '', 'position': '', 'top': ''});
             spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
             videoItem.css({'opacity': '', 'width': ''});
             radioItem.css({'opacity': '', 'width': ''});
@@ -344,7 +344,7 @@ waitForKeyElements(videoItemSelector, function () {
 
                     // updates style for each that changes
                     suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
-                    autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
+                    if (autoPlay.length) autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
                     spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
                     // widths of items and inside of movie items must change
                     videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
