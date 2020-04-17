@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      6.5
+// @version      6.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -312,7 +312,7 @@ waitForKeyElements(videoItemSelector, function () {
                     var maxHeight            = vItemHPad * Math.floor((viewHeight - (autoPlayBot + standardPadding)) / vItemHPad),
                         itemsNewWidth        = resizeWidth - scrollbarWidth,
                         movieItemANewWidth   = itemsNewWidth - vThumbWidth,
-                        atContent            = (fillerHeight - scrTop) <= 0,
+                        atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
                         opacityItems         = atSugEnd ? 0.33 : 1,
                         marginTopSuggestions = autoPHeight,
                         posSuggestions       = 'static',
