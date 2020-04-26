@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      2.0
+// @version      2.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
@@ -17,17 +17,8 @@
 
 // constants
 const fastDelay = 100;
-const urlDoubleQuote = '%22';
-const darkModeThemeId = '4';
-const darkModeLinkColor = urlDoubleQuote + '93CFF7' + urlDoubleQuote;
-const helpIFrameId = '#helpPaneFull iframe';
-const iframeID = 'ocSearchIFrame';
 const stickyNotesWebsite = 'https://www.onenote.com/stickynotes';
 const stickiesHelpBeginning = 'https://support.office.com/client/results?NS=stickynotes&Context=%7B%22ThemeId%22:4,';
-// needs to change when the page loads
-var iframeFixCss = '.ocpArticleContent .ocpAlert{background-color:#686868}';
-// listener variables
-var helpIFrameLoaded = false;
 // need to check url
 var currentURL = window.location.href;
 
@@ -55,6 +46,13 @@ var injectCss = function(documentToInject, cssStyle) {
 };
 
 if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky notes website
+    const urlDoubleQuote = '%22';
+    const darkModeThemeId = '4';
+    const darkModeLinkColor = urlDoubleQuote + '93CFF7' + urlDoubleQuote;
+    const helpIFrameId = '#helpPaneFull iframe';
+    // listener variables
+    var helpIFrameLoaded = false;
+
     // apply the partial fix
     injectCss(document, getCssResource('cssDarkStickies'));
 
@@ -86,33 +84,21 @@ if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky not
     document.body.classList.add('n-darkMode');
     checkForHelp();
 } else if (currentURL.startsWith(stickiesHelpBeginning)) { // code to run on the dark sticky notes help website
-    // also apply dark scrollbar to iframe
-    iframeFixCss += getCssResource('cssDarkScrollbar');
+    const iframeID = 'ocSearchIFrame';
+    const iframeFixCss = '.ocpArticleContent .ocpAlert{background-color:#686868}' + getCssResource('cssDarkScrollbar');
 
-    // iframe needs dark theme fix
-    checkForSearchBar = setInterval(function() {
-        var searchBarPage = document.getElementById('ocClientSearch');
+    // set the style fixes
+    checkForIFrame = setInterval(function() {
+        var iframe = document.getElementById(iframeID);
+        var iframeDoc = iframe.contentDocument;
 
-        // must wait for the search bar to detect theme
-        if (elementExists(searchBarPage)) {
-            clearInterval(checkForSearchBar);
+        if (elementExists(iframe) && iframeDoc != null) {
+            clearInterval(checkForIFrame);
 
-            // check for dark theme
-            if (searchBarPage.classList.contains('black')) {
-                checkForDark = setInterval(function() {
-                    var iframe = document.getElementById(iframeID);
-                    var iframeDoc = iframe.contentDocument;
-
-                    if (elementExists(iframe) && iframeDoc != null) {
-                        clearInterval(checkForDark);
-
-                        // must listen for page load to change style
-                        iframe.onload = function () {
-                            var iDocument = frames[0].document;
-                            injectCss(iDocument, iframeFixCss);
-                        }
-                    }
-                }, 100);
+            // must listen for page load to change style
+            iframe.onload = function () {
+                var iDocument = frames[0].document;
+                injectCss(iDocument, iframeFixCss);
             }
         }
     }, 100);
