@@ -1,16 +1,18 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://github.com/TheAlienDrew/Tampermonkey-Scripts
-// @version      1.3
+// @version      2.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
 // @match        http*://*/*
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     css https://userstyles.org/styles/179150.css
+// @resource     cssDarkStickies https://userstyles.org/styles/170362.css
+// @resource     cssDarkScrollbar https://userstyles.org/styles/179150.css
 // ==/UserScript==
 
+// dark sticky notes partial via https://userstyles.org/styles/170362
 // dark scrollbar via https://userstyles.org/styles/179150
 
 // constants
@@ -33,8 +35,29 @@ var currentURL = window.location.href;
 var elementExists = function(element) {
     return (typeof(element) != 'undefined' && element != null);
 };
+// function for fixing css resources
+var getCssResource = function(nameOfResource) {
+    var css_resource = GM_getResourceText(nameOfResource).split('\n');
+    var resource_parsed = "";
+    // starts at 1 and ends at the second to last line to remove the @-moz-document encasement
+    var k;
+    for (k = 1; k < css_resource.length - 1; k++) {
+        resource_parsed = resource_parsed.concat(css_resource[k]);
+    }
+    return resource_parsed;
+};
+// function for injecting css styles
+var injectCss = function(documentToInject, cssStyle) {
+    var node = document.createElement('style');
+    node.type = 'text/css';
+    node.innerHTML = cssStyle;
+    documentToInject.body.appendChild(node);
+};
 
 if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky notes website
+    // apply the partial fix
+    injectCss(document, getCssResource('cssDarkStickies'));
+
     // theme help iframe
     function checkForHelp() {
         setTimeout(function() {
@@ -64,14 +87,7 @@ if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky not
     checkForHelp();
 } else if (currentURL.startsWith(stickiesHelpBeginning)) { // code to run on the dark sticky notes help website
     // also apply dark scrollbar to iframe
-    const dark_scrollbar = GM_getResourceText('css').split('\n');
-    var dark_scrollbar_fixed = "";
-    // starts at 1 and ends at the second to last line to remove the @-moz-document encasement
-    var k;
-    for (k = 1; k < dark_scrollbar.length - 1; k++) {
-        dark_scrollbar_fixed = dark_scrollbar_fixed.concat(dark_scrollbar[k]);
-    }
-    iframeFixCss += dark_scrollbar_fixed;
+    iframeFixCss += getCssResource('cssDarkScrollbar');
 
     // iframe needs dark theme fix
     checkForSearchBar = setInterval(function() {
@@ -93,10 +109,7 @@ if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky not
                         // must listen for page load to change style
                         iframe.onload = function () {
                             var iDocument = frames[0].document;
-                            var fixNode = document.createElement('style');
-                            fixNode.type = 'text/css';
-                            fixNode.innerHTML = iframeFixCss;
-                            iDocument.body.appendChild(fixNode);
+                            injectCss(iDocument, iframeFixCss);
                         }
                     }
                 }, 100);
