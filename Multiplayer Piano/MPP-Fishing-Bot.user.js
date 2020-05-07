@@ -42,7 +42,7 @@ MPP.client.on('a', function (msg) {
             waiting = false;
             fishing = false;
         }
-    }
+    } else if (exists(input) && input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
 });
 
 // Check to make sure variable is initialized with something
