@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8
+// @version      1.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -46,7 +46,6 @@ MPP.client.on('a', function (msg) {
                 waiting = true;
             }
             var selfname = MPP.client.user.name;
-            var prefixPhrase = "Our good friend " + selfname;
             if (username == "fishing") {
             if (input.startsWith(input.includes(selfname + " casts")) || input.includes(selfname + ": Your lure")) fishing = true;
                 else if (input.includes(selfname + " caught")) {
@@ -75,7 +74,10 @@ var clearSoundWarning = setInterval(function() {
                 setInterval(function() {
                     if (waiting) {
                         if (fishTimer > 0) fishTimer -= ONE_SECOND;
-                        else waiting = false;
+                        else {
+                            waiting = false;
+                            fishing = false;
+                        }
                     }
                 }, ONE_SECOND);
                 // make sure to wait before picking fruit again
