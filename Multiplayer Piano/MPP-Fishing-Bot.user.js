@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6
+// @version      1.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
-// @include      /^https?://www\.multiplayerpiano\.com*/
+// @include      /^https?://www\.multiplayerpiano\.com/test/fishing$/
 // @icon         https://icons.iconarchive.com/icons/fasticon/fish-toys/256/Green-Fish-icon.png
 // @grant        GM_info
 // @run-at       document-end
@@ -20,8 +20,6 @@ const TENTH_OF_SECOND = 100; // milliseconds
 var ready = false;
 var waiting = false;
 var fishing = false;
-var picking = false;
-var picked = false;
 var fishTimer = ONE_MINUTE;
 
 // Check to make sure variable is initialized with something
@@ -46,18 +44,15 @@ MPP.client.on('a', function (msg) {
                 fishTimer = ONE_MINUTE;
                 waiting = true;
             }
-            if (!picking && !picked) {
-                MPP.chat.send("/pick");
-                picking = true;
-            }
             var selfname = MPP.client.user.name;
             var prefixPhrase = "Our good friend " + selfname;
             if (input.startsWith(prefixPhrase + " casts") || input.startsWith("Friend " + selfname + ": Your lure")) fishing = true;
             else if (input.startsWith(prefixPhrase + " caught")) {
                 waiting = false;
                 fishing = false;
-            } else if (input.startsWith()) picked = false;
+            }
         } else if (input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
+        else if (input == "/reel") MPP.chat.send("/pick");
     }
 });
 
@@ -80,6 +75,10 @@ var clearSoundWarning = setInterval(function() {
                         else waiting = false;
                     }
                 }, ONE_SECOND);
+                // make sure to wait before picking fruit again
+                setInterval(function() {
+                    MPP.chat.send("/pick");
+                }, ONE_MINUTE);
             }
         }, TENTH_OF_SECOND);
     }
