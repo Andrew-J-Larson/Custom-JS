@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3
+// @version      1.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -34,15 +34,17 @@ MPP.client.on('a', function (msg) {
         timer = ONE_MINUTE;
         waiting = true;
     }
-    if (userId != selfId) {
-        var selfname = MPP.client.user.name;
-        var prefixPhrase = "Our good friend " + selfname;
-        if (input.startsWith(prefixPhrase + " casts")) fishing = true;
-        else if (input.startsWith(prefixPhrase + " caught")) {
-            waiting = false;
-            fishing = false;
-        }
-    } else if (exists(input) && input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
+    if (exists(input)) {
+        if(userId != selfId) {
+            var selfname = MPP.client.user.name;
+            var prefixPhrase = "Our good friend " + selfname;
+            if (input.startsWith(prefixPhrase + " casts") || input.startsWith("Friend " + selfname + ": Your lure")) fishing = true;
+            else if (input.startsWith(prefixPhrase + " caught")) {
+                waiting = false;
+                fishing = false;
+            }
+        } else if (input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
+    }
 });
 
 // Check to make sure variable is initialized with something
