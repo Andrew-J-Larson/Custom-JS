@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9
+// @version      1.1.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -53,8 +53,8 @@ MPP.client.on('a', function (msg) {
                     fishing = false;
                 }
             }
-        } else if (input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
-        else if (input == "/reel") MPP.chat.send("/pick");
+        } else if (input == "/reel") MPP.chat.send("/pick");
+        if (input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
     }
 });
 
