@@ -58,4 +58,33 @@ MPP.client.on('a', function (msg) {
     }
 });
 
+// Automatically turns off the sound warning (loading the bot)
+var clearSoundWarning = setInterval(function() {
+    var playButton = document.querySelector("#sound-warning button");
+    if (exists(playButton)) {
+        clearInterval(clearSoundWarning);
+        playButton.click();
+        // wait for the client to come online
+        var waitForMPP = setInterval(function() {
+            if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id)) {
+                clearInterval(waitForMPP);
+                ready = true;
 
+                // makes sure to wait before fishing again (prevents multiple commands)
+                setInterval(function() {
+                    if (waiting) {
+                        if (fishTimer > 0) fishTimer -= ONE_SECOND;
+                        else {
+                            waiting = false;
+                            fishing = false;
+                        }
+                    }
+                }, ONE_SECOND);
+                // make sure to wait before picking fruit again
+                setInterval(function() {
+                    MPP.chat.send("/pick");
+                }, ONE_MINUTE);
+            }
+        }, TENTH_OF_SECOND);
+    }
+}, TENTH_OF_SECOND);
