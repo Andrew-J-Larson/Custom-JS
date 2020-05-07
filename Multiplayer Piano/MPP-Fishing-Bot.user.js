@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7
+// @version      1.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -33,6 +33,7 @@ MPP.client.on('a', function (msg) {
     if (!ready) return;
     // get the message as string
     var input = msg.a.trim();
+    var username = msg.p.name;
     var userId = msg.p._id;
     var selfId = MPP.client.user._id;
     // sometimes it's null
@@ -46,10 +47,12 @@ MPP.client.on('a', function (msg) {
             }
             var selfname = MPP.client.user.name;
             var prefixPhrase = "Our good friend " + selfname;
-            if (input.startsWith(prefixPhrase + " casts") || input.startsWith("Friend " + selfname + ": Your lure")) fishing = true;
-            else if (input.startsWith(prefixPhrase + " caught")) {
-                waiting = false;
-                fishing = false;
+            if (username == "fishing") {
+            if (input.startsWith(input.includes(selfname + " casts")) || input.includes(selfname + ": Your lure")) fishing = true;
+                else if (input.includes(selfname + " caught")) {
+                    waiting = false;
+                    fishing = false;
+                }
             }
         } else if (input == "/fishingbot") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
         else if (input == "/reel") MPP.chat.send("/pick");
