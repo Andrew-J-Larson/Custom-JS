@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.4
+// @version      1.2.8
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -64,11 +64,12 @@ const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const BOT_COMMAND = "~~ Commands ~~";
 const COMMANDS = ["help - displays this help page",
                   "about - get information about this bot",
-                  "play [url or data uri] - plays a specific song (url must be a direct link)",
+                  "play [URL] - plays a specific song (URL must be a direct link)",
                   "stop - stops all music from playing ",
                   "pause - pauses the music at that moment in the song",
                   "resume - plays music right where pause left off",
                   "song - shows the current song playing",
+                  "repeat - allows one song to keep repeating, choices are off (0), or on (1)",
                   "sustain - sets the sustain (midi controlled), choices are off (0), or on (1)",
                   "clear - clears the chat",
                   "feedback [text] - send feedback about the bot to the developer"];
@@ -80,6 +81,7 @@ const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
 const PRE_RESUME = PRE_MSG + "[Resume]";
 const PRE_SONG = PRE_MSG + "[Song]";
+const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
@@ -188,7 +190,6 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
-var sustainOption = true; // makes notes end according to the midi file "Note off" ("Note on" && velocity == 0)
 var endDelay; // used in multiline chats send commands
 
 var MidiPlayer = MidiPlayer;
@@ -201,8 +202,10 @@ var currentNote = null;
 var previousTick = null;
 var currentTick = null;
 var currentSongData = null; // this contains the song as a data URI
-var currentFileURL = null; // this leads to the MIDI URL
-var currentFileName = null; // extracted from the end of the URL
+var currentFileURL = null; // this leads to the MIDI URL (if not using the upload button)
+var currentFileName = null; // extracted from the file name/end of URL
+var repeatOption = false;
+var sustainOption = true; // makes notes end according to the midi file "Note off" ("Note on" && velocity == 0)
 
 // =============================================== OBJECTS
 
@@ -216,15 +219,14 @@ var Player = new window.MidiPlayer.Player(function(event) {
         Player.pause();
         Player.setTempo(event.data);
         Player.play();
-    } else if (currentEvent == "Note on") {
-        if (event.velocity > 0) { // start note
-            currentNote = MIDIPlayerToMPPNote[event.noteName];
-            MPP.press(currentNote, (event.velocity/100));
-        } else if (sustainOption) MPP.release(currentNote); // conditionally end note
-    } else if (currentEvent == "Key Signature" && previousTick > currentTick) {
+    } else if (currentEvent == "Note on" && event.velocity > 0) { // start note
+        currentNote = MIDIPlayerToMPPNote[event.noteName];
+        MPP.press(currentNote, (event.velocity/100));
+    } else if (sustainOption && ( currentEvent == "Note off" || (currentEvent == "Note on" && event.velocity == 0))) MPP.release(currentNote); // conditionally end note
+    if (!ended && !Player.isPlaying()) {
         ended = true;
         paused = false;
-        currentSongData = null;
+        if (!repeatOption) currentSongData = null;
         currentTick = null;
     }
 });
@@ -497,10 +499,32 @@ var playFile = function(songFile) {
     }
 }
 
-// Get the string value of the sustain
+// Get the string/type value of the repeat option
+var getRepeatString = function(choice) {
+    if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
+    return (choice ? "" : "not") + " repeating";
+}
+var getRepeatValue = function(choice) {
+    var valid = null;
+    switch(choice.toLowerCase()) {
+        case "0": case "off": case "false": valid = false; break;
+        case "1": case "on": case "true": valid = true; break;
+    }
+    return valid;
+}
+
+// Get the string/type value of the sustain option
 var getSustainString = function(choice) {
     if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
     return (choice ? "midi controlled (on)" : "MPP controlled (off)");
+}
+var getSustainValue = function(choice) {
+    var valid = null;
+    switch(choice.toLowerCase()) {
+        case "0": case "off": case "false": valid = false; break;
+        case "1": case "on": case "true": valid = true; break;
+    }
+    return valid;
 }
 
 // Change the room color
@@ -532,7 +556,8 @@ var createUploadButton = function() {
     buttonContainer.appendChild(uploadDiv);
 
     var uploadBtn = document.createElement("input");
-    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;width:100%;height:100%;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.id = "aliendrew-midi-player-bot-upload"
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
@@ -659,6 +684,29 @@ var song = function() {
     } else mppChatSend(NO_SONG, 0);
     mppChatSend(THIN_BORDER, 0);
 }
+var repeat = function(choice) {
+    // turns on or off repeat
+    var currentRepeat = getRepeatString(repeatOption);
+
+    if (!exists(choice) || choice == "") {
+        mppTitleSend(PRE_REPEAT, 0);
+        mppChatSend("Repeat is currently set to " + currentRepeat, 0);
+    } else if (getRepeatValue(choice) == repeatOption) {
+        mppTitleSend(PRE_REPEAT, 0);
+        mppChatSend("Repeat is already set to " + currentRepeat, 0);
+    } else {
+        var valid = getRepeatValue(choice);
+        if (valid != null) {
+            repeatOption = valid;
+            mppTitleSend(PRE_REPEAT, 0);
+            mppChatSend("Repeat set to " + getRepeatString(valid), 0);
+        } else {
+            mppTitleSend(PRE_ERROR + " (repeat)", 0);
+            mppChatSend("Invalid repeat choice", 0);
+        }
+    }
+    mppChatSend(THIN_BORDER, 0);
+}
 var sustain = function(choice) {
     // turns on or off sustain
     var currentSustain = getSustainString(sustainOption);
@@ -666,15 +714,11 @@ var sustain = function(choice) {
     if (!exists(choice) || choice == "") {
         mppTitleSend(PRE_SUSTAIN, 0);
         mppChatSend("Self sustain is currently set to " + currentSustain, 0);
-    } else if (choice.toLowerCase() == sustainOption) {
+    } else if (getSustainValue(choice) == sustainOption) {
         mppTitleSend(PRE_SUSTAIN, 0);
         mppChatSend("Self sustain is already set to " + currentSustain, 0);
     } else {
-        var valid = null;
-        switch(choice.toLowerCase()) {
-            case "0": case "off": case "false": valid = false; break;
-            case "1": case "on": case "true": valid = true; break;
-        }
+        var valid = getSustainValue(choice);
         if (valid != null) {
             sustainOption = valid;
             mppTitleSend(PRE_SUSTAIN, 0);
@@ -752,8 +796,9 @@ MPP.client.on('a', function (msg) {
             case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
             case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
-            case "resume": case "re": if (active && !preventsPlaying) resume(); break;
+            case "resume": case "r": if (active && !preventsPlaying) resume(); break;
             case "song": case "so": if (active && !preventsPlaying) song(); break;
+            case "repeat": case "re": if (active && !preventsPlaying) repeat(argumentsString); break;
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(username, userId, argumentsString); break;
@@ -777,11 +822,15 @@ MPP.client.on('p', function(msg) {
 
 // =============================================== INTERVALS
 
-// Stuff that needs to be done by intervals (e.g. autoplay)
-/*var repeatingTasks = setInterval(function() {
+// Stuff that needs to be done by intervals (e.g. repeat)
+var repeatingTasks = setInterval(function() {
     if (!active || MPP.client.preventsPlaying()) return;
-    // code here ---------------------------------------------------------- might not need ---- FIX ME
-}, TENTH_OF_SECOND);*/
+    // do repeat
+    if (repeatOption && ended && !stopped && exists(currentFileName) && exists(currentSongData)) {
+        ended = false;
+        Player.play();
+    }
+}, TENTH_OF_SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
