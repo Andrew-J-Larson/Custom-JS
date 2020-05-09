@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.9
+// @version      1.2.4
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -372,26 +372,23 @@ var urlToBlob = function(url, callback) {
     });
 }
 
-// Converts blob to base64 (data URI)
-var blobToBase64 = function(blob, callback) {
-    if (blob == null) callback(null);
+// Converts files/blobs to base64 (data URI)
+var fileOrBlobToBase64 = function(raw, callback) {
+    if (raw == null) callback(null);
 
     // continue if we have a blob
     var reader = new FileReader();
-    reader.readAsDataURL(blob);
+    reader.readAsDataURL(raw);
     reader.onloadend = function() {
         var base64data = reader.result;
         callback(base64data);
     }
 }
 
-// Validates blob is a MIDI file
-var isMidiBlob = function(blob) {
-  if (blob != null) {
-      // audio needs to be replaced with @file to work with MPPMidiPlayer
-      if (blob.type == "audio/midi" || blob.type == "@file/midi") return true;
-      else return false;
-  } else return false;
+// Validates file or blob is a MIDI
+var isMidi = function(raw) {
+    if (exists(raw) && (raw.type == "@file/mid" || raw.type == "@file/midi" || raw.type == "audio/midi" || raw.type == "audio/mid")) return true;
+    else return false;
 }
 
 // Set the bot on or off (only from bot)
@@ -445,14 +442,13 @@ var stopSong = function() {
     }
 }
 
-// Gets song from URL and plays it
-var playSong = function(songUrl, songData) {
+// Gets song from data URI and plays it
+var playSong = function(songName, songData) {
     // stop any current songs from playing
     stopSong();
-    // changes son
-    currentFileURL = songUrl.toString();
+    // changes song
     currentSongData = songData;
-    currentFileName = currentFileURL.substring(currentFileURL.lastIndexOf('/') + 1);
+    currentFileName = songName;
     // then play song
     Player.loadDataUri(currentSongData);
     while(!Player.fileLoaded()) {}
@@ -462,6 +458,43 @@ var playSong = function(songUrl, songData) {
     mppTitleSend(PRE_PLAY, 0);
     mppChatSend("Now playing " + quoteString(currentFileName), 0);
     mppChatSend(THIN_BORDER, 0);
+}
+
+// Plays the song from a URL if it's a MIDI
+var playURL = function(songUrl, songData) {
+    currentFileURL = songUrl.toString();
+    playSong(currentFileURL.substring(currentFileURL.lastIndexOf('/') + 1), songData);
+}
+
+// Plays the song from an uploaded file if it's a MIDI
+var playFile = function(songFile) {
+    var songData = null;
+    var songName = null;
+
+    // load in the file
+    if (exists(songFile)) {
+        songName = songFile.name.split(/(\\|\/)/g).pop();
+        if (isMidi(songFile)) {
+            fileOrBlobToBase64(songFile, function(base64data) {
+                // play song only if we got data
+                if (exists(base64data)) {
+                    playURL(songName, base64data);
+                } else {
+                    mppTitleSend(PRE_ERROR + " [Play]", 0);
+                    mppChatSend("Unexpected result, MIDI file couldn't load", 0);
+                    mppChatSend(THIN_BORDER, 0);
+                }
+            });
+        } else {
+            mppTitleSend(PRE_ERROR + " (play)", 0);
+            mppChatSend("The file choosen, is either corrupted, or it's not really a MIDI file", 0);
+            mppChatSend(THIN_BORDER, 0);
+        }
+    } else {
+        mppTitleSend(PRE_ERROR + " (play)", 0);
+        mppChatSend("MIDI file not found", 0);
+        mppChatSend(THIN_BORDER, 0);
+    }
 }
 
 // Get the string value of the sustain
@@ -487,6 +520,30 @@ var setRoomColor = function(color) {
         // go back to default color
         setRoomColor(BOT_ROOM_COLOR);
     }
+}
+
+// Allows users to upload midi files to the bot
+var createUploadButton = function() {
+    var buttonContainer = document.querySelector("#bottom div");
+    var uploadDiv = document.createElement("div");
+    uploadDiv.style = "position:absolute;left:660px;top:32px;display:block;";
+    uploadDiv.classList.add("ugly-button");
+    uploadDiv.innerHtml = "Upload MIDI";
+    buttonContainer.appendChild(uploadDiv);
+
+    var uploadBtn = document.createElement("input");
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;width:100%;height:100%;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.id = "aliendrew-midi-player-bot-upload"
+    uploadBtn.type = "file";
+    uploadBtn.accept = ".mid,.midi";
+    uploadBtn.onchange = function() {
+        if (uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
+        else console.log("No MIDI file selected");
+    }
+
+    var uploadTxt = document.createTextNode("Upload MIDI");
+    uploadDiv.appendChild(uploadBtn);
+    uploadDiv.appendChild(uploadTxt);
 }
 
 // Sets the name of the bot
@@ -531,17 +588,19 @@ var play = function(url) {
             mppChatSend("No MIDI url entered", 0);
             mppChatSend(THIN_BORDER, 0);
         } else {
+            // must change http to https
+            if (url.indexOf("http:") == 0) url = "https:" + url.substring(5);
             // downloads file if possible and then plays it if it's a MIDI
             urlToBlob(url, function(blob) {
                 if (blob == null) {
                     mppTitleSend(PRE_ERROR + " (play)", 0);
                     mppChatSend("Invalid URL, there is no file, or the download is blocked by the website, at " + quoteString(url), 0);
                     mppChatSend(THIN_BORDER, 0);
-                } else if (isMidiBlob(blob)) {
-                    blobToBase64(blob, function(base64data) {
+                } else if (isMidi(blob)) {
+                    fileOrBlobToBase64(blob, function(base64data) {
                         // play song only if we got data
                         if (exists(base64data)) {
-                            playSong(url, base64data);
+                            playURL(url, base64data);
                         } else {
                             mppTitleSend(PRE_ERROR + " [Play]", 0);
                             mppChatSend("Unexpected result, MIDI file couldn't load", 0);
@@ -738,6 +797,7 @@ var clearSoundWarning = setInterval(function() {
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 mppTitleSend(PRE_MSG + " Online!", 0);
                 mppChatSend(THIN_BORDER, 0);
+                createUploadButton();
             }
         }, TENTH_OF_SECOND);
     }
