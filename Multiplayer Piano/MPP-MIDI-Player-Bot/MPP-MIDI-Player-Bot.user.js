@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.9
+// @version      1.3.0
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -47,6 +47,7 @@ const AUTHOR = SCRIPT.author;
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const CHAT_DELAY = 500; // needed since the chat is limited to 10 messages within less delay
+const TEST_CHAT_DELAY = 2000 // test rooms have less chat quota
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // none for now
@@ -57,6 +58,7 @@ const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
 const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 const THIN_BORDER = "════════════════════════════════════════════════════";
+const TEST_ROOM_SLOW = "[Slow Bot Chat Mode = ON]" // only turns on for test rooms as they have very low chat quota
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_ROOM_COLOR = "#";
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
@@ -190,6 +192,7 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
+var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
 var MidiPlayer = MidiPlayer;
@@ -417,7 +420,7 @@ var mppChatSend = function(str, delay) {
 // Titles for some commands
 var mppTitleSend = function(str, delay) {
     mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str, delay);
+    mppChatSend(str + (chatDelay == TEST_CHAT_DELAY ? ' ' + TEST_ROOM_SLOW : ""), delay);
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
@@ -429,10 +432,10 @@ var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
         var currentString = strArray[i];
         if (currentString != "") {
             ++newDelay;
-            mppChatSend(optionalPrefix + strArray[i], CHAT_DELAY * newDelay);
+            mppChatSend(optionalPrefix + strArray[i], chatDelay * newDelay);
         }
     }
-    return CHAT_DELAY * newDelay;
+    return chatDelay * newDelay;
 }
 
 // Stops the current song if any are playing
@@ -734,8 +737,8 @@ var clear = function() {
     // clear the chat of current messages (can be slow)
     var i;
     for (i = 0; i < CLEAR_LINES; ++i) {
-        mppChatSend('.', CHAT_DELAY * i);
-        if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, CHAT_DELAY * (i + 1));
+        mppChatSend('.', chatDelay * i);
+        if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
     }
 }
 var feedback = function(username, userId, comment) {
@@ -807,6 +810,14 @@ MPP.client.on('a', function (msg) {
         }
     }
 });
+MPP.client.on("ch", function(msg) {
+    var roomname = msg.ch._id;
+    if (exists(roomname)) {
+        // set new chat delay based on the roomname
+        if (roomname.indexOf("test/" == 0)) chatDelay = TEST_CHAT_DELAY;
+        else chatDelay = CHAT_DELAY;
+    }
+});
 MPP.client.on('p', function(msg) {
     // kick ban all the banned players
     var userId = msg._id;
@@ -843,6 +854,7 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id)) {
                 clearInterval(waitForMPP);
                 active = true;
+                if (MPP.client.channel._id.indexOf("test/" == 0)) chatDelay = TEST_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 mppTitleSend(PRE_MSG + " Online!", 0);
                 mppChatSend(THIN_BORDER, 0);
