@@ -91,6 +91,7 @@ const FEEDBACK_NAME_STYLE = FEEDBACK_COLORS + " text-decoration: underline;";
 const FEEDBACK_TEXT_STYLE = FEEDBACK_COLORS + " font-weight: bold";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
+const CLEAR_LINES = 35;
 
 // Gets the correct note from MIDIPlayer to play on MPP
 const MIDIPlayerToMPPNote = {
