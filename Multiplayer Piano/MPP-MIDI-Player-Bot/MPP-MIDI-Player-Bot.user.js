@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -420,7 +420,7 @@ var mppChatSend = function(str, delay) {
 // Titles for some commands
 var mppTitleSend = function(str, delay) {
     mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str + (chatDelay == TEST_CHAT_DELAY ? ' ' + TEST_ROOM_SLOW : ""), delay);
+    mppChatSend(str + (chatDelay == TEST_CHAT_DELAY ? (' ' + TEST_ROOM_SLOW) : ""), delay);
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
@@ -500,6 +500,23 @@ var playFile = function(songFile) {
         mppChatSend("MIDI file not found", 0);
         mppChatSend(THIN_BORDER, 0);
     }
+}
+
+// Checks roomname if it's a valid a slow room
+var isASlowRoom = function(roomname) {
+    const LOBBY = "lobby";
+    const TEST = "test/";
+    if (exists(roomname) && roomname != "" && (roomname.indexOf(LOBBY) == 0)) {
+        // check to make sure all anything else is a number
+        var i;
+        for(i = LOBBY.length; i < roomname.length; ++i) {
+            var c = roomname[i];
+            // any non digit number should immediately send false
+            if (c < '0' || c > '9') return false;
+        }
+        return true;
+    } else if (roomname.indexOf(TEST) == 0) return true;
+    else return false;
 }
 
 // Get the string/type value of the repeat option
@@ -814,7 +831,7 @@ MPP.client.on("ch", function(msg) {
     var roomname = msg.ch._id;
     if (exists(roomname)) {
         // set new chat delay based on the roomname
-        if (roomname.indexOf("test/" == 0)) chatDelay = TEST_CHAT_DELAY;
+        if (isASlowRoom(roomname)) chatDelay = TEST_CHAT_DELAY;
         else chatDelay = CHAT_DELAY;
     }
 });
@@ -851,10 +868,10 @@ var clearSoundWarning = setInterval(function() {
         playButton.click();
         // wait for the client to come online
         var waitForMPP = setInterval(function() {
-            if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id)) {
+            if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
                 active = true;
-                if (MPP.client.channel._id.indexOf("test/" == 0)) chatDelay = TEST_CHAT_DELAY;
+                if (isASlowRoom(MPP.client.channel._id)) chatDelay = TEST_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 mppTitleSend(PRE_MSG + " Online!", 0);
                 mppChatSend(THIN_BORDER, 0);
