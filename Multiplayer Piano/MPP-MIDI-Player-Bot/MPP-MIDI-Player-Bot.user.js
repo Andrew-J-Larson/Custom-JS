@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -70,6 +70,7 @@ const COMMANDS = ["help - displays this help page",
                   "resume - plays music right where pause left off",
                   "song - shows the current song playing",
                   "sustain - sets the sustain (midi controlled), choices are off (0), or on (1)",
+                  "clear - clears the chat",
                   "feedback [text] - send feedback about the bot to the developer"];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -625,6 +626,14 @@ var sustain = function(choice) {
     }
     mppChatSend(THIN_BORDER, 0);
 }
+var clear = function() {
+    // clear the chat of current messages (can be slow)
+    var i;
+    for (i = 0; i < CLEAR_LINES; ++i) {
+        mppChatSend('.', CHAT_DELAY * i);
+        if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, CHAT_DELAY * (i + 1));
+    }
+}
 var feedback = function(username, userId, comment) {
     // just sends string to console to look at later
     if (exists(username) && exists(comment)) {
@@ -686,6 +695,7 @@ MPP.client.on('a', function (msg) {
             case "resume": case "re": if (active && !preventsPlaying) resume(); break;
             case "song": case "so": if (active && !preventsPlaying) song(); break;
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
+            case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(username, userId, argumentsString); break;
             case "active": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
