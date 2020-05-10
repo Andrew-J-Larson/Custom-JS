@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.1
+// @version      1.3.3
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -95,6 +95,7 @@ const FEEDBACK_NAME_STYLE = FEEDBACK_COLORS + " text-decoration: underline;";
 const FEEDBACK_TEXT_STYLE = FEEDBACK_COLORS + " font-weight: bold";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
+const ALLOW_ALL_INTRUMENTS = false; // setting as false removes instruments that have no tone on piano
 const CLEAR_LINES = 35;
 
 // Gets the correct note from MIDIPlayer to play on MPP
@@ -189,6 +190,9 @@ const MIDIPlayerToMPPNote = {
     "C8": "c7"
 }
 
+// Instruments to ignore (mainly nonchromatic percussion and sound effects)
+
+
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
@@ -201,9 +205,6 @@ var eventsDiv = document.getElementById('events');
 var ended = true;
 var stopped = false;
 var paused = false;
-var currentNote = null;
-var previousTick = null;
-var currentTick = null;
 var currentSongData = null; // this contains the song as a data URI
 var currentFileURL = null; // this leads to the MIDI URL (if not using the upload button)
 var currentFileName = null; // extracted from the file name/end of URL
@@ -216,21 +217,22 @@ var sustainOption = true; // makes notes end according to the midi file "Note of
 var Player = new window.MidiPlayer.Player(function(event) {
     if (!active || MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
-    previousTick = currentTick;
-    if (exists(event.tick)) currentTick = event.tick;
+    if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent == "Set Tempo") { // fixes tempo on some songs
         Player.pause();
         Player.setTempo(event.data);
         Player.play();
-    } else if (currentEvent == "Note on" && event.velocity > 0) { // start note
-        currentNote = MIDIPlayerToMPPNote[event.noteName];
-        MPP.press(currentNote, (event.velocity/100));
-    } else if (sustainOption && ( currentEvent == "Note off" || (currentEvent == "Note on" && event.velocity == 0))) MPP.release(currentNote); // conditionally end note
+    } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != 10)) { // ignoring percussion only channel
+        var currentNote = null;
+        if (currentEvent == "Note on" && event.velocity > 0) { // start note
+            currentNote = MIDIPlayerToMPPNote[event.noteName];
+            MPP.press(currentNote, (event.velocity/100));
+        } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // conditionally end note
+    }
     if (!ended && !Player.isPlaying()) {
         ended = true;
         paused = false;
         if (!repeatOption) currentSongData = null;
-        currentTick = null;
     }
 });
 
@@ -639,7 +641,7 @@ var play = function(url) {
             urlToBlob(url, function(blob) {
                 if (blob == null) {
                     mppTitleSend(PRE_ERROR + " (play)", 0);
-                    mppChatSend("Invalid URL, there is no file, or the download is blocked by the website, at " + quoteString(url), 0);
+                    mppChatSend("Invalid URL, there is no file, or the file requires a manual download from " + quoteString(url), 0);
                     mppChatSend(THIN_BORDER, 0);
                 } else if (isMidi(blob)) {
                     fileOrBlobToBase64(blob, function(base64data) {
@@ -654,7 +656,7 @@ var play = function(url) {
                     });
                 } else {
                     mppTitleSend(PRE_ERROR + " [Play]", 0);
-                    mppChatSend("Invalid file, this is not a MIDI file", 0);
+                    mppChatSend("Invalid URL, this is not a MIDI file", 0);
                     mppChatSend(THIN_BORDER, 0);
                 }
             });
