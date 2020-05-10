@@ -100,6 +100,7 @@ const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
 const ALLOW_ALL_INTRUMENTS = false; // setting as false removes instruments that have no tone on piano
+const PERCUSSION_CHANNEL = 10;
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent
 const CLEAR_LINES = 35;
 
@@ -224,7 +225,7 @@ var Player = new window.MidiPlayer.Player(function(event) {
         Player.pause();
         Player.setTempo(event.data);
         Player.play();
-    } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != 10)) { // ignoring percussion only channel
+    } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
         var currentNote = null;
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             currentNote = MIDIPlayerToMPPNote[event.noteName];
