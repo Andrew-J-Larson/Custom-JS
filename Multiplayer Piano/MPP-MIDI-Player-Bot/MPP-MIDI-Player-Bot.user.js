@@ -208,7 +208,7 @@ var paused = false;
 var currentSongData = null; // this contains the song as a data URI
 var currentFileURL = null; // this leads to the MIDI URL (if not using the upload button)
 var currentFileName = null; // extracted from the file name/end of URL
-var repeatOption = false;
+var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file "Note off" ("Note on" && velocity == 0)
 
 // =============================================== OBJECTS
