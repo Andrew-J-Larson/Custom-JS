@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.0
+// @version      1.4.2
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -209,11 +209,12 @@ var eventsDiv = document.getElementById('events');
 var ended = true;
 var stopped = false;
 var paused = false;
+var uploadButton = null; // this get's an element after it's loaded
 var currentSongData = null; // this contains the song as a data URI
-var currentFileURL = null; // this leads to the MIDI URL (if not using the upload button)
+var currentFileLocation = null; // this leads to the MIDI location (local or by URL)
 var currentFileName = null; // extracted from the file name/end of URL
 var repeatOption = false; // allows for repeat of one song
-var sustainOption = true; // makes notes end according to the midi file "Note off" ("Note on" && velocity == 0)
+var sustainOption = true; // makes notes end according to the midi file
 
 // =============================================== OBJECTS
 
@@ -231,7 +232,7 @@ var Player = new window.MidiPlayer.Player(function(event) {
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             currentNote = MIDIPlayerToMPPNote[event.noteName];
             MPP.press(currentNote, (event.velocity/100));
-        } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // conditionally end note
+        } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
         ended = true;
@@ -483,7 +484,7 @@ var playSong = function(songName, songData) {
     currentFileName = songName;
     // then play song
     Player.loadDataUri(currentSongData);
-    while(!Player.fileLoaded()) {}
+    while(!Player.fileLoaded()) { console.log("Loading file . . .") }
     ended = false;
     stopped = false;
     Player.play();
@@ -494,13 +495,12 @@ var playSong = function(songName, songData) {
 
 // Plays the song from a URL if it's a MIDI
 var playURL = function(songUrl, songData) {
-    currentFileURL = songUrl.toString();
-    playSong(currentFileURL.substring(currentFileURL.lastIndexOf('/') + 1), songData);
+    currentFileLocation = songUrl.toString();
+    playSong(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1), songData);
 }
 
 // Plays the song from an uploaded file if it's a MIDI
 var playFile = function(songFile) {
-    var songData = null;
     var songName = null;
 
     // load in the file
@@ -510,7 +510,10 @@ var playFile = function(songFile) {
             fileOrBlobToBase64(songFile, function(base64data) {
                 // play song only if we got data
                 if (exists(base64data)) {
-                    playURL(songName, base64data);
+                    currentFileLocation = songFile.name;
+                    console.log(songFile, songFile.name, base64data);
+                    playSong(songName, base64data);
+                    uploadButton.value = ""; // reset file input
                 } else {
                     mppTitleSend(PRE_ERROR + " [Play]", 0);
                     mppChatSend("Unexpected result, MIDI file couldn't load", 0);
@@ -595,6 +598,8 @@ var createUploadButton = function() {
     var uploadTxt = document.createTextNode("Upload MIDI");
     uploadDiv.appendChild(uploadBtn);
     uploadDiv.appendChild(uploadTxt);
+
+    uploadButton = uploadBtn;
 }
 
 // Sets the name of the bot
@@ -704,7 +709,7 @@ var stop = function() {
         stopSong();
         paused = false;
         mppChatSend("Stopped playing " + quoteString(currentFileName), 0);
-        currentFileURL = currentFileName = null;
+        currentFileLocation = currentFileName = null;
     }
     mppEndSend(0);
 }
