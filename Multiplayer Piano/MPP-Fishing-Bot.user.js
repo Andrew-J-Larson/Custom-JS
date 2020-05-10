@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.5
+// @version      1.1.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -14,14 +14,27 @@
 
 /* globals MPP */
 
+// =============================================== CONSTANTS
+
+// Script constants
+const NAME = SCRIPT.name;
+const VERSION = SCRIPT.version;
+
 const TENTH_OF_SECOND = 100; // milliseconds
 const ONE_SECOND = 1000; // milliseconds
 const ONE_MINUTE = 60 * ONE_SECOND; // milliseconds
 const FIVE_MINUTES = 5 * ONE_MINUTE; // milliseconds
+
+const PRE_MSG = NAME + " (v" + VERSION + "): ";
+
+// =============================================== VARIABLES
+
 var ready = false;
 var waiting = false;
 var fishing = false;
 var fishTimer = FIVE_MINUTES;
+
+// =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
 var exists = function(element) {
@@ -38,7 +51,8 @@ var goFish = function() {
     }
 }
 
-// Main
+// =============================================== MAIN
+
 MPP.client.on('a', function (msg) {
     if (!ready) return;
     // get the message as string
@@ -60,9 +74,11 @@ MPP.client.on('a', function (msg) {
                 }
             }
         } else if (input == "/reel") MPP.chat.send("/fish");
-        if (input == "/help") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
+        if (input == "/help") MPP.chat.send(PRE_MSG + "https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
     }
 });
+
+// =============================================== INTERVALS
 
 // Automatically turns off the sound warning (loading the bot)
 var clearSoundWarning = setInterval(function() {
