@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.7
+// @version      1.4.8
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -563,14 +563,15 @@ var getSustainValue = function(choice) {
 // Change the room color
 var setRoomColor = function(color) {
     var isOwner = MPP.client.isOwner();
-    if (isOwner && isColor(color)) {
+    var isRealColor = isColor(color);
+    if (isOwner && isRealColor) {
         color = colorToHEX(color);
         var set = {color: color};
         MPP.client.sendArray([{m: "chset", set: set}]);
         console.log("Color set to: " + color);
         return true;
     } else if (exists(color)) { // if the color wasn't valid
-        console.log((isOwner ? "" : NOT_OWNER + " AND! ") + (isColor(color) ? "" : "Invalid color. Color wasn't set."));
+        console.log((isOwner ? "" : NOT_OWNER + (isRealColor ? " AND! " : "")) + (isRealColor ? "" : "Invalid color. Color wasn't set."));
         return false;
     } else setRoomColor(BOT_ROOM_COLOR); // go back to default color
 }
