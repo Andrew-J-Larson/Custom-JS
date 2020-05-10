@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.3
+// @version      1.4.4
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -49,6 +49,9 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const CHAT_DELAY = 500; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2000 // when you are not the owner, your chat quota is lowered
 
+// URLs
+const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
+
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = ["1251d6256fc2264660957fb9"];
 const LIMITED_PLAYERS = ["9f435879f55c87c238a1575d"];
@@ -74,7 +77,7 @@ const COMMANDS = [
     ["repeat (choice)", "allows one song to keep repeating, choices are off (0), or on (1)"],
     ["sustain (choice)", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
     ["clear", "clears the chat"],
-    ["feedback [text]", "send feedback about the bot to the developer"],
+    ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -92,10 +95,6 @@ const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
-const FEEDBACK_BGCOLOR = "background-color: black;";
-const FEEDBACK_START_COLORS = FEEDBACK_BGCOLOR + " color: #00ff00;"
-const FEEDBACK_NAME_STYLE = FEEDBACK_START_COLORS + " text-decoration: underline;";
-const FEEDBACK_TEXT_STYLE = FEEDBACK_BGCOLOR + " color: #0000ff; font-weight: bold";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
@@ -798,16 +797,10 @@ var clear = function() {
         if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
     }
 }
-var feedback = function(username, userId, comment) {
-    // just sends string to console to look at later
-    if (exists(username) && exists(comment)) {
-        console.log("%c" + username + " (" + userId + ")%c says: %c" + quoteString(comment), FEEDBACK_NAME_STYLE, FEEDBACK_START_COLORS, FEEDBACK_TEXT_STYLE);
-        mppTitleSend(PRE_FEEDBACK, 0);
-        mppChatSend("Feedback sent to developer");
-    } else {
-        mppTitleSend(PRE_ERROR + " (feedback)", 0);
-        mppChatSend("Nothing entered, so nothing was sent", 0);
-    }
+var feedback = function() {
+    // just sends feedback url to user
+    mppTitleSend(PRE_FEEDBACK, 0);
+    mppChatSend("Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
     mppEndSend(0);
 }
 
@@ -851,7 +844,7 @@ MPP.client.on('a', function (msg) {
             case "repeat": case "re": if (active && !preventsPlaying) repeat(argumentsString); break;
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
             case "clear": case "cl": if (active) clear(); break;
-            case "feedback": case "fb": if (active) feedback(username, userId, argumentsString); break;
+            case "feedback": case "fb": if (active) feedback(); break;
             case "active": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
         }
