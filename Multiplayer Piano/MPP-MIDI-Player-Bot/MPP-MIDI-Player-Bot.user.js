@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.8
+// @version      1.4.0
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -72,7 +72,7 @@ const COMMANDS = [
     ["resume", "plays music right where pause left off"],
     ["song", "shows the current song playing"],
     ["repeat", "allows one song to keep repeating, choices are off (0), or on (1)"],
-    ["sustain", "sets the sustain (midi controlled), choices are off (0), or on (1)"],
+    ["sustain", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
     ["clear", "clears the chat"],
     ["feedback [text]", "send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
@@ -546,13 +546,13 @@ var getRepeatValue = function(choice) {
 // Get the string/type value of the sustain option
 var getSustainString = function(choice) {
     if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
-    return (choice ? "midi controlled (on)" : "MPP controlled (off)");
+    return (choice ? "MIDI controlled" : "MPP controlled");
 }
 var getSustainValue = function(choice) {
     var valid = null;
     switch(choice.toLowerCase()) {
-        case "0": case "off": case "false": valid = false; break;
-        case "1": case "on": case "true": valid = true; break;
+        case "mpp": case "0": case "off": case "false": valid = false; break;
+        case "midi": case "1": case "on": case "true": valid = true; break;
     }
     return valid;
 }
@@ -768,19 +768,19 @@ var sustain = function(choice) {
 
     if (!exists(choice) || choice == "") {
         mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Self sustain is currently set to " + currentSustain, 0);
+        mppChatSend("Sustain is currently set to " + currentSustain, 0);
     } else if (getSustainValue(choice) == sustainOption) {
         mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Self sustain is already set to " + currentSustain, 0);
+        mppChatSend("Sustain is already set to " + currentSustain, 0);
     } else {
         var valid = getSustainValue(choice);
         if (valid != null) {
             sustainOption = valid;
             mppTitleSend(PRE_SUSTAIN, 0);
-            mppChatSend("Self sustain set to " + getSustainString(valid), 0);
+            mppChatSend("Sustain set to " + getSustainString(valid), 0);
         } else {
             mppTitleSend(PRE_ERROR + " (sustain)", 0);
-            mppChatSend("Invalid self sustain choice", 0);
+            mppChatSend("Invalid sustain choice", 0);
         }
     }
     mppEndSend(0);
