@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.3
+// @version      1.3.6
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -47,7 +47,7 @@ const AUTHOR = SCRIPT.author;
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const CHAT_DELAY = 500; // needed since the chat is limited to 10 messages within less delay
-const TEST_CHAT_DELAY = 2000 // test rooms have less chat quota
+const SLOW_CHAT_DELAY = 2000 // when you are not the owner, your chat quota is lowered
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // none for now
@@ -58,23 +58,25 @@ const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
 const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 const THIN_BORDER = "════════════════════════════════════════════════════";
-const TEST_ROOM_SLOW = "[Slow Bot Chat Mode = ON]" // only turns on for test rooms as they have very low chat quota
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
-const BOT_ROOM_COLOR = "#";
+const BOT_ROOM_COLOR = "#046307";
+const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
-const BOT_COMMAND = "~~ Commands ~~";
-const COMMANDS = ["help - displays this help page",
-                  "about - get information about this bot",
-                  "play [URL] - plays a specific song (URL must be a direct link)",
-                  "stop - stops all music from playing",
-                  "pause - pauses the music at that moment in the song",
-                  "resume - plays music right where pause left off",
-                  "song - shows the current song playing",
-                  "repeat - allows one song to keep repeating, choices are off (0), or on (1)",
-                  "sustain - sets the sustain (midi controlled), choices are off (0), or on (1)",
-                  "clear - clears the chat",
-                  "feedback [text] - send feedback about the bot to the developer"];
+const COMMANDS = [
+    ["help (command)", "displays info about command, but no command entered shows the commands"],
+    ["about", "get information about this bot"],
+    ["play [URL]", "plays a specific song (URL must be a direct link)"],
+    ["stop", "stops all music from playing"],
+    ["pause", "pauses the music at that moment in the song"],
+    ["resume", "plays music right where pause left off"],
+    ["song", "shows the current song playing"],
+    ["repeat", "allows one song to keep repeating, choices are off (0), or on (1)"],
+    ["sustain", "sets the sustain (midi controlled), choices are off (0), or on (1)"],
+    ["clear", "clears the chat"],
+    ["feedback [text]", "send feedback about the bot to the developer"],
+    ["active", "turns the bot on or off (bot owner only)"]
+];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
@@ -93,9 +95,12 @@ const NO_SONG = "Not currently playing anything";
 const FEEDBACK_COLORS = "background-color: black; color: #00ff00;";
 const FEEDBACK_NAME_STYLE = FEEDBACK_COLORS + " text-decoration: underline;";
 const FEEDBACK_TEXT_STYLE = FEEDBACK_COLORS + " font-weight: bold";
+const LIST_BULLET = "• ";
+const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
 const ALLOW_ALL_INTRUMENTS = false; // setting as false removes instruments that have no tone on piano
+const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent
 const CLEAR_LINES = 35;
 
 // Gets the correct note from MIDIPlayer to play on MPP
@@ -189,9 +194,6 @@ const MIDIPlayerToMPPNote = {
     "B7": "b6",
     "C8": "c7"
 }
-
-// Instruments to ignore (mainly nonchromatic percussion and sound effects)
-
 
 // =============================================== VARIABLES
 
@@ -414,6 +416,22 @@ var setActive = function(args, userId) {
     }
 }
 
+// Makes all commands into one string
+var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+    if (!exists(prefix)) prefix = '';
+    var commands = '';
+    var i;
+    for(i = 0; i < commandsArray.length; ++i) {
+        commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
+    }
+    return commands;
+}
+
+// Gets 1 command and info about it into a string
+var formatCommandInfo = function(commandIndex) {
+    return LIST_BULLET + PREFIX + COMMANDS[commandIndex][0] + DESCRIPTION_SEPARATOR + COMMANDS[commandIndex][1];
+}
+
 // Send messages without worrying about timing
 var mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, delay);
@@ -421,8 +439,13 @@ var mppChatSend = function(str, delay) {
 
 // Titles for some commands
 var mppTitleSend = function(str, delay) {
-    mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str + (chatDelay == TEST_CHAT_DELAY ? (' ' + TEST_ROOM_SLOW) : ""), delay);
+    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THICK_BORDER, delay);
+    mppChatSend(str, delay);
+}
+
+// Sends in a bottom border if needed
+var mppEndSend = function(delay) {
+    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THIN_BORDER, delay);
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
@@ -464,7 +487,7 @@ var playSong = function(songName, songData) {
     Player.play();
     mppTitleSend(PRE_PLAY, 0);
     mppChatSend("Now playing " + quoteString(currentFileName), 0);
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 
 // Plays the song from a URL if it's a MIDI
@@ -489,36 +512,19 @@ var playFile = function(songFile) {
                 } else {
                     mppTitleSend(PRE_ERROR + " [Play]", 0);
                     mppChatSend("Unexpected result, MIDI file couldn't load", 0);
-                    mppChatSend(THIN_BORDER, 0);
+                    mppEndSend(0);
                 }
             });
         } else {
             mppTitleSend(PRE_ERROR + " (play)", 0);
             mppChatSend("The file choosen, is either corrupted, or it's not really a MIDI file", 0);
-            mppChatSend(THIN_BORDER, 0);
+            mppEndSend(0);
         }
     } else {
         mppTitleSend(PRE_ERROR + " (play)", 0);
         mppChatSend("MIDI file not found", 0);
-        mppChatSend(THIN_BORDER, 0);
+        mppEndSend(0);
     }
-}
-
-// Checks roomname if it's a valid a slow room
-var isASlowRoom = function(roomname) {
-    const LOBBY = "lobby";
-    const TEST = "test/";
-    if (exists(roomname) && roomname != "" && (roomname.indexOf(LOBBY) == 0)) {
-        // check to make sure all anything else is a number
-        var i;
-        for(i = LOBBY.length; i < roomname.length; ++i) {
-            var c = roomname[i];
-            // any non digit number should immediately send false
-            if (c < '0' || c > '9') return false;
-        }
-        return true;
-    } else if (roomname.indexOf(TEST) == 0) return true;
-    else return false;
 }
 
 // Get the string/type value of the repeat option
@@ -610,22 +616,51 @@ var playerLimited = function(username) {
     // displays message with their name about being limited
     mppTitleSend(PRE_LIMITED, 0);
     mppChatSend("You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot", 0);
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
+}
+
+// when there is an incorrect command, show this error
+var cmdNotFound = function(cmd) {
+    // if cmd is empty somehow, show it
+    mppTitleSend(PRE_ERROR, 0);
+    if (exists(cmd) && cmd != "") {
+        mppChatSend("Invalid command, " + quoteString(cmd) + " doesn't exist", 0);
+    } else {
+        mppChatSend("No command entered", 0);
+    }
+    mppEndSend(0);
 }
 
 // Commands
-var help = function() {
-    mppTitleSend(PRE_HELP, 0);
-    mppChatSend(BOT_COMMAND, 0);
-    endDelay = mppChatMultiSend(COMMANDS, "• " + PREFIX, 0);
-    mppChatSend(THIN_BORDER, endDelay);
+var help = function(command) {
+    if (!exists(command) || command == "") {
+        mppTitleSend(PRE_HELP, 0);
+        mppChatSend("Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    } else {
+        var valid = null;
+        var commandIndex = null;
+        command = command.toLowerCase();
+        // check commands array
+        var i;
+        for(i = 0; i < COMMANDS.length; ++i) {
+            if (COMMANDS[i][0].indexOf(command) == 0) {
+                valid = command;
+                commandIndex = i;
+            }
+        }
+        // display info on command if it exists
+        if (exists(valid)) {
+            mppTitleSend(PRE_HELP, 0);
+            mppChatSend(formatCommandInfo(commandIndex), 0);
+        } else cmdNotFound(command);
+    }
+    mppEndSend(0);
 }
 var about = function() {
     mppTitleSend(PRE_ABOUT, 0);
     mppChatSend(BOT_DESCRIPTION, 0);
-    mppChatSend(BOT_AUTHOR, 0);
-    mppChatSend(NAMESPACE, 0);
-    mppChatSend(THIN_BORDER, 0);
+    mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
+    mppEndSend(0);
 }
 var play = function(url) {
     // URL needs to be entered to play a song
@@ -633,7 +668,7 @@ var play = function(url) {
         if (url == "") {
             mppTitleSend(PRE_ERROR + " (play)", 0);
             mppChatSend("No MIDI url entered", 0);
-            mppChatSend(THIN_BORDER, 0);
+            mppEndSend(0);
         } else {
             // must change http to https
             if (url.indexOf("http:") == 0) url = "https:" + url.substring(5);
@@ -642,7 +677,7 @@ var play = function(url) {
                 if (blob == null) {
                     mppTitleSend(PRE_ERROR + " (play)", 0);
                     mppChatSend("Invalid URL, there is no file, or the file requires a manual download from " + quoteString(url), 0);
-                    mppChatSend(THIN_BORDER, 0);
+                    mppEndSend(0);
                 } else if (isMidi(blob)) {
                     fileOrBlobToBase64(blob, function(base64data) {
                         // play song only if we got data
@@ -651,13 +686,13 @@ var play = function(url) {
                         } else {
                             mppTitleSend(PRE_ERROR + " [Play]", 0);
                             mppChatSend("Unexpected result, MIDI file couldn't load", 0);
-                            mppChatSend(THIN_BORDER, 0);
+                            mppEndSend(0);
                         }
                     });
                 } else {
                     mppTitleSend(PRE_ERROR + " [Play]", 0);
                     mppChatSend("Invalid URL, this is not a MIDI file", 0);
-                    mppChatSend(THIN_BORDER, 0);
+                    mppEndSend(0);
                 }
             });
         }
@@ -673,7 +708,7 @@ var stop = function() {
         mppChatSend("Stopped playing " + quoteString(currentFileName), 0);
         currentFileURL = currentFileName = null;
     }
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var pause = function() {
     // pauses the current song
@@ -685,7 +720,7 @@ var pause = function() {
         paused = true;
         mppChatSend("Paused " + quoteString(currentFileName), 0);
     }
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var resume = function() {
     // resumes the current song
@@ -696,7 +731,7 @@ var resume = function() {
         paused = false;
         mppChatSend("Resumed " + quoteString(currentFileName), 0);
     } else mppChatSend("The song is already playing", 0);
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var song = function() {
     // shows current song playing
@@ -704,7 +739,7 @@ var song = function() {
     if (exists(currentFileName) && currentFileName != "") {
         mppChatSend("Currently playing " + quoteString(currentFileName), 0);
     } else mppChatSend(NO_SONG, 0);
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var repeat = function(choice) {
     // turns on or off repeat
@@ -727,7 +762,7 @@ var repeat = function(choice) {
             mppChatSend("Invalid repeat choice", 0);
         }
     }
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var sustain = function(choice) {
     // turns on or off sustain
@@ -750,7 +785,7 @@ var sustain = function(choice) {
             mppChatSend("Invalid self sustain choice", 0);
         }
     }
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -770,17 +805,7 @@ var feedback = function(username, userId, comment) {
         mppTitleSend(PRE_ERROR + " (feedback)", 0);
         mppChatSend("Nothing entered, so nothing was send", 0);
     }
-    mppChatSend(THIN_BORDER, 0);
-}
-var cmdNotFound = function(cmd) {
-    // if cmd is empty somehow, show it
-    mppTitleSend(PRE_ERROR, 0);
-    if (exists(cmd) && cmd != "") {
-        mppChatSend("Invalid command, " + quoteString(cmd) + " doesn't exist", 0);
-    } else {
-        mppChatSend("No command entered", 0);
-    }
-    mppChatSend(THIN_BORDER, 0);
+    mppEndSend(0);
 }
 
 // =============================================== MAIN
@@ -813,7 +838,7 @@ MPP.client.on('a', function (msg) {
         // look through commands
         var preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": if (active) help(); break;
+            case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
             case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
@@ -830,12 +855,9 @@ MPP.client.on('a', function (msg) {
     }
 });
 MPP.client.on("ch", function(msg) {
-    var roomname = msg.ch._id;
-    if (exists(roomname)) {
-        // set new chat delay based on the roomname
-        if (isASlowRoom(roomname)) chatDelay = TEST_CHAT_DELAY;
-        else chatDelay = CHAT_DELAY;
-    }
+    // set new chat delay based on room ownership after changing rooms
+    if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
+    else chatDelay = CHAT_DELAY;
 });
 MPP.client.on('p', function(msg) {
     // kick ban all the banned players
@@ -873,11 +895,11 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
                 active = true;
-                if (isASlowRoom(MPP.client.channel._id)) chatDelay = TEST_CHAT_DELAY;
+                if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
-                mppTitleSend(PRE_MSG + " Online!", 0);
-                mppChatSend(THIN_BORDER, 0);
                 createUploadButton();
+                mppTitleSend(PRE_MSG + " Online!", 0);
+                mppEndSend(0);
             }
         }, TENTH_OF_SECOND);
     }
