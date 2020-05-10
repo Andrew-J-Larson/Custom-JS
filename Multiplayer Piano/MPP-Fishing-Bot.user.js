@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.4
+// @version      1.1.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -14,18 +14,28 @@
 
 /* globals MPP */
 
-const ONE_MINUTE = 60000; // milliseconds
-const ONE_SECOND = 1000; // milliseconds
 const TENTH_OF_SECOND = 100; // milliseconds
+const ONE_SECOND = 1000; // milliseconds
+const ONE_MINUTE = 60 * ONE_SECOND; // milliseconds
+const FIVE_MINUTES = 5 * ONE_MINUTE; // milliseconds
 var ready = false;
 var waiting = false;
 var fishing = false;
-var fishTimer = ONE_MINUTE;
+var fishTimer = FIVE_MINUTES;
 
 // Check to make sure variable is initialized with something
 var exists = function(element) {
     if (typeof(element) != "undefined" && element != null) return true;
     return false;
+}
+
+// Sets variables for fishing while executing command
+var goFish = function() {
+    if (!fishing && !waiting) {
+        MPP.chat.send("/fish");
+        fishTimer = FIVE_MINUTES;
+        waiting = true;
+    }
 }
 
 // Main
@@ -40,11 +50,7 @@ MPP.client.on('a', function (msg) {
     if (exists(input)) {
         // check commands not sent by self
         if(userId != selfId) {
-            if (!fishing && !waiting) {
-                MPP.chat.send("/fish");
-                fishTimer = ONE_MINUTE;
-                waiting = true;
-            }
+            goFish();
             var selfname = MPP.client.user.name;
             if (username == "fishing") {
             if (input.startsWith(input.includes(selfname + " casts")) || input.includes(selfname + ": Your lure")) fishing = true;
@@ -53,7 +59,7 @@ MPP.client.on('a', function (msg) {
                     fishing = false;
                 }
             }
-        } else if (input == "/reel") MPP.chat.send("/pick");
+        } else if (input == "/reel") MPP.chat.send("/fish");
         if (input == "/help") MPP.chat.send("https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
     }
 });
@@ -70,6 +76,10 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
                 ready = true;
 
+                // run commands at least once
+                goFish();
+                MPP.chat.send("/pick");
+
                 // makes sure to wait before fishing again (prevents multiple commands)
                 setInterval(function() {
                     if (waiting) {
@@ -83,7 +93,7 @@ var clearSoundWarning = setInterval(function() {
                 // make sure to wait before picking fruit again
                 setInterval(function() {
                     MPP.chat.send("/pick");
-                }, ONE_MINUTE);
+                }, FIVE_MINUTES);
             }
         }, TENTH_OF_SECOND);
     }
