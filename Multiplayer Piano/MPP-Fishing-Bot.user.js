@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.6
+// @version      1.1.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -17,6 +17,7 @@
 // =============================================== CONSTANTS
 
 // Script constants
+const SCRIPT = GM_info.script;
 const NAME = SCRIPT.name;
 const VERSION = SCRIPT.version;
 
