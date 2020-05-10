@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.6
+// @version      1.3.8
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -50,8 +50,8 @@ const CHAT_DELAY = 500; // needed since the chat is limited to 10 messages withi
 const SLOW_CHAT_DELAY = 2000 // when you are not the owner, your chat quota is lowered
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = []; // none for now
-const LIMITED_PLAYERS = []; // none for now
+const BANNED_PLAYERS = ["1251d6256fc2264660957fb9"];
+const LIMITED_PLAYERS = ["9f435879f55c87c238a1575d"];
 
 // Bot constants
 const PREFIX = "/";
@@ -75,7 +75,7 @@ const COMMANDS = [
     ["sustain", "sets the sustain (midi controlled), choices are off (0), or on (1)"],
     ["clear", "clears the chat"],
     ["feedback [text]", "send feedback about the bot to the developer"],
-    ["active", "turns the bot on or off (bot owner only)"]
+    ["active [choice]", "turns the bot on or off (bot owner only)"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -92,9 +92,10 @@ const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
-const FEEDBACK_COLORS = "background-color: black; color: #00ff00;";
-const FEEDBACK_NAME_STYLE = FEEDBACK_COLORS + " text-decoration: underline;";
-const FEEDBACK_TEXT_STYLE = FEEDBACK_COLORS + " font-weight: bold";
+const FEEDBACK_BGCOLOR = "background-color: black;";
+const FEEDBACK_START_COLORS = FEEDBACK_BGCOLOR + " color: #00ff00;"
+const FEEDBACK_NAME_STYLE = FEEDBACK_START_COLORS + " text-decoration: underline;";
+const FEEDBACK_TEXT_STYLE = FEEDBACK_BGCOLOR + " color: #0000ff; font-weight: bold";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
@@ -566,13 +567,9 @@ var setRoomColor = function(color) {
         console.log("Color set to: " + color);
         return true;
     } else if (exists(color)){
-        if (!isOwner) console.log(NOT_OWNER);
-        else console.log("Invalid color. Color wasn't set.");
+        console.log((isOwner ? "" : NOT_OWNER + " AND! ") + "Invalid color. Color wasn't set.");
         return false;
-    } else {
-        // go back to default color
-        setRoomColor(BOT_ROOM_COLOR);
-    }
+    } else setRoomColor(BOT_ROOM_COLOR); // go back to default color
 }
 
 // Allows users to upload midi files to the bot
@@ -799,12 +796,12 @@ var clear = function() {
 var feedback = function(username, userId, comment) {
     // just sends string to console to look at later
     if (exists(username) && exists(comment)) {
-        console.log("%c" + username + " (" + userId + ")%c says: %c" + quoteString(comment), FEEDBACK_NAME_STYLE, FEEDBACK_COLORS, FEEDBACK_TEXT_STYLE);
+        console.log("%c" + username + " (" + userId + ")%c says: %c" + quoteString(comment), FEEDBACK_NAME_STYLE, FEEDBACK_START_COLORS, FEEDBACK_TEXT_STYLE);
         mppTitleSend(PRE_FEEDBACK, 0);
         mppChatSend("Feedback sent to developer");
     } else {
         mppTitleSend(PRE_ERROR + " (feedback)", 0);
-        mppChatSend("Nothing entered, so nothing was send", 0);
+        mppChatSend("Nothing entered, so nothing was sent", 0);
     }
     mppEndSend(0);
 }
@@ -896,6 +893,7 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
                 active = true;
+                setRoomColor(BOT_ROOM_COLOR);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 createUploadButton();
