@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.7
+// @version      1.1.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -30,6 +30,8 @@ const PRE_MSG = NAME + " (v" + VERSION + "): ";
 
 // =============================================== VARIABLES
 
+var active = true;
+var currentRoom = null;
 var ready = false;
 var waiting = false;
 var fishing = false;
@@ -55,7 +57,7 @@ var goFish = function() {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
-    if (!ready) return;
+    if (!ready || !active) return;
     // get the message as string
     var input = msg.a.trim();
     var username = msg.p.name;
@@ -78,6 +80,12 @@ MPP.client.on('a', function (msg) {
         if (input == "/help") MPP.chat.send(PRE_MSG + "https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
     }
 });
+MPP.client.on("ch", function(msg) {
+    // update current room info
+    currentRoom = MPP.client.channel._id;
+    if (currentRoom == "testing/fishing") active = true;
+    else active = false;
+});
 
 // =============================================== INTERVALS
 
@@ -92,14 +100,17 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
                 ready = true;
+                currentRoom = MPP.client.channel._id;
 
                 // run commands at least once
-                goFish();
-                MPP.chat.send("/pick");
+                if (active) {
+                    goFish();
+                    MPP.chat.send("/pick");
+                }
 
                 // makes sure to wait before fishing again (prevents multiple commands)
                 setInterval(function() {
-                    if (waiting) {
+                    if (active && waiting) {
                         if (fishTimer > 0) fishTimer -= ONE_SECOND;
                         else {
                             waiting = false;
@@ -109,7 +120,7 @@ var clearSoundWarning = setInterval(function() {
                 }, ONE_SECOND);
                 // make sure to wait before picking fruit again
                 setInterval(function() {
-                    MPP.chat.send("/pick");
+                    if (active) MPP.chat.send("/pick");
                 }, FIVE_MINUTES);
             }
         }, TENTH_OF_SECOND);
