@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.4
+// @version      1.4.5
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -199,6 +199,7 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
+var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
@@ -624,13 +625,24 @@ var playerLimited = function(username) {
 // when there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     // if cmd is empty somehow, show it
-    mppTitleSend(PRE_ERROR, 0);
     if (exists(cmd) && cmd != "") {
-        mppChatSend("Invalid command, " + quoteString(cmd) + " doesn't exist", 0);
+        // if we're in the fishing room, ignore the fishing commands
+        var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
+        cmd = cmd.toLowerCase();
+        if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
+                                             cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
+                                             cmd.indexOf("pick") == 0)) {
+            console.log(error);
+        } else {
+            mppTitleSend(PRE_ERROR, 0);
+            mppChatSend(error, 0);
+            mppEndSend(0);
+        }
     } else {
+        mppTitleSend(PRE_ERROR, 0);
         mppChatSend("No command entered", 0);
+        mppEndSend(0);
     }
-    mppEndSend(0);
 }
 
 // Commands
@@ -854,6 +866,8 @@ MPP.client.on("ch", function(msg) {
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
+    // update current room info
+    currentRoom = MPP.client.channel._id;
 });
 MPP.client.on('p', function(msg) {
     // kick ban all the banned players
@@ -890,6 +904,8 @@ var clearSoundWarning = setInterval(function() {
         var waitForMPP = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
+
+                currentRoom = MPP.client.channel._id;
                 active = true;
                 setRoomColor(BOT_ROOM_COLOR);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
