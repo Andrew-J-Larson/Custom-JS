@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.8
+// @version      1.1.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
-// @include      /^https?://www\.multiplayerpiano\.com/test%2Ffishing$/
+// @include      /^https?://www\.multiplayerpiano\.com/test/fishing$/
 // @icon         https://icons.iconarchive.com/icons/fasticon/fish-toys/256/Green-Fish-icon.png
 // @grant        GM_info
 // @run-at       document-end
@@ -83,7 +83,7 @@ MPP.client.on('a', function (msg) {
 MPP.client.on("ch", function(msg) {
     // update current room info
     currentRoom = MPP.client.channel._id;
-    if (currentRoom == "testing/fishing") active = true;
+    if (currentRoom == "test/fishing") active = true;
     else active = false;
 });
 
@@ -99,6 +99,8 @@ var clearSoundWarning = setInterval(function() {
         var waitForMPP = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
+                console.log(PRE_MSG + "Online!");
+
                 ready = true;
                 currentRoom = MPP.client.channel._id;
 
