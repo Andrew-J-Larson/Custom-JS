@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.3
+// @version      1.5.4
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -285,10 +285,10 @@ var secondsToHms = function(d) {
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
 }
 
-// Takes formatted time and removed preceeding zeros
+// Takes formatted time and removed preceeding zeros (only before minutes)
 var timeClearZeros = function(formattedHms) {
     var newTime = formattedHms;
-    while (newTime.indexOf("00:") == 0) {
+    while (newTime.length > 5 && newTime.indexOf("00:") == 0) {
         newTime = newTime.substring(3);
     }
     return newTime;
