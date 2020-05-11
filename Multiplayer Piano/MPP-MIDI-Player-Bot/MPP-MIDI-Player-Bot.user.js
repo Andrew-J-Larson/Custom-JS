@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.4
+// @version      1.5.5
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -608,8 +608,8 @@ var getRepeatString = function(choice) {
 var getRepeatValue = function(choice) {
     var valid = null;
     switch(choice.toLowerCase()) {
-        case "0": case "off": case "false": valid = false; break;
-        case "1": case "on": case "true": valid = true; break;
+        case "false": case "off": case "no": case "0": valid = false; break;
+        case "true": case "on": case "yes": case "1": valid = true; break;
     }
     return valid;
 }
@@ -622,8 +622,8 @@ var getSustainString = function(choice) {
 var getSustainValue = function(choice) {
     var valid = null;
     switch(choice.toLowerCase()) {
-        case "mpp": case "0": case "off": case "false": valid = false; break;
-        case "midi": case "1": case "on": case "true": valid = true; break;
+        case "mpp": case "false": case "off": case "no": case "0": valid = false; break;
+        case "midi": case "true": case "on": case "yes": case "1": valid = true; break;
     }
     return valid;
 }
