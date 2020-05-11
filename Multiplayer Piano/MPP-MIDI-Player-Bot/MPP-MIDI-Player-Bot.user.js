@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.1
+// @version      1.5.2
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -56,13 +56,29 @@ const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
 const BANNED_PLAYERS = ["1251d6256fc2264660957fb9"];
 const LIMITED_PLAYERS = ["9f435879f55c87c238a1575d"];
 
+// MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer
+const MPP_DEFAULT_ROOMCOLORS = ["rgb(59, 80, 84)", "rgb(0, 16, 20)"];
+const MPP_LOBBY_ROOMCOLORS = ["rgb(25, 180, 185)", "rgb(128, 16, 20)"];
+
 // Bot constants
+const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
+const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
+const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
+const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
+
+// Bot constant settings
+const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
+const CLEAR_LINES = 35; // may be changed if needed, but this number seems to be the magic number
+const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
+const BOT_ROOM_COLORS = ["#046307", "#32CD32"]; // these are the colors the bot will set the room to by default
+const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
+
+// Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
 const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 const THIN_BORDER = "════════════════════════════════════════════════════";
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
-const BOT_ROOM_COLOR = "#046307";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
@@ -76,9 +92,17 @@ const COMMANDS = [
     ["song", "shows the current song playing"],
     ["repeat (choice)", "allows one song to keep repeating, choices are off (0), or on (1)"],
     ["sustain (choice)", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
+    ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"],
     ["clear", "clears the chat"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
+];
+const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
+const ROOMCOLOR_COMMANDS = [
+    ["roomcolor1 (option/color)", "sets the inner room color"],
+    ["roomcolor2 (option/color)", "sets the outer room color"],
+    ["roomcolors (option/color)", "sets both the inner and outer room colors (one color)"],
+    ["roomcolors ([color1] [color2])", "sets both the inner and outer room colors (separate colors)"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -90,6 +114,7 @@ const PRE_RESUME = PRE_MSG + "[Resume]";
 const PRE_SONG = PRE_MSG + "[Song]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
+const PRE_ROOMCOLOR = PRE_MSG + "[Roomcolor]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -98,11 +123,6 @@ const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
-const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
-const ALLOW_ALL_INTRUMENTS = false; // setting as false removes instruments that have no tone on piano
-const PERCUSSION_CHANNEL = 10;
-const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent
-const CLEAR_LINES = 35;
 
 // Gets the correct note from MIDIPlayer to play on MPP
 const MIDIPlayerToMPPNote = {
@@ -263,6 +283,20 @@ var quoteString = function(string) {
     return newString
 }
 
+// Validates colors
+var isColor = function(strColor){
+    // no need to test if color exists
+    var s = new Option().style;
+    s.color = strColor;
+    var result = s.color != "";
+    if (!result) {
+        var output = "Invalid color";
+        if (exists(strColor) && strColor != "") console.log(output + ": " + strColor);
+        else console.log(output + '.');
+    }
+    return result;
+}
+
 // Checks to see if HEX color is valid
 var isHexColor = function(strColor) {
     return /^#([0-9A-F]{3}){1,2}$/i.test(strColor);
@@ -329,6 +363,8 @@ var RGBToHex = function(rgb) {
 
 // Get CSS color name as HEX color
 var colorToHEX = function(strColor) {
+    if (!isColor(strColor)) return null;
+    strColor = strColor.toLowerCase();
     if (isHexColor(strColor)) {
         // must convert hex to full 6 hexadecimal value
         if (strColor.length == 4) {
@@ -360,13 +396,6 @@ var colorToHEX = function(strColor) {
     // else it must be HEX now
 
     return pv;
-}
-
-// Validates colors
-var isColor = function(strColor){
-    var s = new Option().style;
-    s.color = strColor;
-    return (s.color != "");
 }
 
 // Gets file as a blob (data URI)
@@ -409,8 +438,8 @@ var setActive = function(args, userId) {
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
-        case "false": case "off": case "0": newActive = false; break;
-        case "true": case "on": case "1": newActive = true; break;
+        case "false": case "off": case "no": case "0": newActive = false; break;
+        case "true": case "on": case "yes": case "1": newActive = true; break;
         default: console.log("Invalid choice. Bot wasn't turned off or on.");
     }
     if (exists(newActive)) {
@@ -431,8 +460,8 @@ var formattedCommands = function(commandsArray, prefix, spacing) { // needs to b
 }
 
 // Gets 1 command and info about it into a string
-var formatCommandInfo = function(commandIndex) {
-    return LIST_BULLET + PREFIX + COMMANDS[commandIndex][0] + DESCRIPTION_SEPARATOR + COMMANDS[commandIndex][1];
+var formatCommandInfo = function(commandsArray, commandIndex) {
+    return LIST_BULLET + PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Send messages without worrying about timing
@@ -560,20 +589,151 @@ var getSustainValue = function(choice) {
     return valid;
 }
 
-// Change the room color
-var setRoomColor = function(color) {
+
+// Change the room colors
+var roomColorAreaToString = function(area) {
+    // send string value from room color area number value
+    switch(area) {
+        case INNER_ROOM_COLOR: return "inner"; break;
+        case OUTER_ROOM_COLOR: return "outer"; break;
+        default: return "unknown"; break; // shouldn't ever get here
+    }
+}
+var currentRoomColor = function(area) {
+    // shows the current color of ths choosen room area
+    var color = null;
+
+    if (area == INNER_ROOM_COLOR) {
+        color = MPP.client.channel.settings.color;
+    } else if (area == OUTER_ROOM_COLOR) {
+        color = MPP.client.channel.settings.color2;
+    }
+
+    // backup solution in the case of colors not set in the room setting
+    if (!exists(color)) {
+        var background = document.body.style.background;
+        var rgb1StartIndex = background.indexOf("rgb(");
+        var rgb1EndIndex = background.indexOf(')', rgb1StartIndex + 4) + 1;
+        if (area == INNER_ROOM_COLOR) {
+            color = background.substring(rgb1StartIndex, rgb1EndIndex);
+        } else if (area == OUTER_ROOM_COLOR) {
+            var rgb2StartIndex = background.indexOf("rgb(", rgb1EndIndex);
+            var rgb2EndIndex = background.indexOf(')', rgb2StartIndex + 4) + 1;
+            color = background.substring(rgb2StartIndex, rgb2EndIndex);
+        }
+    }
+
+    return color;
+}
+var getRoomColorArea = function(area) {
+    // get area we are setting a color to
+    var valid = null;
+    if (exists(area)) { // don't continue if value is already correct
+        switch(area) {
+            case INNER_ROOM_COLOR:
+            case OUTER_ROOM_COLOR: return area; break;
+        }
+        // fix string if not value
+        if (area != "") valid = area.toLowerCase();
+    }
+    var result = null;
+    var output = "";
+
+    switch(valid) {
+        case "inner": case "inside": case "center": case "1": result = INNER_ROOM_COLOR; break;
+        case "outer": case "outside": case "outskirts": case "2": result = OUTER_ROOM_COLOR; break;
+        default: console.log("Invalid area: " + quoteString(area)); break;
+    }
+
+    if (valid != null) console.log(output + '.'); return null;
+    return result;
+}
+var getRoomColorSet = function(area, color) {
+    // get the set we need to change area color
+    var validArea = getRoomColorArea(area);
+    var validColor = colorToHEX(color);
+    var result = null;
+    var output = null;
+
+    switch(validArea) {
+        case INNER_ROOM_COLOR:
+        case OUTER_ROOM_COLOR: output = roomColorAreaToString(validArea); break;
+    }
+    switch(validArea) {
+        case INNER_ROOM_COLOR: result = {color: validColor, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR))}; break; // second color gets reset without setting it with first color
+        case OUTER_ROOM_COLOR: result = {color2: validColor}; break;
+    }
+
+    if (output != null) {
+        output = output.charAt(0).toUpperCase() + output.slice(1);
+        output += " color will be set to: " + color;
+        console.log(output);
+    }
+    return result;
+}
+var getRoomColorsSet = function(color1, color2) {
+    // get the set we need to change colors
+    var validColor1 = colorToHEX(color1);
+    var validColor2 = colorToHEX(color2);
+    var result = null;
+    var output = null;
+
+    if (validColor1 != null && validColor2 != null) result = {color: validColor1, color2: validColor2};
+    else if (validColor1 != null) result = {color: validColor1, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR))}; // second color gets reset without setting it with first color
+    else if (validColor2 != null) result = {color2: validColor2};
+
+    if (validColor1 != null) output = "Room " + roomColorAreaToString(INNER_ROOM_COLOR) + " color will be set to: " + color1;
+    if (validColor2 != null) output += (output == null ? "" : "\n") + "Room " + roomColorAreaToString(OUTER_ROOM_COLOR) + " color will be set to: " + color2;
+
+    if (output != null) console.log(output);
+    return result;
+}
+var setRoomColor = function(area, color) {
+    // set color based on inner or outer area
     var isOwner = MPP.client.isOwner();
-    var isRealColor = isColor(color);
-    if (isOwner && isRealColor) {
-        color = colorToHEX(color);
-        var set = {color: color};
+
+    var set = getRoomColorSet(area, color);
+    if (isOwner && set != null) {
         MPP.client.sendArray([{m: "chset", set: set}]);
-        console.log("Color set to: " + color);
         return true;
-    } else { // if not room owner or the color wasn't valid
-        console.log((isOwner ? "" : NOT_OWNER + (isRealColor ? "" : " AND! ")) + (isRealColor ? "" : "Invalid color. Color wasn't set."));
+    } else { // room ownership (other errors are logged from other functions)
+        if (!isOwner) console.log(NOT_OWNER);
         return false;
     }
+}
+var setRoomColors = function(color1, color2) {
+    // set both inner and outer colors
+    var isOwner = MPP.client.isOwner();
+
+    var set = getRoomColorsSet(color1, color2);
+    if (isOwner && set != null) {
+        MPP.client.sendArray([{m: "chset", set: set}]);
+        return true;
+    } else { // room ownership (other errors are logged from other functions)
+        if (!isOwner) console.log(NOT_OWNER);
+        return false;
+    }
+}
+var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OUTER constant
+    // check the color string for defaults or show color
+    if (exists(color) && color != "") {
+        var checkColor = (color != "") ? color.toLowerCase() : "normal";
+        switch(checkColor) {
+            case "normal": color = BOT_ROOM_COLORS[area]; break;
+            case "default": case "mpp": color = MPP_DEFAULT_ROOMCOLORS[area]; break;
+            case "lobby": case "test": color = MPP_LOBBY_ROOMCOLORS[area]; break;
+        }
+
+        if (!setRoomColor(area, color)) {
+            mppTitleSend(PRE_ERROR + " (roomcolor" + (area + 1) + ")", delay);
+            mppChatSend("Invalid " + roomColorAreaToString(area) + " room color", delay);
+        }
+    } else {
+        color = currentRoomColor(area);
+        mppTitleSend(PRE_ROOMCOLOR, delay);
+        mppChatSend("The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
+    }
+    mppEndSend(0);
 }
 
 // Allows users to upload midi files to the bot
@@ -666,7 +826,7 @@ var help = function(command) {
         // display info on command if it exists
         if (exists(valid)) {
             mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(commandIndex), 0);
+            mppChatSend(formatCommandInfo(COMMANDS, commandIndex), 0);
         } else cmdNotFound(command);
     }
     mppEndSend(0);
@@ -802,6 +962,73 @@ var sustain = function(choice) {
     }
     mppEndSend(0);
 }
+var roomcolor = function(command) {
+    if (!exists(command) || command == "") {
+        mppTitleSend(PRE_ROOMCOLOR, 0);
+        mppChatSend(ROOMCOLOR_OPTIONS, 0);
+        mppChatSend("Commands: " + formattedCommands(ROOMCOLOR_COMMANDS, LIST_BULLET + PREFIX, true), 0);
+        mppEndSend(0);
+    } else {
+        var valid = null;
+        var commandIndex = null;
+        command = command.toLowerCase();
+        // check commands array
+        var i;
+        for(i = 0; i < ROOMCOLOR_COMMANDS.length; ++i) {
+            if (ROOMCOLOR_COMMANDS[i][0].indexOf(command) == 0) {
+                valid = command;
+                commandIndex = i;
+            }
+        }
+        // display info on command if it exists
+        if (exists(valid)) {
+            mppTitleSend(PRE_HELP, 0);
+            mppChatSend(formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
+            mppEndSend(0);
+        } else cmdNotFound(command);
+    }
+}
+var roomcolor1 = function(color) {
+    mppRoomColorSend(INNER_ROOM_COLOR, color, 0);
+}
+var roomcolor2 = function(color) {
+    mppRoomColorSend(OUTER_ROOM_COLOR, color, 0);
+}
+var roomcolors = function(argsColors) {
+    // check the arguments for color string defaults or show colors
+    var color1 = currentRoomColor(INNER_ROOM_COLOR);
+    var color2 = currentRoomColor(OUTER_ROOM_COLOR);
+    if (exists(argsColors) && argsColors.length > 0) {
+        // get color1
+        var newColor1 = argsColors[INNER_ROOM_COLOR].toLowerCase();
+        switch(newColor1) {
+            case "normal": color1 = BOT_ROOM_COLORS[INNER_ROOM_COLOR]; break;
+            case "default": case "mpp": color1 = MPP_DEFAULT_ROOMCOLORS[INNER_ROOM_COLOR]; break;
+            case "lobby": case "test": color1 = MPP_LOBBY_ROOMCOLORS[INNER_ROOM_COLOR]; break;
+            default: color1 = newColor1;
+        }
+
+        // get color2
+        var newColor2 = newColor1;
+        if (argsColors.length > 1) newColor2 = argsColors[OUTER_ROOM_COLOR].toLowerCase();
+        switch(newColor2) {
+            case "normal": color2 = BOT_ROOM_COLORS[OUTER_ROOM_COLOR]; break;
+            case "default": case "mpp": color2 = MPP_DEFAULT_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
+            case "lobby": case "test": color2 = MPP_LOBBY_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
+            default: color2 = newColor2;
+        }
+
+        if (!setRoomColors(color1, color2)) {
+            mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
+            mppChatSend("Invalid room color(s)", 0);
+        }
+    } else {
+        // show the room colors
+        mppTitleSend(PRE_ROOMCOLOR, 0);
+        mppChatSend("The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
+    }
+    mppEndSend(0);
+}
 var clear = function() {
     // clear the chat of current messages (can be slow)
     var i;
@@ -856,6 +1083,10 @@ MPP.client.on('a', function (msg) {
             case "song": case "so": if (active && !preventsPlaying) song(); break;
             case "repeat": case "re": if (active && !preventsPlaying) repeat(argumentsString); break;
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
+            case "roomcolor": case "rc": if (active) roomcolor(argumentsString); break;
+            case "roomcolor1": case "rc1": if (active) roomcolor1(argumentsString); break;
+            case "roomcolor2": case "rc2": if (active) roomcolor2(argumentsString); break;
+            case "roomcolors": case "rcs": if (active) roomcolors(arguments); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
             case "active": setActive(arguments, userId); break;
@@ -908,7 +1139,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 active = true;
-                setRoomColor(BOT_ROOM_COLOR);
+                setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 createUploadButton();
