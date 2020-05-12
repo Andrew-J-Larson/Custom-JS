@@ -1031,7 +1031,7 @@ var play = function(url) {
         }
     } else {
         mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend("No URL entered", 0);
+        mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
         mppEndSend(0);
     }
 }
