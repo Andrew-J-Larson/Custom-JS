@@ -120,6 +120,7 @@ const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
+const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload at https://bitmidi.com/ and https://midiworld.com/, or you can upload your own at a site like https://www.file.io/";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
@@ -995,7 +996,7 @@ var play = function(url) {
     if (exists(url)) {
         if (url == "") {
             mppTitleSend(PRE_ERROR + " (play)", 0);
-            mppChatSend("No MIDI url entered", 0);
+            mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
             mppEndSend(0);
         } else {
             // downloads file if possible and then plays it if it's a MIDI
