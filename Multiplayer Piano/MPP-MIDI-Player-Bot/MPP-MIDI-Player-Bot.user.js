@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.9
+// @version      1.7.0
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -514,8 +514,11 @@ var fileOrBlobToBase64 = function(raw, callback) {
 
 // Validates file or blob is a MIDI
 var isMidi = function(raw) {
-    if (exists(raw) && (raw.type == "@file/mid" || raw.type == "@file/midi" || raw.type == "audio/midi" || raw.type == "audio/mid")) return true;
-    else return false;
+    if (exists(raw)) {
+        var mimetype = raw.type;
+        if (raw.type == "@file/mid" || raw.type == "@file/midi" || raw.type == "audio/x-mid" || raw.type == "audio/x-midi" || raw.type == "audio/mid" || raw.type == "audio/midi") return true;
+    }
+    return false;
 }
 
 // Validates file or blob is application/octet-stream ... when using CORS
