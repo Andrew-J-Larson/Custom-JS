@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9
+// @version      0.9.1
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -45,8 +45,11 @@ const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quot
 // URLs
 const FEEDBACK_URL = "-----------------";
 
-// Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = []; // empty for now
+// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
+const BANNED_PLAYERS = [
+//  ["Fake user", "cb066e42-6b29-42a1-b686-2b17dcf77156"],
+    [,] // empty for now
+];
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
@@ -74,6 +77,7 @@ const COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
+const PRE_LISTBAN = PRE_MSG + "[Listban]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
@@ -87,6 +91,11 @@ var active = true; // turn off the bot if needed
 var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
+
+// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
+var tempBannedPlayers = [
+    [,] // empty for now, this is for adding and removing users via commands
+];
 
 // ============================================== FUNCTIONS
 
@@ -186,7 +195,24 @@ var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     return chatDelay * newDelay;
 }
 
-// when there is an incorrect command, show this error
+// Gets the players (from and _id and username array) and puts them into a string
+var getPlayers = function(playersArray) {
+    var allPlayers = "[none]";
+    var playersSize = playersArray.length;
+    if (playersSize > 0) {
+        allPlayers = playersArray[0][1] + quoteString(playersArray[0][0]);
+        // add more perm banned players
+        if (playersSize > 1) {
+            var i;
+            for(i = 1; i < playersSize; ++i) {
+                allPlayers += ", " + playersArray[i][0];
+            }
+        }
+    }
+    return allPlayers;
+}
+
+// When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
@@ -240,8 +266,18 @@ var about = function() {
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
     mppEndSend(0);
 }
-
-
+var ban = function() {
+    // ======================================================================================================== CODE ME!
+}
+var unban = function() {
+    // ======================================================================================================== CODE ME!
+}
+var listban = function() {
+    mppTitleSend(PRE_LISTBAN, 0);
+    mppChatSend("Permanent: " + getPlayers(BANNED_PLAYERS), 0);
+    mppChatSend("Temporary: " + getPlayers(tempBannedPlayers), 0);
+    mppEndSend(0);
+}
 var clear = function() {
     // clear the chat of current messages (can be slow)
     var i;
@@ -277,6 +313,9 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
+            case "ban": case "b": if (active) ban(argumentsString); break;
+            case "unban": case "ub": if (active) unban(argumentsString); break;
+            case "listban": case "lb": if (active) listban(); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
             case "active": setActive(arguments, userId); break;
@@ -295,11 +334,20 @@ MPP.client.on("ch", function(msg) {
 MPP.client.on('p', function(msg) {
     var userId = msg._id;
     // kick ban all the banned players
-    var bannedPlayers = BANNED_PLAYERS.length;
-    if (bannedPlayers > 0) {
+    var bannedPlayer = null;
+    var bannedPlayersSize = BANNED_PLAYERS.length;
+    if (bannedPlayersSize > 0) {
         var i;
-        for(i = 0; i < BANNED_PLAYERS.length; ++i) {
-            var bannedPlayer = BANNED_PLAYERS[i];
+        for(i = 0; i < bannedPlayersSize; ++i) {
+            bannedPlayer = BANNED_PLAYERS[i][0];
+            if (userId == bannedPlayer) MPP.client.sendArray([{m: "kickban", _id: bannedPlayer, ms: 3600000}]);
+        }
+    }
+    var tempBannedPlayersSize = tempBannedPlayers.length;
+    if (tempBannedPlayersSize > 0) {
+        var j;
+        for(j = 0; j < tempBannedPlayersSize; ++j) {
+            bannedPlayer = tempBannedPlayers[j][0];
             if (userId == bannedPlayer) MPP.client.sendArray([{m: "kickban", _id: bannedPlayer, ms: 3600000}]);
         }
     }
