@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.1
-// @description  Plays MIDI files by URL or by data URI!
+// @version      1.7.2
+// @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/MPP-MIDI-Player-Bot.user.js
@@ -258,7 +258,7 @@ var Player = new window.MidiPlayer.Player(function(event) {
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             currentNote = MIDIPlayerToMPPNote[event.noteName];
             MPP.press(currentNote, (event.velocity/100));
-        } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
+        } else if (sustainOption && (currentEvent == "Note off" || (currentEvent == "Note on" && event.velocity == 0))) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
@@ -1263,7 +1263,6 @@ var repeatingTasks = setInterval(function() {
         Player.play();
     }
 }, TENTH_OF_SECOND);
-
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
