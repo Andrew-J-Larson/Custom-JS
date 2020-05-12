@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.3
+// @version      1.7.4
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -658,8 +658,8 @@ var playSong = function(songName, songData) {
         ended = false;
         stopped = false;
         Player.play();
-        mppTitleSend(PRE_PLAY, 0);
-        mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppTitleSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Now playing " + quoteString(currentSongName), 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongData != null) Player.loadDataUri(previousSongData);
@@ -1045,33 +1045,44 @@ var stop = function() {
 }
 var pause = function() {
     // pauses the current song
-    mppTitleSend(PRE_PAUSE, 0);
-    if (ended) mppChatSend(NO_SONG, 0);
-    else if (paused) mppChatSend("The song is already paused", 0);
-    else {
-        Player.pause();
-        paused = true;
-        mppChatSend("Paused " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+    if (ended) {
+        mppTitleSend(PRE_PAUSE, 0);
+        mppChatSend(NO_SONG, 0);
+    } else {
+        mppTitleSend(PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        if (paused) mppChatSend("The song is already paused", 0);
+        else {
+            Player.pause();
+            paused = true;
+            mppChatSend("Paused " + quoteString(currentSongName), 0);
+        }
     }
     mppEndSend(0);
 }
 var resume = function() {
     // resumes the current song
-    mppTitleSend(PRE_RESUME, 0)
-    if (ended) mppChatSend(NO_SONG, 0);
-    else if (paused) {
-        Player.play();
-        paused = false;
-        mppChatSend("Resumed " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-    } else mppChatSend("The song is already playing", 0);
+    if (ended) {
+        mppTitleSend(PRE_RESUME, 0);
+        mppChatSend(NO_SONG, 0);
+    } else {
+        mppTitleSend(PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        if (paused) {
+            Player.play();
+            paused = false;
+            mppChatSend("Resumed " + quoteString(currentSongName), 0);
+        } else mppChatSend("The song is already playing", 0);
+    }
     mppEndSend(0);
 }
 var song = function() {
     // shows current song playing
-    mppTitleSend(PRE_SONG, 0);
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend("Currently playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-    } else mppChatSend(NO_SONG, 0);
+        mppTitleSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Currently playing " + quoteString(currentSongName), 0);
+    } else {
+        mppTitleSend(PRE_SONG, 0);
+        mppChatSend(NO_SONG, 0);
+    }
     mppEndSend(0);
 }
 var repeat = function(choice) {
