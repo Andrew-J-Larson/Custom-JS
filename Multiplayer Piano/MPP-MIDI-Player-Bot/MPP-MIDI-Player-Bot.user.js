@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.8
+// @version      1.5.9
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -71,7 +71,7 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
 const CLEAR_LINES = 35; // may be changed if needed, but this number seems to be the magic number
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
-const BOT_ROOM_COLORS = ["#046307", "#32CD32"]; // these are the colors the bot will set the room to by default
+const BOT_ROOM_COLORS = ["#000000", "#046307"]; // these are the colors the bot will set the room to by default
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
 // Bot custom constants
@@ -772,13 +772,14 @@ var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OU
         if (!setRoomColor(area, color)) {
             mppTitleSend(PRE_ERROR + " (roomcolor" + (area + 1) + ")", delay);
             mppChatSend("Invalid " + roomColorAreaToString(area) + " room color", delay);
+            mppEndSend(0);
         }
     } else {
         color = currentRoomColor(area);
         mppTitleSend(PRE_ROOMCOLOR, delay);
         mppChatSend("The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
+        mppEndSend(0);
     }
-    mppEndSend(0);
 }
 
 // Allows users to upload midi files to the bot
@@ -1075,13 +1076,14 @@ var roomcolors = function(argsColors) {
         if (!setRoomColors(color1, color2)) {
             mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
             mppChatSend("Invalid room color(s)", 0);
+            mppEndSend(0);
         }
     } else {
         // show the room colors
         mppTitleSend(PRE_ROOMCOLOR, 0);
         mppChatSend("The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
+        mppEndSend(0);
     }
-    mppEndSend(0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
