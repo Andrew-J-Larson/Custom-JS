@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.5
+// @version      1.6.6
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1078,28 +1078,35 @@ var roomcolors = function(argsColors) {
     var color1 = currentRoomColor(INNER_ROOM_COLOR);
     var color2 = currentRoomColor(OUTER_ROOM_COLOR);
     if (exists(argsColors) && argsColors.length > 0) {
-        // get color1
-        var newColor1 = argsColors[INNER_ROOM_COLOR].toLowerCase();
-        switch(newColor1) {
-            case "normal": color1 = BOT_ROOM_COLORS[INNER_ROOM_COLOR]; break;
-            case "default": case "mpp": color1 = MPP_DEFAULT_ROOMCOLORS[INNER_ROOM_COLOR]; break;
-            case "lobby": case "test": color1 = MPP_LOBBY_ROOMCOLORS[INNER_ROOM_COLOR]; break;
-            default: color1 = newColor1;
-        }
+        // make sure extra spaces aren't being used (will show up as extra arguments)
+        if (argsColors.length <= 2) {
+            // get color1
+            var newColor1 = argsColors[INNER_ROOM_COLOR].toLowerCase();
+            switch(newColor1) {
+                case "normal": color1 = BOT_ROOM_COLORS[INNER_ROOM_COLOR]; break;
+                case "default": case "mpp": color1 = MPP_DEFAULT_ROOMCOLORS[INNER_ROOM_COLOR]; break;
+                case "lobby": case "test": color1 = MPP_LOBBY_ROOMCOLORS[INNER_ROOM_COLOR]; break;
+                default: color1 = newColor1;
+            }
 
-        // get color2
-        var newColor2 = newColor1;
-        if (argsColors.length > 1) newColor2 = argsColors[OUTER_ROOM_COLOR].toLowerCase();
-        switch(newColor2) {
-            case "normal": color2 = BOT_ROOM_COLORS[OUTER_ROOM_COLOR]; break;
-            case "default": case "mpp": color2 = MPP_DEFAULT_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
-            case "lobby": case "test": color2 = MPP_LOBBY_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
-            default: color2 = newColor2;
-        }
+            // get color2
+            var newColor2 = newColor1;
+            if (argsColors.length > 1) newColor2 = argsColors[OUTER_ROOM_COLOR].toLowerCase();
+            switch(newColor2) {
+                case "normal": color2 = BOT_ROOM_COLORS[OUTER_ROOM_COLOR]; break;
+                case "default": case "mpp": color2 = MPP_DEFAULT_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
+                case "lobby": case "test": color2 = MPP_LOBBY_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
+                default: color2 = newColor2;
+            }
 
-        if (!setRoomColors(color1, color2)) {
+            if (!setRoomColors(color1, color2)) {
+                mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
+                mppChatSend("Invalid room color(s)", 0);
+                mppEndSend(0);
+            }
+        } else {
             mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-            mppChatSend("Invalid room color(s)", 0);
+            mppChatSend("Too many arguments (are you sure you removed spaces from the color values?)", 0);
             mppEndSend(0);
         }
     } else {
