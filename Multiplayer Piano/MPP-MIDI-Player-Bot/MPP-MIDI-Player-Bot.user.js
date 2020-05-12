@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.4
+// @version      1.6.5
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -946,6 +946,10 @@ var play = function(url) {
                 }
             });
         }
+    } else {
+        mppTitleSend(PRE_ERROR + " (play)", 0);
+        mppChatSend("No URL entered", 0);
+        mppEndSend(0);
     }
 }
 var stop = function() {
