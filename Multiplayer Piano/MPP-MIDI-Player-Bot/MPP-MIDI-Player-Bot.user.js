@@ -322,7 +322,6 @@ var timeSizeFormat = function(timeCurrent, timeEnd) {
     while (newTimeFormat.length < timeEndLength) {
         newTimeFormat = "00:" + newTimeFormat;
     }
-    console.log(timeCurrentLength,timeEndLength,newTimeFormat);
     return newTimeFormat;
 }
 
