@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.3
+// @version      1.6.4
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -231,9 +231,9 @@ var ended = true;
 var stopped = false;
 var paused = false;
 var uploadButton = null; // this get's an element after it's loaded
-var timeElapsedFormatted = null // changes with the amount of song being played
+var currentSongElapsedFormatted = "00:00"; // changes with the amount of song being played
+var currentSongDurationFormatted = "00:00"; // gets updated when currentSongDuration is updated
 var currentSongDuration = 0; // this changes after each song is loaded
-var currentSongDurationFormatted = "00"; // gets updated when currentSongDuration is updated
 var currentSongData = null; // this contains the song as a data URI
 var currentFileLocation = null; // this leads to the MIDI location (local or by URL)
 var currentSongName = null; // extracted from the file name/end of URL
@@ -261,15 +261,15 @@ var Player = new window.MidiPlayer.Player(function(event) {
         } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
-        timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
         paused = false;
         if (!repeatOption) currentSongData = null;
         currentSongName = null;
     } else {
         var timeRemaining = Player.getSongTimeRemaining();
-        var timeElapsed = currentSongDuration - timeRemaining;
-        timeElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed == null ? 0 : timeElapsed), currentSongDurationFormatted);
+        var timeElapsed = currentSongDuration - (timeRemaining > 0 ? timeRemaining : 0);
+        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
 
@@ -284,13 +284,22 @@ var exists = function(element) {
 // Format time to HH:MM:SS from seconds
 var secondsToHms = function(d) {
     d = Number(d);
-    var h = Math.floor(d / 3600);
-    var m = Math.floor((d % 3600) / 60);
-    var s = Math.floor((d % 3600) % 60);
 
-    var hDisplay = (h < 10 ? "0" : "") + h;
-    var mDisplay = (m < 10 ? "0" : "") + m;
-    var sDisplay = (s < 10 ? "0" : "") + s;
+    var h, m, s;
+    var hDisplay = "00";
+    var mDisplay = hDisplay;
+    var sDisplay = hDisplay;
+
+    if (d != null && d > 0) {
+        h = Math.floor(d / 3600);
+        m = Math.floor((d % 3600) / 60);
+        s = Math.floor((d % 3600) % 60);
+
+        hDisplay = (h < 10 ? "0" : "") + h;
+        mDisplay = (m < 10 ? "0" : "") + m;
+        sDisplay = (s < 10 ? "0" : "") + s;
+    }
+
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
 }
 
@@ -304,13 +313,16 @@ var timeClearZeros = function(formattedHms) {
 }
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
-var timeSizeFormat = function(timeToResize, timeControl) {
-    var newTimeFormat = timeToResize;
+var timeSizeFormat = function(timeCurrent, timeEnd) {
+    var newTimeFormat = timeCurrent;
+    var timeCurrentLength = timeCurrent.length;
+    var timeEndLength = timeEnd.length;
     // lose or add 00's
-    if (newTimeFormat.length > timeControl.length) newTimeFormat = timeToResize.substring(timeToResize.length - timeControl.length);
-    while (newTimeFormat.length < timeControl.length) {
+    if (timeCurrentLength > timeEndLength) newTimeFormat = timeCurrent.substring(timeCurrentLength - timeEndLength);
+    while (newTimeFormat.length < timeEndLength) {
         newTimeFormat = "00:" + newTimeFormat;
     }
+    console.log(timeCurrentLength,timeEndLength,newTimeFormat);
     return newTimeFormat;
 }
 
@@ -545,6 +557,7 @@ var stopSong = function() {
     stopped = true;
     if (!ended) {
         Player.stop();
+        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
     }
 }
@@ -569,7 +582,7 @@ var playSong = function(songName, songData) {
         stopped = false;
         Player.play();
         mppTitleSend(PRE_PLAY, 0);
-        mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongData != null) Player.loadDataUri(previousSongData);
@@ -956,7 +969,7 @@ var pause = function() {
     else {
         Player.pause();
         paused = true;
-        mppChatSend("Paused " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Paused " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     }
     mppEndSend(0);
 }
@@ -967,7 +980,7 @@ var resume = function() {
     else if (paused) {
         Player.play();
         paused = false;
-        mppChatSend("Resumed " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Resumed " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     } else mppChatSend("The song is already playing", 0);
     mppEndSend(0);
 }
@@ -975,7 +988,7 @@ var song = function() {
     // shows current song playing
     mppTitleSend(PRE_SONG, 0);
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend("Currently playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Currently playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     } else mppChatSend(NO_SONG, 0);
     mppEndSend(0);
 }
