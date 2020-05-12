@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.4
+// @version      1.7.5
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -498,11 +498,13 @@ var urlToBlob = function(url, callback) {
             "Content-Disposition": "attachment" // this might not be doing anything
         }
     }).then(response => {
+        clearInterval(downloading);
         if (!response.ok) {
             throw new Error("Network response was not ok");
         }
         return response.blob();
     }).then(blob => {
+        clearInterval(downloading);
         callback(blob);
     }).catch(error => {
         console.error("Normal fetch couldn't get the file:", error);
@@ -513,6 +515,7 @@ var urlToBlob = function(url, callback) {
                     "Content-Disposition": "attachment" // this might not be doing anything
                 }
             }).then(response => {
+                clearInterval(downloading);
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
