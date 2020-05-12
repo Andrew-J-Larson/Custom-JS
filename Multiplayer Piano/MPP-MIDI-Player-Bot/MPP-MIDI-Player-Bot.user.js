@@ -846,7 +846,7 @@ var playerLimited = function(username) {
     mppEndSend(0);
 }
 
-// when there is an incorrect command, show this error
+// When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
