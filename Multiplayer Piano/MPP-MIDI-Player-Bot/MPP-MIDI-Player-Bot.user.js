@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.2
+// @version      1.6.3
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -268,8 +268,8 @@ var Player = new window.MidiPlayer.Player(function(event) {
         currentSongName = null;
     } else {
         var timeRemaining = Player.getSongTimeRemaining();
-        var timeElapsed = timeRemaining != null ? (currentSongDuration - timeRemaining) : 0;
-        timeElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
+        var timeElapsed = currentSongDuration - timeRemaining;
+        timeElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed == null ? 0 : timeElapsed), currentSongDurationFormatted);
     }
 });
 
