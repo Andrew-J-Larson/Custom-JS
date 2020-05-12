@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.5
+// @version      1.5.6
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -236,6 +236,7 @@ var currentSongDurationFormatted = "00"; // gets updated when currentSongDuratio
 var currentSongData = null; // this contains the song as a data URI
 var currentFileLocation = null; // this leads to the MIDI location (local or by URL)
 var currentSongName = null; // extracted from the file name/end of URL
+var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
 
@@ -544,20 +545,26 @@ var stopSong = function() {
 var playSong = function(songName, songData) {
     // stop any current songs from playing
     stopSong();
-    // changes song
-    currentSongData = songData;
-    currentSongName = songName;
-    // then play song
+    // play song
     Player.loadDataUri(currentSongData);
     while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
-    currentSongDuration = Player.getSongTime();
-    currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-    ended = false;
-    stopped = false;
-    Player.play();
-    mppTitleSend(PRE_PLAY, 0);
-    var timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-    mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+    // sometimes the MIDIs uploaded aren't properly created
+    if (Player.validate()) {
+        // changes song
+        currentSongData = songData;
+        currentSongName = songName;
+        currentSongDuration = Player.getSongTime();
+        currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
+        ended = false;
+        stopped = false;
+        Player.play();
+        mppTitleSend(PRE_PLAY, 0);
+        var timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+        mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
+    } else {
+        Player.loadDataUri(currentSongData); // reload the working file
+        mppTitleSend(PRE_ERROR + " (play)", 0); mppChatSend("Invalid MIDI file selected", 0); mppEndSend(0);
+    }
     mppEndSend(0);
 }
 
@@ -583,7 +590,7 @@ var playFile = function(songFile) {
                     playSong(songName, base64data);
                     uploadButton.value = ""; // reset file input
                 } else {
-                    mppTitleSend(PRE_ERROR + " [Play]", 0);
+                    mppTitleSend(PRE_ERROR + " (play)", 0);
                     mppChatSend("Unexpected result, MIDI file couldn't load", 0);
                     mppEndSend(0);
                 }
@@ -904,13 +911,13 @@ var play = function(url) {
                         if (exists(base64data)) {
                             playURL(url, base64data);
                         } else {
-                            mppTitleSend(PRE_ERROR + " [Play]", 0);
+                            mppTitleSend(PRE_ERROR + " (play)", 0);
                             mppChatSend("Unexpected result, MIDI file couldn't load", 0);
                             mppEndSend(0);
                         }
                     });
                 } else {
-                    mppTitleSend(PRE_ERROR + " [Play]", 0);
+                    mppTitleSend(PRE_ERROR + " (play)", 0);
                     mppChatSend("Invalid URL, this is not a MIDI file", 0);
                     mppEndSend(0);
                 }
