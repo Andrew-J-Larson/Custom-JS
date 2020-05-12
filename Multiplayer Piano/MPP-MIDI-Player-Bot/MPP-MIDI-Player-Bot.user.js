@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.0
+// @version      1.7.1
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -279,7 +279,8 @@ var Player = new window.MidiPlayer.Player(function(event) {
 var useCorsUrl = function(url) {
     var newUrl = null; // send null back if it's already a cors url
     var cors_api_url = 'https://cors-anywhere.herokuapp.com/';
-    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
+    // removes protocols before applying cors api url
+    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url.replace(/(^\w+:|^)\/\//, '');
     return newUrl;
 }
 
@@ -464,7 +465,11 @@ var colorToHEX = function(strColor) {
 
 // Gets file as a blob (data URI)
 var urlToBlob = function(url, callback) {
-    fetch(url).then(response => {
+    fetch(url, {
+        headers: {
+            "Content-Disposition": "attachment" // this might not be doing anything
+        }
+    }).then(response => {
         if (!response.ok) {
             throw new Error("Network response was not ok");
         }
@@ -472,15 +477,12 @@ var urlToBlob = function(url, callback) {
     }).then(blob => {
         callback(blob);
     }).catch(error => {
-        console.error("Fetch is unable to get file:", error);
+        console.error("Normal fetch couldn't get the file:", error);
         var corsUrl = useCorsUrl(url);
         if (corsUrl != null) {
             fetch(corsUrl, {
                 headers: {
-                    //'Content-Type': 'application/json'
-                    //'Content-Type': 'application/x-www-form-urlencoded',
-                    'Content-Type': 'audio/mid',
-                    'Content-Type': '@file/mid'
+                    "Content-Disposition": "attachment" // this might not be doing anything
                 }
             }).then(response => {
                 if (!response.ok) {
@@ -488,14 +490,13 @@ var urlToBlob = function(url, callback) {
                 }
                 return response.blob();
             }).then(blob => {
-                console.log(blob);
                 callback(blob);
             }).catch(error => {
-                console.error("Fetch is unable to get file:", error);useCorsUrl
+                console.error("CORS Anywhere API fetch couldn't get the file:", error);
                 callback(null);
             });
         }
-        //callback(null);
+        // callback(null); // disabled since the second fetch already should call the call back
     });
 }
 
@@ -516,7 +517,17 @@ var fileOrBlobToBase64 = function(raw, callback) {
 var isMidi = function(raw) {
     if (exists(raw)) {
         var mimetype = raw.type;
-        if (raw.type == "@file/mid" || raw.type == "@file/midi" || raw.type == "audio/x-mid" || raw.type == "audio/x-midi" || raw.type == "audio/mid" || raw.type == "audio/midi") return true;
+        // acceptable mimetypes for midi files
+        switch(mimetype) {
+            case "@file/mid": case "@file/midi":
+            case "application/mid": case "application/midi":
+            case "application/x-mid": case "application/x-midi":
+            case "audio/mid": case "audio/midi":
+            case "audio/x-mid": case "audio/x-midi":
+            case "music/crescendo":
+            case "x-music/mid": case "x-music/midi":
+            case "x-music/x-mid": case "x-music/x-midi": return true; break;
+        }
     }
     return false;
 }
@@ -959,8 +970,6 @@ var play = function(url) {
             mppChatSend("No MIDI url entered", 0);
             mppEndSend(0);
         } else {
-            // must change http to https
-            url = url.replace(/^http:\/\//i, "https://");
             // downloads file if possible and then plays it if it's a MIDI
             urlToBlob(url, function(blob) {
                 if (blob == null) {
@@ -972,7 +981,7 @@ var play = function(url) {
                         // play song only if we got data
                         if (exists(base64data)) {
                             if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                                base64data = base64data.replace("application/octet-stream", "audio/mid");
+                                base64data = base64data.replace("application/octet-stream", "audio/midi");
                             }
                             playURL(url, base64data);
                         } else {
