@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.2
+// @version      1.7.3
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -116,6 +116,7 @@ const PRE_SONG = PRE_MSG + "[Song]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ROOMCOLOR = PRE_MSG + "[Roomcolor]";
+const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -282,6 +283,24 @@ var useCorsUrl = function(url) {
     // removes protocols before applying cors api url
     if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url.replace(/(^\w+:|^)\/\//, '');
     return newUrl;
+}
+
+// Get visual loading progress, just enter the current progressing number (usually time elapsed in seconds)
+var getProgress = function(intProgress) {
+    var progress = intProgress % 20;
+    switch(progress) {
+        case 0: return " █░░░░░░░░░░"; break;
+        case 1: case 19: return " ░█░░░░░░░░░"; break;
+        case 2: case 18: return " ░░█░░░░░░░░"; break;
+        case 3: case 17: return " ░░░█░░░░░░░"; break;
+        case 4: case 16: return " ░░░░█░░░░░░"; break;
+        case 5: case 15: return " ░░░░░█░░░░░"; break;
+        case 6: case 14: return " ░░░░░░█░░░░"; break;
+        case 7: case 13: return " ░░░░░░░█░░░"; break;
+        case 8: case 12: return " ░░░░░░░░█░░"; break;
+        case 9: case 11: return " ░░░░░░░░░█░"; break;
+        case 10: return " ░░░░░░░░░░█"; break;
+    }
 }
 
 // Check to make sure variable is initialized with something
@@ -465,6 +484,14 @@ var colorToHEX = function(strColor) {
 
 // Gets file as a blob (data URI)
 var urlToBlob = function(url, callback) {
+    // show file download progress
+    var progress = 0;
+    var downloading = setInterval(function() {
+        var showProgress = getProgress(progress);
+        progress++;
+        mppChatSend(PRE_DOWNLOADING + showProgress, 0);
+    }, chatDelay);
+
     fetch(url, {
         headers: {
             "Content-Disposition": "attachment" // this might not be doing anything
@@ -490,9 +517,11 @@ var urlToBlob = function(url, callback) {
                 }
                 return response.blob();
             }).then(blob => {
+                clearInterval(downloading);
                 callback(blob);
             }).catch(error => {
                 console.error("CORS Anywhere API fetch couldn't get the file:", error);
+                clearInterval(downloading);
                 callback(null);
             });
         }
@@ -619,7 +648,6 @@ var playSong = function(songName, songData) {
     try {
         // load song
         Player.loadDataUri(songData);
-        while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
         // changes song
         previousSongData = currentSongData;
         previousSongName = currentSongName;
