@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.0
+// @version      1.6.1
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -231,6 +231,7 @@ var ended = true;
 var stopped = false;
 var paused = false;
 var uploadButton = null; // this get's an element after it's loaded
+var timeElapsedFormatted = null // changes with the amount of song being played
 var currentSongDuration = 0; // this changes after each song is loaded
 var currentSongDurationFormatted = "00"; // gets updated when currentSongDuration is updated
 var currentSongData = null; // this contains the song as a data URI
@@ -260,9 +261,15 @@ var Player = new window.MidiPlayer.Player(function(event) {
         } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
+        timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
         paused = false;
         if (!repeatOption) currentSongData = null;
+        currentSongName = null;
+    } else {
+        var timeRemaining = Player.getSongTimeRemaining();
+        var timeElapsed = currentSongDuration - timeRemaining;
+        timeElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
 
@@ -562,7 +569,6 @@ var playSong = function(songName, songData) {
         stopped = false;
         Player.play();
         mppTitleSend(PRE_PLAY, 0);
-        var timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
     } catch(error) {
         // reload the previous working file if there is one
@@ -950,7 +956,7 @@ var pause = function() {
     else {
         Player.pause();
         paused = true;
-        mppChatSend("Paused " + quoteString(currentSongName), 0);
+        mppChatSend("Paused " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
     }
     mppEndSend(0);
 }
@@ -961,7 +967,7 @@ var resume = function() {
     else if (paused) {
         Player.play();
         paused = false;
-        mppChatSend("Resumed " + quoteString(currentSongName), 0);
+        mppChatSend("Resumed " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
     } else mppChatSend("The song is already playing", 0);
     mppEndSend(0);
 }
@@ -969,9 +975,6 @@ var song = function() {
     // shows current song playing
     mppTitleSend(PRE_SONG, 0);
     if (exists(currentSongName) && currentSongName != "") {
-        var timeRemaining = Player.getSongTimeRemaining();
-        var timeElapsed = currentSongDuration - timeRemaining;
-        var timeElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
         mppChatSend("Currently playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
     } else mppChatSend(NO_SONG, 0);
     mppEndSend(0);
