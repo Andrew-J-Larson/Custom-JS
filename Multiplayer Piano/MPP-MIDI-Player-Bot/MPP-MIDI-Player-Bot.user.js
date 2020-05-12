@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.7
+// @version      1.5.8
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -586,7 +586,6 @@ var playFile = function(songFile) {
                 // play song only if we got data
                 if (exists(base64data)) {
                     currentFileLocation = songFile.name;
-                    console.log(songFile, songFile.name, base64data);
                     playSong(songName, base64data);
                     uploadButton.value = ""; // reset file input
                 } else {
