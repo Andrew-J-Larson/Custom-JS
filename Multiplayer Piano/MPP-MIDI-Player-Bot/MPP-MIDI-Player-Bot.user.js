@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.7
+// @version      1.6.8
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -593,7 +593,7 @@ var playSong = function(songName, songData) {
 
 // Plays the song from a URL if it's a MIDI
 var playURL = function(songUrl, songData) {
-    currentFileLocation = songUrl.toString().replace(/^http:\/\//i, "https://");
+    currentFileLocation = songUrl;
     playSong(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1), songData);
 }
 
@@ -921,7 +921,7 @@ var play = function(url) {
             mppEndSend(0);
         } else {
             // must change http to https
-            if (url.indexOf("http:") == 0) url = "https:" + url.substring(5);
+            url = url.replace(/^http:\/\//i, "https://");
             // downloads file if possible and then plays it if it's a MIDI
             urlToBlob(url, function(blob) {
                 if (blob == null) {
@@ -1163,7 +1163,7 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
-            case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
+            case "play": case "p": if (active && !preventsPlaying) play(argumentsString); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
             case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
             case "resume": case "r": if (active && !preventsPlaying) resume(); break;
