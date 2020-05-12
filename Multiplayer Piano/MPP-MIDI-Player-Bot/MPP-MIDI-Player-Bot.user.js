@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.9
+// @version      1.6.0
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -236,6 +236,7 @@ var currentSongDurationFormatted = "00"; // gets updated when currentSongDuratio
 var currentSongData = null; // this contains the song as a data URI
 var currentFileLocation = null; // this leads to the MIDI location (local or by URL)
 var currentSongName = null; // extracted from the file name/end of URL
+var previousSongData = null; // grabs current when changing successfully
 var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
@@ -545,12 +546,14 @@ var stopSong = function() {
 var playSong = function(songName, songData) {
     // stop any current songs from playing
     stopSong();
-    // play song
-    Player.loadDataUri(songData);
-    while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
-    // sometimes the MIDIs uploaded aren't properly created
-    if (Player.validate()) {
+    // play song if it loaded correctly
+    try {
+        // load song
+        Player.loadDataUri(songData);
+        while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
         // changes song
+        previousSongData = currentSongData;
+        previousSongName = currentSongName;
         currentSongData = songData;
         currentSongName = songName;
         currentSongDuration = Player.getSongTime();
@@ -561,9 +564,11 @@ var playSong = function(songName, songData) {
         mppTitleSend(PRE_PLAY, 0);
         var timeElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(timeElapsedFormatted, currentSongDurationFormatted), 0);
-    } else {
-        Player.loadDataUri(currentSongData); // reload the working file
-        mppTitleSend(PRE_ERROR + " (play)", 0); mppChatSend("Invalid MIDI file selected", 0); mppEndSend(0);
+    } catch(error) {
+        // reload the previous working file if there is one
+        if (previousSongData != null) Player.loadDataUri(previousSongData);
+        mppTitleSend(PRE_ERROR + " (play)", 0);
+        mppChatSend(error, 0);
     }
     mppEndSend(0);
 }
