@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.6
+// @version      1.5.7
 // @description  Plays MIDI files by URL or by data URI!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -546,7 +546,7 @@ var playSong = function(songName, songData) {
     // stop any current songs from playing
     stopSong();
     // play song
-    Player.loadDataUri(currentSongData);
+    Player.loadDataUri(songData);
     while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
     // sometimes the MIDIs uploaded aren't properly created
     if (Player.validate()) {
