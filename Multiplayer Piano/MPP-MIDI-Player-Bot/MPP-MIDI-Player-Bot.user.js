@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.6
+// @version      1.7.7
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1000,43 +1000,37 @@ var about = function() {
 }
 var play = function(url) {
     // URL needs to be entered to play a song
-    if (exists(url)) {
-        if (url == "") {
-            mppTitleSend(PRE_ERROR + " (play)", 0);
-            mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
-            mppEndSend(0);
-        } else {
-            // downloads file if possible and then plays it if it's a MIDI
-            urlToBlob(url, function(blob) {
-                if (blob == null) {
-                    mppTitleSend(PRE_ERROR + " (play)", 0);
-                    mppChatSend("Invalid URL, there is no file, or the file requires a manual download from " + quoteString(url), 0);
-                    mppEndSend(0);
-                } else if (isMidi(blob) || isOctetStream(blob)) {
-                    fileOrBlobToBase64(blob, function(base64data) {
-                        // play song only if we got data
-                        if (exists(base64data)) {
-                            if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                                base64data = base64data.replace("application/octet-stream", "audio/midi");
-                            }
-                            playURL(url, base64data);
-                        } else {
-                            mppTitleSend(PRE_ERROR + " (play)", 0);
-                            mppChatSend("Unexpected result, MIDI file couldn't load", 0);
-                            mppEndSend(0);
-                        }
-                    });
-                } else {
-                    mppTitleSend(PRE_ERROR + " (play)", 0);
-                    mppChatSend("Invalid URL, this is not a MIDI file", 0);
-                    mppEndSend(0);
-                }
-            });
-        }
-    } else {
+    if (!exists(url) || url == "") {
         mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend("No URL entered", 0);
+        mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
         mppEndSend(0);
+    } else {
+        // downloads file if possible and then plays it if it's a MIDI
+        urlToBlob(url, function(blob) {
+            if (blob == null) {
+                mppTitleSend(PRE_ERROR + " (play)", 0);
+                mppChatSend("Invalid URL, there is no file, or the file requires a manual download from " + quoteString(url), 0);
+                mppEndSend(0);
+            } else if (isMidi(blob) || isOctetStream(blob)) {
+                fileOrBlobToBase64(blob, function(base64data) {
+                    // play song only if we got data
+                    if (exists(base64data)) {
+                        if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                            base64data = base64data.replace("application/octet-stream", "audio/midi");
+                        }
+                        playURL(url, base64data);
+                    } else {
+                        mppTitleSend(PRE_ERROR + " (play)", 0);
+                        mppChatSend("Unexpected result, MIDI file couldn't load", 0);
+                        mppEndSend(0);
+                    }
+                });
+            } else {
+                mppTitleSend(PRE_ERROR + " (play)", 0);
+                mppChatSend("Invalid URL, this is not a MIDI file", 0);
+                mppEndSend(0);
+            }
+        });
     }
 }
 var stop = function() {
