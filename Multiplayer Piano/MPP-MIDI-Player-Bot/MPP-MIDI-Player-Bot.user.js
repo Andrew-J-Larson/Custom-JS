@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.4
+// @version      1.8.6
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1386,7 +1386,7 @@ MPP.client.on('a', function (msg) {
             case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": setActive(arguments, userId); break;
+            case "active": case "a": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }

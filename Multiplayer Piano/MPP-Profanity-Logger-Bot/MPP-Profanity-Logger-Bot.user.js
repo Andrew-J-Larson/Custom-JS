@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9.2
+// @version      0.9.3
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -340,7 +340,7 @@ MPP.client.on('a', function (msg) {
             case "listban": case "lb": if (active) listban(); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": setActive(arguments, userId); break;
+            case "active": case "a": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
