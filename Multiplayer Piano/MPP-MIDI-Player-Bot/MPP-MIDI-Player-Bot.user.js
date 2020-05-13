@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.0
+// @version      1.8.1
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1001,7 +1001,7 @@ var createButtons = function() {
             buttonsOn = true;
         }
     }
-    var togglerTxt = document.createTextNode("MIDI Player Bot");
+    var togglerTxt = document.createTextNode(NAME);
     togglerDiv.appendChild(togglerTxt);
     buttonContainer.appendChild(togglerDiv);
 }
