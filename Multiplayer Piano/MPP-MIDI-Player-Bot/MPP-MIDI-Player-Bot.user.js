@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.1
+// @version      1.8.2
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -929,7 +929,8 @@ var createButtons = function() {
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function() {
-        if (uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (active && !preventsPlaying && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
         else console.log("No MIDI file selected");
     }
     var uploadTxt = document.createTextNode("Play");
