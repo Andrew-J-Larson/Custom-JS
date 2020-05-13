@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.0
+// @version      0.1.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -32,7 +32,7 @@ const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 1
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 
 // URLs
-const FEEDBACK_URL = "[insert google form short link here]";
+const FEEDBACK_URL = "https://forms.gle/SzpZYTzVKRe7B4Wc7";
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)

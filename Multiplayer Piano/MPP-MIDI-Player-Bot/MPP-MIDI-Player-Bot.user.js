@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.7
+// @version      1.8.8
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -59,7 +59,7 @@ const LIMITED_PLAYERS = ["9f435879f55c87c238a1575d"];
 
 // MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer
 const MPP_DEFAULT_ROOMCOLORS = ["rgb(59, 80, 84)", "rgb(0, 16, 20)"];
-const MPP_LOBBY_ROOMCOLORS = ["rgb(25, 180, 185)", "rgb(128, 16, 20)"];
+const MPP_LOBBY_ROOMCOLORS = ["rgb(115, 179, 204)", "rgb(39, 53, 70)"];
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
