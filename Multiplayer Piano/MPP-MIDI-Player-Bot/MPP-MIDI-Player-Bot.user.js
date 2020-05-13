@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.6
+// @version      1.8.7
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -225,6 +225,7 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
+var botUser = null; // gets set to _id of user running the bot
 var preventsPlaying = null // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
@@ -579,7 +580,7 @@ var isOctetStream = function(raw) {
 
 // Set the bot on or off (only from bot)
 var setActive = function(args, userId) {
-    if (userId != MPP.client.user._id) return;
+    if (userId != botUser) return;
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
@@ -1327,17 +1328,17 @@ var feedback = function() {
 MPP.client.on('a', function (msg) {
     // get the message as string
     var input = msg.a.trim();
-
+    var participant = msg.p;
+    var username = participant.name;
+    var userId = participant._id;
+    
     // check if ping
-    if (pinging && input == PRE_PING) {
+    if (userId == botUser && pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
         mppChatSend("Pong! [" + pingTime + "ms]", 0 );
     }
-
-    var participant = msg.p;
-    var username = participant.name;
-    var userId = participant._id;
+    
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the bot
@@ -1434,8 +1435,9 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 
-                currentRoom = MPP.client.channel._id;
                 active = true;
+                botUser = MPP.client.user._id;
+                currentRoom = MPP.client.channel._id;
                 setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);

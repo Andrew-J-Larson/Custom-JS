@@ -30,12 +30,12 @@ const PRE_MSG = NAME + " (v" + VERSION + "): ";
 
 // =============================================== VARIABLES
 
-var active = true;
-var currentRoom = null;
-var ready = false;
-var waiting = false;
-var fishing = false;
-var fishTimer = FIVE_MINUTES;
+var active = true; // turn off the bot if needed
+var currentRoom = null; // updates when it connects to room
+var ready = false; // when the bot is ready, it updates this
+var waiting = false; // changes when a fish is caught or reel was executed
+var fishing = false; // changes when fishing starts/ends
+var fishTimer = FIVE_MINUTES; // in case caught wasn't detected
 
 // =============================================== FUNCTIONS
 

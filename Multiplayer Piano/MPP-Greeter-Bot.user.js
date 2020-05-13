@@ -1,32 +1,21 @@
 // ==UserScript==
-// @name         Profanity Logger Bot
+// @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9.4
-// @description  Logs anyone who cusses in the web console!
+// @version      0.1.0
+// @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
+// @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Profanity-Logger-Bot/MPP-Profanity-Logger-Bot.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Profanity-Logger-Bot/favicon.png
+// require       https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js
+// @icon         https://cdn.pixabay.com/photo/2016/11/30/18/14/chat-1873543_960_720.png
 // @grant        GM_info
-// @grant        GM_getResourceText
-// @grant        GM_getResourceURL
-// @resource     FilthyWords https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/en
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
 
-/* globals MPP */
+/* globals jQuery, MPP, Color */
 
-// =============================================== FILES
-
-// filthy words to log in console
-var fileFilthyWords = GM_getResourceText("FilthyWords").split('\n');
-// need to remove empty elements in array
-var filthyWords = fileFilthyWords.filter(function (word) {
-    return word != "";
-});
-
-// ============================================== CONSTANTS
+// =============================================== CONSTANTS
 
 // Script constants
 const SCRIPT = GM_info.script;
@@ -43,13 +32,7 @@ const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 1
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 
 // URLs
-const FEEDBACK_URL = "-----------------";
-
-// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
-const BANNED_PLAYERS = [
-//  ["Fake user", "cb066e42-6b29-42a1-b686-2b17dcf77156"],
-    [,] // empty for now
-];
+const FEEDBACK_URL = "[insert google form short link here]";
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
@@ -57,20 +40,28 @@ const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for
 // Bot constant settings
 const CLEAR_LINES = 9; // may be changed if needed, but this number seems to be the magic number
 const CLEAR_TEXT = "—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬";
-const BOT_LOG_PROFANITY = true; // this is just to log anyone swearing in the room in case it's not kid friendly so they can be banned from the room
 
 // Bot custom constants
+const GREET_HI = 0;
+const GREET_BYE = 1;
+const GREET_NAME = "$NAME";
+const GREET_COLOR = "$COLOR";
+const GREET_PLAYER = '"' + GREET_NAME + '" [' + GREET_COLOR + ']';
 const PREFIX = "!";
 const PREFIX_LENGTH = PREFIX.length;
 const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 const THIN_BORDER = "══════════════════════════════════════════════════════════════════════";
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
-const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to LDNOOBW for the list of filthy words that are constantly updated."
+const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
+    ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
+    ["hi_[choice]", "turns the welcome message on or off; e.g. " + PREFIX + "hi_on"],
+    ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
+    ["bye_[choice]", "turns the goodbye message on or off e.g. " + PREFIX + "bye_on"],
     ["clear", "clears the chat"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
@@ -78,28 +69,32 @@ const COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
-const PRE_LISTBAN = PRE_MSG + "[Listban]";
+const PRE_HI = PRE_MSG + "[Hi]";
+const PRE_BYE = PRE_MSG + "[Bye]";
+const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
+const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
-const NOT_OWNER = "The bot isn't the owner of the room";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
-const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 
-// ============================================== VARIABLES
+// =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
 var botUser = null; // gets set to _id of user running the bot
+var pinging = false; // helps aid in getting response time
+var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
-// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
-var tempBannedPlayers = [
-    [,] // empty for now, this is for adding and removing users via commands
-];
+var hiOn = true;
+var byeOn = true;
+var hiMessage = "Hi " + GREET_PLAYER + "!"; // user joined
+var byeMessage = "Bye " + GREET_PLAYER + "!"; // user left
+var currentPlayers = null; // fills up upon joining new rooms and updates when people join/leave
 
-// ============================================== FUNCTIONS
+// =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
 var exists = function(element) {
@@ -128,26 +123,6 @@ var setActive = function(args, userId) {
         active = newActive;
         console.log("Bot was turned " + (newActive ? "on" : "off") + '.');
     }
-}
-
-// Logs any filthy words used in chat from the user
-var checkForFilthyWords = function(username, userId, msg) {
-    // exit if it's the bot's message
-    if (userId == MPP.client.user._id) return;
-    // get msg as array of words
-    var msgWords = msg.trim().split(' ');
-    // log any users that cuss
-    var hasFilth = false;
-    var i;
-    for(i = 0; i < filthyWords.length; ++i) {
-        if (!hasFilth) {
-            var j;
-            for(j = 0; j < msgWords.length; ++j) {
-                if (msgWords[j] == filthyWords[i]) hasFilth = true;
-            }
-        }
-    }
-    if (hasFilth) console.log("%c" + username + " (" + userId + ") said: " + quoteString(msg), CONSOLE_IMPORTANT_STYLE);
 }
 
 // Makes all commands into one string
@@ -197,21 +172,23 @@ var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     return chatDelay * newDelay;
 }
 
-// Gets the players (from and _id and username array) and puts them into a string
-var getPlayers = function(playersArray) {
-    var allPlayers = "[none]";
-    var playersSize = playersArray.length;
-    if (playersSize > 0) {
-        allPlayers = playersArray[0][1] + quoteString(playersArray[0][0]);
-        // add more perm banned players
-        if (playersSize > 1) {
-            var i;
-            for(i = 1; i < playersSize; ++i) {
-                allPlayers += ", " + playersArray[i][0];
-            }
+// Gets the MPP color name for users color
+var mppGetUserColorName = function(hexColor) {
+    return (new Color(hexColor)).getName().replace("A shade of ", "");
+}
+
+// Send command info to user
+var mppCmdSend = function(commandsArray, cmdSubstring, delay) {
+    var commandIndex = null;
+    // get command index
+    var i;
+    for(i = 0; i < commandsArray.length; ++i) {
+        if (commandsArray[i][0].indexOf(cmdSubstring) == 0) {
+            commandIndex = i;
         }
     }
-    return allPlayers;
+    // display info on command
+    mppChatSend(formatCommandInfo(commandsArray, commandIndex), delay);
 }
 
 // When there is an incorrect command, show this error
@@ -268,16 +245,46 @@ var about = function() {
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
     mppEndSend(0);
 }
-var ban = function() {
-    // ======================================================================================================== CODE ME!
+var greetMsgSet = function(cmd, intGreet, msg) {
+    var greet = "The ";
+    var title;
+    if (intGreet == GREET_HI) title = PRE_HI;
+    else if (intGreet == GREET_BYE) title = PRE_BYE;
+    mppTitleSend(title, 0);
+    if (!exists(msg)) mppCmdSend(COMMANDS, cmd + ' ', 0);
+    else {
+        var sameMsg = false;
+        switch(intGreet) {
+            case GREET_HI: greet += "welcome"; hiMessage == msg ? sameMsg = true : hiMessage = msg; break;
+            case GREET_BYE: greet += "goodbye"; byeMessage == msg ? sameMsg = true : byeMessage = msg; break;
+        }
+        if (sameMsg) mppChatSend(greet + " message wasn't changed", 0);
+        else mppChatSend(greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_COLOR,"[usercolor here]"), 0);
+    }
+    mppEndSend(0);
 }
-var unban = function() {
-    // ======================================================================================================== CODE ME!
-}
-var listban = function() {
-    mppTitleSend(PRE_LISTBAN, 0);
-    mppChatSend("Permanent: " + getPlayers(BANNED_PLAYERS), 0);
-    mppChatSend("Temporary: " + getPlayers(tempBannedPlayers), 0);
+var greetToggle = function(cmd, intGreet, boolChoice) {
+    // check greet, then check current bool, lastly set it if not already
+    var greet = "The ";
+    var alreadySet = false;
+    if (intGreet == GREET_HI) {
+        greet += "welcome";
+        switch(hiOn) {
+            case true: boolChoice ? alreadySet = true : hiOn = false; break;
+            case false: boolChoice ? hiOn = true : alreadySet = true; break;
+        }
+    } else if (intGreet == GREET_BYE) {
+        greet += "goodbye";
+        switch(byeOn) {
+            case true: boolChoice ? alreadySet = true : byeOn = false; break;
+            case false: boolChoice ? byeOn = true : alreadySet = true; break;
+        }
+    }
+
+    // display message
+    mppTitleSend(PRE_MSG + '[' + cmd + ']', 0);
+    if (alreadySet) mppChatSend(greet + " message is already turned " + (boolChoice ? "on" : "off"), 0);
+    else mppChatSend(greet + " message has been turned " + (boolChoice ? "on" : "off"), 0);
     mppEndSend(0);
 }
 var clear = function() {
@@ -315,16 +322,18 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
-            case "ban": case "b": if (active) ban(argumentsString); break;
-            case "unban": case "ub": if (active) unban(argumentsString); break;
-            case "listban": case "lb": if (active) listban(); break;
+            case "hi": if (active) greetMsgSet(command.toLowerCase(), GREET_HI, argumentsString); break;
+            case "bye": if (active) greetMsgSet(command.toLowerCase(), GREET_BYE, argumentsString); break;
+            case "hi_on": if (active) greetToggle(command.toLowerCase(), GREET_HI, true); break;
+            case "hi_off": if (active) greetToggle(command.toLowerCase(), GREET_HI, false); break;
+            case "bye_on": if (active) greetToggle(command.toLowerCase(), GREET_BYE, true); break;
+            case "bye_off": if (active) greetToggle(command.toLowerCase(), GREET_BYE, false); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
             case "active": case "a": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
-    if (active && BOT_LOG_PROFANITY) checkForFilthyWords(username, userId, input);
 });
 MPP.client.on("ch", function(msg) {
     // set new chat delay based on room ownership after changing rooms
@@ -332,32 +341,65 @@ MPP.client.on("ch", function(msg) {
     else chatDelay = CHAT_DELAY;
     // update current room info
     currentRoom = MPP.client.channel._id;
-});
-MPP.client.on('p', function(msg) {
-    var userId = msg._id;
-    // kick ban all the banned players
-    var bannedPlayer = null;
-    var bannedPlayersSize = BANNED_PLAYERS.length;
-    if (bannedPlayersSize > 0) {
-        var i;
-        for(i = 0; i < bannedPlayersSize; ++i) {
-            bannedPlayer = BANNED_PLAYERS[i][0];
-            if (userId == bannedPlayer) MPP.client.sendArray([{m: "kickban", _id: bannedPlayer, ms: 3600000}]);
+    // greeting messages
+    var ppl = msg.ppl;
+    if (exists(ppl)) { // if list of users is updated
+        // clear current players list when changing rooms
+        if (currentRoom != MPP.client.channel._id) currentPlayers = null;
+        // greet new members not in list
+        var updatedPlayers = ppl.map(a => [a._id, a.name, a.color]);
+        if (currentPlayers != null) { // if users changed after joining the room, check for new users
+            var new_ids = updatedPlayers.slice().map(a => a[0]);
+            var old_ids = currentPlayers.slice().map(a => a[0]);
+            var i = 0;
+
+            // check players joined
+            if (hiOn) {
+                var added_ids = [];
+                jQuery.grep(new_ids, function(_id) {
+                    if (jQuery.inArray(_id, old_ids) == -1) added_ids.push(_id);
+                    i++;
+                });
+                // if we have gained users, welcome them in
+                if (exists(added_ids) && added_ids.length > 0) {
+                    var j;
+                    for(j = 0; j < added_ids.length; j++) {
+                        var k;
+                        for(k = 0; k < updatedPlayers.length; k++) {
+                            // if added _id matches in updatedPlayers, then get name and show hiMessage
+                            if (added_ids[j] == updatedPlayers[k][0]) mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1]).replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])), 0);
+                        }
+                    }
+                }
+            }
+
+            // check players left
+            if (byeOn) {
+                var removed_ids = [];
+                jQuery.grep(old_ids, function(_id) {
+                    if (jQuery.inArray(_id, new_ids) == -1) removed_ids.push(_id);
+                    i++;
+                });
+                // if we have lost users, goodbye to them
+                if (exists(removed_ids) && removed_ids.length > 0) {
+                    var l;
+                    for(l = 0; l < removed_ids.length; l++) {
+                        var m;
+                        for(m = 0; m < currentPlayers.length; m++) {
+                            // if removed _id matches in currentPlayers, then get name and show byeMessage
+                            if (removed_ids[l] == currentPlayers[m][0]) mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1]).replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])), 0);
+                        }
+                    }
+                }
+            }
         }
-    }
-    var tempBannedPlayersSize = tempBannedPlayers.length;
-    if (tempBannedPlayersSize > 0) {
-        var j;
-        for(j = 0; j < tempBannedPlayersSize; ++j) {
-            bannedPlayer = tempBannedPlayers[j][0];
-            if (userId == bannedPlayer) MPP.client.sendArray([{m: "kickban", _id: bannedPlayer, ms: 3600000}]);
-        }
+        currentPlayers = updatedPlayers;
     }
 });
 
 // =============================================== INTERVALS
 
-// Automatically turns off the sound warning
+// Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
     var playButton = document.querySelector("#sound-warning button");
     if (exists(playButton)) {

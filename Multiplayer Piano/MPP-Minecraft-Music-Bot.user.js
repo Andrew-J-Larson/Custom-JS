@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.9
+// @version      2.0.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -646,6 +646,7 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 // =============================================== VARIABLES
 
 var active = false; // turn off the bot if needed
+var botUser = null; // gets set to _id of user running the bot
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -1670,17 +1671,17 @@ var feedback = function() {
 MPP.client.on('a', function (msg) {
     // get the message as string
     var input = msg.a.trim();
-
+    var participant = msg.p;
+    var username = participant.name;
+    var userId = participant._id;
+    
     // check if ping
-    if (pinging && input == PRE_PING) {
+    if (userId == botUser && pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
         mppChatSend("Pong! [" + pingTime + "ms]", 0 );
     }
-
-    var participant = msg.p;
-    var username = participant.name;
-    var userId = participant._id;
+    
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the bot
@@ -1786,6 +1787,7 @@ var clearSoundWarning = setInterval(function() {
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) >= 0) {
                     active = true;
+                    botUser = MPP.client.user._id;
                     autoplayOption = AUTOPLAY_RANDOM;
                     setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
