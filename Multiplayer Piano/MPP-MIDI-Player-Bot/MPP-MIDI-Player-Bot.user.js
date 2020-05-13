@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.7
+// @version      1.8.0
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -224,6 +224,7 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
+var preventsPlaying = null // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -891,31 +892,118 @@ var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OU
     }
 }
 
-// Allows users to upload midi files to the bot
-var createUploadButton = function() {
+// Creates the play, pause, resume, and stop button for the bot
+var createButtons = function() {
+    const PRE_ELEMENT_ID = "aliendrew-midi-player-bot";
+    // buttons have some constant styles/classes
+    const ELEM_ON = "display:block;";
+    const ELEM_OFF = "display:none;";
+    const ELEM_POS = "position:absolute;";
+    const BTN_PAD_LEFT = 8; // pixels
+    const BTN_PAD_TOP = 4; // pixels
+    const BTN_WIDTH = 112; // pixels
+    const BTN_HEIGHT = 24; // pixels
+    const BTN_SPACER_X = BTN_PAD_LEFT + BTN_WIDTH; //pixels
+    const BTN_SPACER_Y = BTN_PAD_TOP + BTN_HEIGHT; //pixels
+    const BTNS_START_X = 300; //pixels
+    const BTNS_END_X = BTNS_START_X + 4 * BTN_SPACER_X; //pixels
+    const BTNS_TOP_0 = BTN_PAD_TOP; //pixels
+    const BTNS_TOP_1 = BTN_PAD_TOP + BTN_SPACER_Y; //pixels
+    const BTN_STYLE = ELEM_POS + ELEM_OFF;
+    // need the bottom area to append buttons to
     var buttonContainer = document.querySelector("#bottom div");
-    var uploadDiv = document.createElement("div");
-    uploadDiv.style = "position:absolute;left:660px;top:32px;display:block;";
-    uploadDiv.classList.add("ugly-button");
-    uploadDiv.innerHtml = "Upload MIDI";
-    buttonContainer.appendChild(uploadDiv);
+    // we need to keep track of the next button locations
+    var nextLocationX = BTNS_END_X;
 
+    // play needs the div like all the other buttons
+    var playDiv = document.createElement("div");
+    playDiv.id = PRE_ELEMENT_ID + "-play";
+    playDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+    playDiv.classList.add("ugly-button");
+    buttonContainer.appendChild(playDiv);
+    // since we need upload files, there also needs to be an input element inside the play div
     var uploadBtn = document.createElement("input");
+    uploadBtn.id = PRE_ELEMENT_ID + "-upload";
     uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
-    uploadBtn.id = "aliendrew-midi-player-bot-upload"
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function() {
         if (uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
         else console.log("No MIDI file selected");
     }
-
-    var uploadTxt = document.createTextNode("Upload MIDI");
-    uploadDiv.appendChild(uploadBtn);
-    uploadDiv.appendChild(uploadTxt);
-
+    var uploadTxt = document.createTextNode("Play");
+    playDiv.appendChild(uploadBtn);
+    playDiv.appendChild(uploadTxt);
+    // then we need to let the rest of the script know it so it can reset it after loading files
     uploadButton = uploadBtn;
+
+    // other buttons can work fine without major adjustments
+    // STOP
+    nextLocationX += BTN_SPACER_X;
+    var stopDiv = document.createElement("div");
+    stopDiv.id = PRE_ELEMENT_ID + "-stop";
+    stopDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+    stopDiv.classList.add("ugly-button");
+    stopDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (active && !preventsPlaying) stop();
+    }
+    var stopTxt = document.createTextNode("Stop");
+    stopDiv.appendChild(stopTxt);
+    buttonContainer.appendChild(stopDiv);
+    // PAUSE
+    nextLocationX = BTNS_END_X;
+    var pauseDiv = document.createElement("div");
+    pauseDiv.id = PRE_ELEMENT_ID + "-pause";
+    pauseDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    pauseDiv.classList.add("ugly-button");
+    pauseDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (active && !preventsPlaying) pause();
+    }
+    var pauseTxt = document.createTextNode("Pause");
+    pauseDiv.appendChild(pauseTxt);
+    buttonContainer.appendChild(pauseDiv);
+    // RESUME
+    nextLocationX += BTN_SPACER_X;
+    var resumeDiv = document.createElement("div");
+    resumeDiv.id = PRE_ELEMENT_ID + "-resume";
+    resumeDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    resumeDiv.classList.add("ugly-button");
+    resumeDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (active && !preventsPlaying) resume();
+    }
+    var resumeTxt = document.createTextNode("Resume");
+    resumeDiv.appendChild(resumeTxt);
+    buttonContainer.appendChild(resumeDiv);
+
+    // one more button to toggle the visibility of the other buttons
+    nextLocationX = BTNS_END_X - BTN_SPACER_X;
+    var buttonsOn = false;
+    var togglerDiv = document.createElement("div");
+    togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
+    togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    togglerDiv.classList.add("ugly-button");
+    togglerDiv.onclick = function() {
+        if (buttonsOn) { // if on, then turn off, else turn on
+            playDiv.style.display =
+            stopDiv.style.display =
+            pauseDiv.style.display =
+            resumeDiv.style.display = "none";
+            buttonsOn = false;
+        } else {
+            playDiv.style.display =
+            stopDiv.style.display =
+            pauseDiv.style.display =
+            resumeDiv.style.display = "block";
+            buttonsOn = true;
+        }
+    }
+    var togglerTxt = document.createTextNode("MIDI Player Bot");
+    togglerDiv.appendChild(togglerTxt);
+    buttonContainer.appendChild(togglerDiv);
 }
 
 // Sets the name of the bot
@@ -1269,7 +1357,7 @@ MPP.client.on('a', function (msg) {
         var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         var arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        var preventsPlaying = MPP.client.preventsPlaying();
+        preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
@@ -1340,7 +1428,7 @@ var clearSoundWarning = setInterval(function() {
                 setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
-                createUploadButton();
+                createButtons();
                 mppTitleSend(PRE_MSG + " Online!", 0);
                 mppEndSend(0);
             }
