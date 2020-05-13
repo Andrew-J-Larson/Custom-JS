@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.1
+// @version      2.0.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1001,7 +1001,6 @@ var playSong = function(songIndex) {
     try {
         // load song
         Player.loadDataUri(SONG_MIDIS[songIndex]);
-        while(!Player.fileLoaded()) { console.log("Loading MIDI . . .") }
         // changes song
         previousSongIndex = currentSongIndex;
         currentSongIndex = songIndex;
@@ -1011,9 +1010,8 @@ var playSong = function(songIndex) {
         ended = false;
         stopped = false;
         setTimeout(function() {Player.play()}, (autoplayOption != AUTOPLAY_OFF) ? END_SONG_DELAY : 0); // nice delay before next song
-        mppTitleSend(PRE_PLAY, 0);
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-        mppChatSend("Now playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppTitleSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Now playing " + quoteString(currentSongName), 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongIndex != null) Player.loadDataUri(SONG_MIDIS[previousSongIndex]);
@@ -1428,32 +1426,32 @@ var stop = function() {
 }
 var pause = function() {
     // pauses the current song
-    mppTitleSend(PRE_PAUSE, 0);
+    mppTitleSend(PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     if (ended) mppChatSend(NO_SONG, 0);
     else if (paused) mppChatSend("The song is already paused", 0);
     else {
         Player.pause();
         paused = true;
-        mppChatSend("Paused " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Paused " + quoteString(currentSongName), 0);
     }
     mppEndSend(0);
 }
 var resume = function() {
     // resumes the current song
-    mppTitleSend(PRE_RESUME, 0)
+    mppTitleSend(PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0)
     if (ended) mppChatSend(NO_SONG, 0);
     else if (paused) {
         Player.play();
         paused = false;
-        mppChatSend("Resumed " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Resumed " + quoteString(currentSongName), 0);
     } else mppChatSend("The song is already playing", 0);
     mppEndSend(0);
 }
 var song = function() {
     // shows current song playing
-    mppTitleSend(PRE_SONG, 0);
+    mppTitleSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend("Currently playing " + quoteString(currentSongName) + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+        mppChatSend("Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
     } else mppChatSend(NO_SONG, 0);
     mppEndSend(0);
 }
@@ -1671,17 +1669,17 @@ var feedback = function() {
 MPP.client.on('a', function (msg) {
     // get the message as string
     var input = msg.a.trim();
-    var participant = msg.p;
-    var username = participant.name;
-    var userId = participant._id;
-    
+
     // check if ping
-    if (userId == botUser && pinging && input == PRE_PING) {
+    if (pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
         mppChatSend("Pong! [" + pingTime + "ms]", 0 );
     }
-    
+
+    var participant = msg.p;
+    var username = participant.name;
+    var userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the bot

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.8
+// @version      1.8.9
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1170,7 +1170,7 @@ var song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
         mppTitleSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-        mppChatSend("Currently playing " + quoteString(currentSongName), 0);
+        mppChatSend("Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
     } else {
         mppTitleSend(PRE_SONG, 0);
         mppChatSend(NO_SONG, 0);
