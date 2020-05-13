@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.2
+// @version      0.1.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -338,9 +338,8 @@ MPP.client.on("ch", function(msg) {
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
-    // update current room info
-    currentRoom = MPP.client.channel._id;
     // greeting messages
+    if (currentRoom != MPP.client.channel._id) currentPlayers = null;
     var ppl = msg.ppl;
     if (exists(ppl)) { // if list of users is updated
         // clear current players list when changing rooms
@@ -394,6 +393,8 @@ MPP.client.on("ch", function(msg) {
         }
         currentPlayers = updatedPlayers;
     }
+    // update current room info
+    currentRoom = MPP.client.channel._id;
 });
 
 // =============================================== INTERVALS
