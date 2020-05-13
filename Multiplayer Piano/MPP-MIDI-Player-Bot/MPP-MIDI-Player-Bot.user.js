@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.5
+// @version      1.7.6
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -95,6 +95,7 @@ const COMMANDS = [
     ["sustain (choice)", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
     ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"],
     ["clear", "clears the chat"],
+    ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
 ];
@@ -117,6 +118,7 @@ const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ROOMCOLOR = PRE_MSG + "[Roomcolor]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
+const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -222,6 +224,8 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
+var pinging = false; // helps aid in getting response time
+var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
@@ -1031,7 +1035,7 @@ var play = function(url) {
         }
     } else {
         mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
+        mppChatSend("No URL entered", 0);
         mppEndSend(0);
     }
 }
@@ -1218,6 +1222,16 @@ var clear = function() {
         if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
     }
 }
+var ping = function() {
+    // get a response back in milliseconds
+    pinging = true;
+    pingTime = Date.now();
+    mppChatSend(PRE_PING, 0);
+    setTimeout(function() {
+        if (pinging) mppChatSend("Pong! [within 1 second]", 0);
+        pinging = false;
+    }, SECOND);
+}
 var feedback = function() {
     // just sends feedback url to user
     mppTitleSend(PRE_FEEDBACK, 0);
@@ -1230,6 +1244,14 @@ var feedback = function() {
 MPP.client.on('a', function (msg) {
     // get the message as string
     var input = msg.a.trim();
+
+    // check if ping
+    if (pinging && input == PRE_PING) {
+        pinging = false;
+        pingTime = Date.now() - pingTime;
+        mppChatSend("Pong! [" + pingTime + "ms]", 0 );
+    }
+
     var participant = msg.p;
     var username = participant.name;
     var userId = participant._id;
@@ -1269,6 +1291,7 @@ MPP.client.on('a', function (msg) {
             case "roomcolor2": case "rc2": if (active) roomcolor2(argumentsString); break;
             case "roomcolors": case "rcs": if (active) roomcolors(arguments); break;
             case "clear": case "cl": if (active) clear(); break;
+            case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
             case "active": setActive(arguments, userId); break;
             default: if (active) cmdNotFound(command); break;
