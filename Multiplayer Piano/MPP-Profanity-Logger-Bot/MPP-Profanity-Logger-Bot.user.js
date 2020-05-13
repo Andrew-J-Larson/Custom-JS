@@ -304,6 +304,27 @@ MPP.client.on('a', function (msg) {
     var userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
+        // don't allow banned or limited users to use the bot // ======================================================= NEED RECODE
+        /*var bannedPlayers = BANNED_PLAYERS.length;
+        if (bannedPlayers > 0) {
+            var i;
+            for(i = 0; i < BANNED_PLAYERS.length; ++i) {
+                if (BANNED_PLAYERS[i] == userId) {
+                    playerLimited(username);
+                    return;
+                }
+            }
+        }
+        var limitedPlayers = LIMITED_PLAYERS.length;
+        if (limitedPlayers > 0) {
+            var j;
+            for(j = 0; j < LIMITED_PLAYERS.length; ++j) {
+                if (LIMITED_PLAYERS[j] == userId) {
+                    playerLimited(username);
+                    return;
+                }
+            }
+        }*/
         // evaluate input into command and possible arguments
         var message = input.substring(PREFIX_LENGTH).trim();
         var hasArgs = message.indexOf(' ');

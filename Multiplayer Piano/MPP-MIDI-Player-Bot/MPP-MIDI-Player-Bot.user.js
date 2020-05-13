@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.3
+// @version      1.8.4
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -745,7 +745,6 @@ var getSustainValue = function(choice) {
     return valid;
 }
 
-
 // Change the room colors
 var roomColorAreaToString = function(area) {
     // send string value from room color area number value
@@ -1341,12 +1340,22 @@ MPP.client.on('a', function (msg) {
     var userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
-        // don't allow limited users to use the bot
+        // don't allow banned or limited users to use the bot
+        var bannedPlayers = BANNED_PLAYERS.length;
+        if (bannedPlayers > 0) {
+            var i;
+            for(i = 0; i < BANNED_PLAYERS.length; ++i) {
+                if (BANNED_PLAYERS[i] == userId) {
+                    playerLimited(username);
+                    return;
+                }
+            }
+        }
         var limitedPlayers = LIMITED_PLAYERS.length;
         if (limitedPlayers > 0) {
-            var i;
-            for(i = 0; i < LIMITED_PLAYERS.length; ++i) {
-                if (LIMITED_PLAYERS[i] == userId) {
+            var j;
+            for(j = 0; j < LIMITED_PLAYERS.length; ++j) {
+                if (LIMITED_PLAYERS[j] == userId) {
                     playerLimited(username);
                     return;
                 }
