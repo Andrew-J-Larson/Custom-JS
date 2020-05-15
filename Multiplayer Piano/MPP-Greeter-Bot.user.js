@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.4
+// @version      0.1.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -199,7 +199,8 @@ var cmdNotFound = function(cmd) {
         cmd = cmd.toLowerCase();
         if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
                                              cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
-                                             cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0)) {
+                                             cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0) ||
+                                             cmd.indexOf("count_fish") == 0) {
             console.log(error);
         } else {
             mppTitleSend(PRE_ERROR, 0);

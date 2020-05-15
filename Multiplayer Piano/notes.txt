@@ -1,0 +1,25 @@
+// Contents of a notification
+//
+// var defaultsAre = {
+//   id: "Notification-" + (par.id || Math.random()),
+//   title: "",
+//   text: "",
+//   html: "",
+//   target: "#piano",
+//   duration: 30000,
+//   class: "classic"
+// };
+//
+// NOTES
+// * the text property takes precedence over html
+// * the "short" class value shows only the text/html
+// * it's better to use single quotes around entire html
+var exampleNotification = {
+  m: "notification", // CONSTANT
+  title: "Title",
+  text: "Text.",
+  duration: 5000
+};
+
+// Execute notification
+new MPP.Notification(exampleNotification);
