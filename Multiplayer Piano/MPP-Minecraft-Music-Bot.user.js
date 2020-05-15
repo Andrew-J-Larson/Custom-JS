@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.4
+// @version      2.0.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1292,7 +1292,8 @@ var cmdNotFound = function(cmd) {
         if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
                                              cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
                                              cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0) ||
-                                             cmd.indexOf("count_fish") == 0) {
+                                             cmd.indexOf("count_fish") == 0 || cmd.indexOf("tree") == 0 || cmd.indexOf("color") == 0 ||
+                                             cmd.indexOf("audio") == 0) {
             console.log(error);
         } else {
             mppTitleSend(PRE_ERROR, 0);
@@ -1625,7 +1626,7 @@ var roomcolors = function(argsColors) {
 
             if (!setRoomColors(color1, color2)) {
                 mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-                mppChatSend("Invalid room color(s)", 0);
+                mppChatSend(MPP.client.isOwner() ? "Invalid room color(s)" : NOT_OWNER, 0);
                 mppEndSend(0);
             }
         } else {

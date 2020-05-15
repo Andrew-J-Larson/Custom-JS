@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.1
+// @version      1.5.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -19,23 +19,83 @@
 // Script constants
 const SCRIPT = GM_info.script;
 const NAME = SCRIPT.name;
+const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
+const DESCRIPTION = SCRIPT.description;
+const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
 
-const TENTH_OF_SECOND = 100; // milliseconds
-const ONE_SECOND = 1000; // milliseconds
-const ONE_MINUTE = 60 * ONE_SECOND; // milliseconds
-const FIVE_MINUTES = 5 * ONE_MINUTE; // milliseconds
+// Time constants (in milliseconds)
+const TENTH_OF_SECOND = 100; // mainly for repeating loops
+const SECOND = 10 * TENTH_OF_SECOND;
+const MINUTE = 60 * SECOND;
+const FIVE_MINUTES = 5 * MINUTE;
 
+// URLs
+const FEEDBACK_URL = "------------------------";
+
+// Bot custom constants
+const FISHING_BOT_ID = "565887aa860ba601611b7615";
+const FISH_INTERVAL = FIVE_MINUTES;
+const PICK_INTERVAL = FIVE_MINUTES;
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
+// `fishing` bot specific strings
+const CMD_PREFIX = '/';
+const CMD_HELP = "help";
+const CMD_CAST = ["cast", "fish"];
+const CMD_REEL = "reel";
+//const CMD_SACK = ["sack", "caught", "count_fish"];
+const CMD_EAT = "eat";
+//const CMD_GIVE = ["give", "bestow"];
+const CMD_PICK = "pick";
+// const CMD_TREE = "tree";
+// const CMD_COLOR = "color";
+const CMD_TREE = "tree";
+const CMD_BOT_USER_COLOR = "color";
+const CMD_BOT_AUDIO_TOGGLER = "audio";
+const CAUGHT = "caught";
+const ATE = "ate";
+const COLORED = "made him/her turn";
+const BITTEN = "getting a bite";
+const LOST = "Some of the fish were lost in the disaster...";
+const FRUITFUL = "picked";
+const BOOST = "fishing boost.";
+const FRUIT = "kekklefruit";
+
+// Audio
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/smb_audio/";
+const AUDIO_EXENSION = "mp3";
+
+// =============================================== OBJECT INITIALIZERS
+
+// Create new audio objects prefixed with URL and postfixed with extension
+var newAudio = function(name) {
+    return new Audio(AUDIO_BASE_URL + name + '.' + AUDIO_EXENSION);
+}
+
+// =============================================== AUDIO
+
+var castedSound = newAudio("Jump");
+var reeledSound = newAudio("Skid");
+var pickedSound = newAudio("Big Jump");
+var caughtSound = newAudio("1up");
+var bittenSound = newAudio("Thwomp");
+var lostSound = newAudio("Die");
+var fruitfulSound = newAudio("Coin");
+var boostSound = newAudio("Powerup");
+var coloredSound = newAudio("Item");
 
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
-var currentRoom = null; // updates when it connects to room
-var ready = false; // when the bot is ready, it updates this
-var waiting = false; // changes when a fish is caught or reel was executed
-var fishing = false; // changes when fishing starts/ends
-var fishTimer = FIVE_MINUTES; // in case caught wasn't detected
+var audioEnabled = true; // allows user to turn off sound
+var currentRoom = null; // updates when it connects to a room
+var fishTimer = 0; // changes while rod is cast
+// The following variables are used in command execution detection
+var casted = false;
+var losing = false;
+var picked = false;
+var fruit = false;
 
 // =============================================== FUNCTIONS
 
@@ -45,39 +105,98 @@ var exists = function(element) {
     return false;
 }
 
-// Sets variables for fishing while executing command
-var goFish = function() {
-    if (!fishing && !waiting) {
-        MPP.chat.send("/fish");
-        fishTimer = FIVE_MINUTES;
-        waiting = true;
-    }
+// Puts quotes around string
+var quoteString = function(string) {
+    var newString = string;
+    if (exists(string) && string != "") newString = '"' + string + '"';
+    return newString
+}
+
+// Plays audio only when enabled
+var audioPlay = function(audioObj) {
+    if (audioEnabled) audioObj.play();
+}
+
+// =============================================== COMMANDS
+
+// From MPP
+var chatSend = function(message) {
+    MPP.chat.send(message);
+}
+
+// For `fishing` bot
+var cast = function() {
+    chatSend(CMD_PREFIX + CMD_CAST[0]);
+}
+var reel = function() {
+    chatSend(CMD_PREFIX + CMD_REEL);
+}
+var eat = function(item) {
+    chatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
+}
+var pick = function() {
+    chatSend(CMD_PREFIX + CMD_PICK);
+}
+
+// For this bot
+var audioToggler = function() {
+    // toggles audio on/off
+    audioEnabled = !audioEnabled;
+    console.log(PRE_MSG + "Audio is " + (audioEnabled ? "on" : "off"));
 }
 
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
-    if (!ready || !active) return;
+    if (!active) return;
     // get the message as string
     var input = msg.a.trim();
-    var username = msg.p.name;
-    var userId = msg.p._id;
+    var checkCommand = input.split()[0];
+    var participant = msg.p;
+    var userId = participant._id;
     var selfId = MPP.client.user._id;
-    // sometimes it's null
-    if (exists(input)) {
-        // check commands not sent by self
-        if(userId != selfId) {
-            goFish();
-            var selfname = MPP.client.user.name;
-            if (username == "fishing") {
-            if (input.startsWith(input.includes(selfname + " casts")) || input.includes(selfname + ": Your lure")) fishing = true;
-                else if (input.includes(selfname + " caught")) {
-                    waiting = false;
-                    fishing = false;
-                }
+    if (checkCommand.indexOf(CMD_PREFIX) == 0) {
+        var command = checkCommand.substring(CMD_PREFIX.length);
+        // if anyone sent anything
+        if (command == CMD_HELP) MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
+        else if (userId == selfId) { // if you sent something
+            // check `fishing` commands
+            if (command == CMD_CAST[0] || command == CMD_CAST[1]) {
+                fishTimer = FISH_INTERVAL;
+                casted = true;
+                audioPlay(castedSound);
+            } else if (command == CMD_REEL) { //DECIDE TO KEEP!
+                casted = false;
+                audioPlay(reeledSound);
+            } else if (command == CMD_PICK) {
+                picked = true;
+                audioPlay(pickedSound);
             }
-        } else if (input == "/reel") MPP.chat.send("/fish");
-        if (input == "/help") MPP.chat.send(PRE_MSG + "https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Fishing-Bot.user.js");
+            else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
+        }
+    } // check for `fishing` bot response
+    else if (userId == FISHING_BOT_ID) {
+        var yourUsername = MPP.client.user.name;
+        // if the `fishing` bot sent something
+        if (input.includes(yourUsername + ' ' + CAUGHT)) {
+            casted = false;
+            audioPlay(caughtSound);
+        } else if (input.includes(yourUsername + ' ' + BITTEN)) {
+            losing = true;
+            audioPlay(bittenSound);
+        } else if (losing && input == ' ' + LOST) {
+            casted = false;
+            losing = false;
+            audioPlay(lostSound);
+        } else if (input.includes(yourUsername + ' ' + ATE)) {
+            if (input.includes(' ' + FRUIT)) {
+                fruit = false;
+                if (input.includes(' ' + BOOST)) audioPlay(boostSound);
+            } else if (input.includes(' ' + COLORED)) audioPlay(coloredSound);
+        } else if (input.includes(yourUsername + ' ' + FRUITFUL)) {
+            fruit = true;
+            audioPlay(fruitfulSound);
+        }
     }
 });
 MPP.client.on("ch", function(msg) {
@@ -88,6 +207,18 @@ MPP.client.on("ch", function(msg) {
 });
 
 // =============================================== INTERVALS
+
+// constantly check if a command executes when run, and exectute if not already
+var checkMessages = function() {
+    if (active) {
+        if (fishTimer > 0) fishTimer -= SECOND;
+        else if (casted) reel();
+        if (!casted) cast();
+        if (!picked) pick();
+        if (fruit) eat(FRUIT);
+    }
+    setTimeout(checkMessages, SECOND);
+}
 
 // Automatically turns off the sound warning (loading the bot)
 var clearSoundWarning = setInterval(function() {
@@ -101,29 +232,12 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
                 console.log(PRE_MSG + "Online!");
 
-                ready = true;
-                currentRoom = MPP.client.channel._id;
+                checkMessages();
 
-                // run commands at least once
-                if (active) {
-                    goFish();
-                    MPP.chat.send("/pick");
-                }
-
-                // makes sure to wait before fishing again (prevents multiple commands)
-                setInterval(function() {
-                    if (active && waiting) {
-                        if (fishTimer > 0) fishTimer -= ONE_SECOND;
-                        else {
-                            waiting = false;
-                            fishing = false;
-                        }
-                    }
-                }, ONE_SECOND);
                 // make sure to wait before picking fruit again
                 setInterval(function() {
-                    if (active) MPP.chat.send("/pick");
-                }, FIVE_MINUTES);
+                    if (active) picked = false;
+                }, PICK_INTERVAL);
             }
         }, TENTH_OF_SECOND);
     }
