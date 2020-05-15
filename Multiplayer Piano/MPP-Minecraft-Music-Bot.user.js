@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.2
+// @version      2.0.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1291,7 +1291,7 @@ var cmdNotFound = function(cmd) {
         cmd = cmd.toLowerCase();
         if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
                                              cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
-                                             cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0)) {
+                                             cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0)) {
             console.log(error);
         } else {
             mppTitleSend(PRE_ERROR, 0);
