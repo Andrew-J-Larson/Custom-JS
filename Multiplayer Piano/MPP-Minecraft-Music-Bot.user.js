@@ -1,16 +1,15 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.5
+// @version      2.0.6
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
 // @icon         https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-32x32.png
-// @require      http://grimmdude.com/MidiPlayerJS/browser/midiplayer.min.js
 // @grant        GM_info
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     MIDIPlayerJS http://grimmdude.com/MidiPlayerJS/browser/midiplayer.min.js
+// @resource     MIDIPlayerJS http://grimmdude.com/MidiPlayerJS/browser/midiplayer.js
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -19,19 +18,13 @@
 // ============================================================================================================== (with pages that show 10 songs at a time)
 // ============================================================================================================== https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal
 
-// MIDIPlayerJS via https://github.com/grimmdude/MidiPlayerJS (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
-
-/* globals MPP */
+/* globals MPP, MidiPlayer */
 
 // =============================================== FILES
 
-// scriptMIDIPlayerJS
-var fileMIDIPlayerJS = GM_getResourceText("MIDIPlayerJS").split('\n');
-var stringMIDIPlayerJS = "";
-var jsLine;
-for (jsLine = 0; jsLine < fileMIDIPlayerJS.length; jsLine++) {
-    stringMIDIPlayerJS = stringMIDIPlayerJS.concat(fileMIDIPlayerJS[jsLine]);
-}
+// midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
+// (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
+var stringMIDIPlayerJS = GM_getResourceText("MIDIPlayerJS");
 var scriptMIDIPlayerJS = document.createElement("script");
 scriptMIDIPlayerJS.type = 'text/javascript';
 scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
@@ -653,9 +646,6 @@ var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
-var MidiPlayer = MidiPlayer;
-var eventsDiv = document.getElementById('events');
-
 var ended = true;
 var stopped = false;
 var paused = false;
@@ -674,7 +664,7 @@ var artDisplaying = false;
 // =============================================== OBJECTS
 
 // The MIDIPlayer
-var Player = new window.MidiPlayer.Player(function(event) {
+var Player = new MidiPlayer.Player(function(event) {
     if (!active || MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
