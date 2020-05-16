@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.6
+// @version      0.0.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -79,7 +79,8 @@ MPP.client.on('a', function (msg) {
     var i;
     for(i = 0; i < arguments.length; i++) {
         if (arguments[i][0] = PING_PREFIX) {
-            var pinging = arguments[i].substring(PING_PREFIX.length).toLowerCase();
+            var pinging = arguments[i].substring(PING_PREFIX.length);
+            var pingingLC = pinging.toLowerCase();
             // commands to do if you are the user who sent them
             if (userId == botId) {
                 // show help if we need to
@@ -88,9 +89,10 @@ MPP.client.on('a', function (msg) {
                 if (pinging == "self") pinged = true;
             }
             // check if we are pinging a user, or all users
-            switch(pinging) {
+            if (pinging == botUsername) pinged = true; // pinging bot user by their username
+            switch(pingingLC) {
                 case "all": case "everyone": case "online":
-                case botUsername: case botId: pinged = true; break;
+                case botId: pinged = true; break;
             }
         }
     }
