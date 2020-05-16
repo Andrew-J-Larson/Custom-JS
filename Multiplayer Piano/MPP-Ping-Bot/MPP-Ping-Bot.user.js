@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.3
+// @version      0.0.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -23,6 +23,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -86,8 +87,6 @@ MPP.client.on('a', function (msg) {
                 case botUser: pinged = true; break;
             }
         }
-    }
-        
     }
     if (pinged) pingSound.play();
 });
