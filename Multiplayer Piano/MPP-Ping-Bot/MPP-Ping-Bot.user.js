@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.5
+// @version      0.0.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -53,10 +53,6 @@ var newAudio = function(name) {
 
 var pingSound = newAudio("discord-notification-high-pitch");
 
-// =============================================== VARIABLES
-
-var botUser = null; // gets set to _id of user running the bot
-
 // =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
@@ -68,9 +64,14 @@ var exists = function(element) {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
+    // if user switches to VPN, these need to update
+    var botUser = MPP.client.user;
+    var botUsername = botUser.name;
+    var botId = botUser._id;
     // get the message as string
     var input = msg.a.trim();
     var participant = msg.p;
+    var username = participant.name;
     var userId = participant._id;
     var pinged = false;
     // check if input contains the prefix
@@ -79,14 +80,17 @@ MPP.client.on('a', function (msg) {
     for(i = 0; i < arguments.length; i++) {
         if (arguments[i][0] = PING_PREFIX) {
             var pinging = arguments[i].substring(PING_PREFIX.length).toLowerCase();
-            // show help if we need to
-            if (i == 0 && pinging == "help") MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
-            // ping yourself, because apparently you need to do that for some reason
-            if (userId == botUser && pinging == "self") pinged = true;
+            // commands to do if you are the user who sent them
+            if (userId == botId) {
+                // show help if we need to
+                if (i == 0 && pinging == "help") MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
+                // ping yourself, because apparently you need to do that for some reason
+                if (pinging == "self") pinged = true;
+            }
             // check if we are pinging a user, or all users
             switch(pinging) {
                 case "all": case "everyone": case "online":
-                case botUser: pinged = true; break;
+                case botUsername: case botId: pinged = true; break;
             }
         }
     }
@@ -105,7 +109,6 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 
-                botUser = MPP.client.user._id;
                 console.log(NAME + ": Online!");
             }
         }, TENTH_OF_SECOND);
