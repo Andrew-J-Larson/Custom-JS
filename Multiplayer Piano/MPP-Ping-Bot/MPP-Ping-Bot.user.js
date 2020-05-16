@@ -78,9 +78,10 @@ MPP.client.on('a', function (msg) {
     for(i = 0; i < arguments.length; i++) {
         if (arguments[i][0] = PING_PREFIX) {
             var pinging = arguments[i].substring(PING_PREFIX.length).toLowerCase();
+            // show help if we need to
+            if (i == 0 && pinging == "help") MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
             // check if we are pinging a user, or all users
             switch(pinging) {
-                case "help": MPP.chat.send(PRE_MSG + DOWNLOAD_URL); break;
                 case "all": case "everyone": case "online":
                 case botUser: pinged = true; break;
             }
