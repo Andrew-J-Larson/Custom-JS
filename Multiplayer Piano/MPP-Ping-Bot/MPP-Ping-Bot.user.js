@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.2
+// @version      0.0.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -37,8 +37,9 @@ const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for
 const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Ping-Bot/audio/";
 const AUDIO_EXENSION = "mp3";
 
-// Bot constants
+// Bot custom constants
 const PING_PREFIX = '@';
+const PRE_MSG = NAME + " (v" + VERSION + "): ";
 
 // =============================================== OBJECT INITIALIZERS
 
@@ -71,21 +72,21 @@ MPP.client.on('a', function (msg) {
     var participant = msg.p;
     var userId = participant._id;
     var pinged = false;
-    // make sure user pinging is not yourself
-    if (userId != botUser) {
-        // check if input contains the ping
-        var arguments = input.split(' ');
-        var i;
-        for(i = 0; i < arguments.length; i++) {
-            if (arguments[i][0] = PING_PREFIX) {
-                var pinging = arguments[i].substring(PING_PREFIX.length).toLowerCase();
-                // check if we are pinging a user, or all users
-                switch(pinging) {
-                    case "all": case "everyone": case "online":
-                    case botUser: pinged = true; break;
-                }
+    // check if input contains the prefix
+    var arguments = input.split(' ');
+    var i;
+    for(i = 0; i < arguments.length; i++) {
+        if (arguments[i][0] = PING_PREFIX) {
+            var pinging = arguments[i].substring(PING_PREFIX.length).toLowerCase();
+            // check if we are pinging a user, or all users
+            switch(pinging) {
+                case "help": MPP.chat.send(PRE_MSG + DOWNLOAD_URL); break;
+                case "all": case "everyone": case "online":
+                case botUser: pinged = true; break;
             }
         }
+    }
+        
     }
     if (pinged) pingSound.play();
 });
