@@ -45,10 +45,10 @@ const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quot
 // URLs
 const FEEDBACK_URL = "-----------------";
 
-// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
+// Players listed by IDs (these are the _id strings) and their encountered name (name at the time of ban)
 const BANNED_PLAYERS = [
-//  ["Fake user", "cb066e42-6b29-42a1-b686-2b17dcf77156"],
-    [,] // empty for now
+//  ["cb066e42-6b29-42a1-b686-2b17dcf77156", "Fake user"],
+//  empty for now
 ];
 
 // Bot constants
@@ -78,6 +78,8 @@ const COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
+const PRE_BAN = PRE_MSG + "[Ban]";
+const PRE_UNBAN = PRE_MSG + "[Unban]";
 const PRE_LISTBAN = PRE_MSG + "[Listban]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -95,7 +97,7 @@ var endDelay; // used in multiline chats send commands
 
 // Players listed by IDs (these are the _id strings) and their encountered name (name at the time of band)
 var tempBannedPlayers = [
-    [,] // empty for now, this is for adding and removing users via commands
+//  empty for now, this is for adding and removing users via commands
 ];
 
 // ============================================== FUNCTIONS
@@ -264,11 +266,134 @@ var about = function() {
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
     mppEndSend(0);
 }
-var ban = function() {
-    // ======================================================================================================== CODE ME!
+var ban = function(userId, yourId) {
+    if (!exists(userId)) {
+        mppTitleSend(PRE_ERROR + " (ban)", 0);
+        mppChatSend("Nothing entered", 0);
+        mppEndSend(0);
+        return;
+    } else userId = userId.toLowerCase();
+    // check user is not self
+    if (userId == yourId) {
+        mppTitleSend(PRE_ERROR + " (ban)", 0);
+        mppChatSend("Can't ban yourself", 0);
+        mppEndSend(0);
+    } else {
+        var permBanned = false;
+        var tempBanned = false;
+        // check if user is in perm ban
+        var bannedPlayersSize = BANNED_PLAYERS.length;
+        if (bannedPlayersSize > 0) {
+            var i;
+            for(i = 0; i < bannedPlayersSize; ++i) {
+                if (userId == BANNED_PLAYERS[i][0]) {
+                    permBanned = true;
+                    mppTitleSend(PRE_ERROR + " (ban)", 0);
+                    mppChatSend("This user is already permanently banned (set by script constants)", 0);
+                    mppEndSend(0);
+                };
+            }
+        }
+        // check if user is in temp ban
+        var tempBannedPlayersSize = tempBannedPlayers.length;
+        if (tempBannedPlayersSize > 0) {
+            var j;
+            for(j = 0; j < tempBannedPlayersSize; ++j) {
+                if (userId == tempBannedPlayers[j][0]) {
+                    tempBanned = true;
+                    mppTitleSend(PRE_ERROR + " (ban)", 0);
+                    mppChatSend("This user is already temporarily banned (set by using the command)", 0);
+                    mppEndSend(0);
+                }
+            }
+        }
+        // otherwise ban them
+        if (!permBanned && !tempBanned) {
+            var username = null;
+            // get the user's name
+            var usersInRoom = Object.values(MPP.client.ppl);
+            var k;
+            for(k = 0; k < usersInRoom.length; k++) {
+                var possibleParticipant = usersInRoom[0];
+                var possibleUserId = possibleParticipant._id;
+                var possibleUsername = possibleParticipant.name;
+                if (userId == possibleUserId) {
+                    username = possibleUsername;
+                }
+            }
+            // add to ban list
+            if (username != null) {
+                tempBannedPlayers.push([userId, username]);
+                MPP.client.sendArray([{m: "kickban", _id: userId, ms: 3600000}]);
+                mppTitleSend(PRE_BAN, 0);
+                mppChatSend(quoteString(username) + " (" + userId + ") has been banned", 0);
+                mppEndSend(0);
+            }
+        }
+    }
 }
-var unban = function() {
-    // ======================================================================================================== CODE ME!
+var unban = function(userId, yourId) {
+    if (!exists(userId)) {
+        mppTitleSend(PRE_ERROR + " (unban)", 0);
+        mppChatSend("Nothing entered", 0);
+        mppEndSend(0);
+        return;
+    } else userId = userId.toLowerCase();
+    // check user is not self
+    if (userId == yourId) {
+        mppTitleSend(PRE_ERROR + " (unban)", 0);
+        mppChatSend("Can't unban yourself", 0);
+        mppEndSend(0);
+    } else {
+        var permBanned = false;
+        var tempBanned = false;
+        // check if user is in perm ban
+        var bannedPlayersSize = BANNED_PLAYERS.length;
+        if (bannedPlayersSize > 0) {
+            var i;
+            for(i = 0; i < bannedPlayersSize; ++i) {
+                if (userId == BANNED_PLAYERS[i][0]) {
+                    permBanned = true;
+                    mppTitleSend(PRE_ERROR + " (unban)", 0);
+                    mppChatSend("Permanently banned players can only be unbanned from editing the script constants", 0);
+                    mppEndSend(0);
+                };
+            }
+        }
+        // check if user is in temp ban
+        var tempBannedPlayersSize = tempBannedPlayers.length;
+        if (tempBannedPlayersSize > 0) {
+            var j;
+            for(j = 0; j < tempBannedPlayersSize; ++j) {
+                if (userId == tempBannedPlayers[j][0]) {
+                    tempBanned = true;
+                }
+            }
+        }
+        // if they were temp banned, unban them
+        if (!permBanned && tempBanned) {
+            var index = null;
+            var username = null;
+            // get the user's name
+            var k;
+            for(k = 0; k < tempBannedPlayers.length; k++) {
+                var unbanningParticipant = tempBannedPlayers[k];
+                var unbanningUserId = unbanningParticipant[0];
+                var unbanningUsername = unbanningParticipant[1];
+                if (userId == unbanningUserId) {
+                    index = k;
+                    username = unbanningUsername;
+                }
+            }
+            // add to ban list
+            if (index != null) {
+                tempBannedPlayers.splice(index, 1);
+                mppTitleSend(PRE_BAN, 0);
+                mppChatSend(quoteString(username) + " (" + userId + ") has been unbanned", 0);
+                mppEndSend(0);
+            }
+        }
+    }
 }
 var listban = function() {
     mppTitleSend(PRE_LISTBAN, 0);
@@ -315,8 +440,8 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
-            case "ban": case "b": if (active) ban(argumentsString); break;
-            case "unban": case "ub": if (active) unban(argumentsString); break;
+            case "ban": case "b": if (active) ban(argumentsString, yourId); break;
+            case "unban": case "ub": if (active) unban(argumentsString, yourId); break;
             case "listban": case "lb": if (active) listban(); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
