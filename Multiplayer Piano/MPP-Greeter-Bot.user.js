@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.8
+// @version      0.1.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -196,13 +196,8 @@ var cmdNotFound = function(cmd) {
         // if we're in the fishing room, ignore the fishing commands
         var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
-                                             cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
-                                             cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0) ||
-                                             cmd.indexOf("count_fish") == 0 || cmd.indexOf("tree") == 0 || cmd.indexOf("color") == 0 ||
-                                             cmd.indexOf("audio") == 0) {
-            console.log(error);
-        } else {
+        if (currentRoom == "test/fishing") console.log(error);
+        else {
             mppTitleSend(PRE_ERROR, 0);
             mppChatSend(error, 0);
             mppEndSend(0);
@@ -316,6 +311,7 @@ MPP.client.on('a', function (msg) {
     var userId = participant._id;
     // make sure the start of the input matches prefix
     if (userId == yourId && input.startsWith(PREFIX)) {
+        console.log('testing?');
         // evaluate input into command and possible arguments
         var message = input.substring(PREFIX_LENGTH).trim();
         var hasArgs = message.indexOf(' ');

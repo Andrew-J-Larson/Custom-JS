@@ -1243,13 +1243,8 @@ var cmdNotFound = function(cmd) {
         // if we're in the fishing room, ignore the fishing commands
         var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing" && (cmd.indexOf("fish") == 0 || cmd.indexOf("cast") == 0 || cmd.indexOf("reel") == 0 ||
-                                             cmd.indexOf("caught") == 0 || cmd.indexOf("eat") == 0 || cmd.indexOf("give") == 0 ||
-                                             cmd.indexOf("bestow") == 0 || cmd.indexOf("pick") == 0 || cmd.indexOf("sack") == 0) ||
-                                             cmd.indexOf("count_fish") == 0 || cmd.indexOf("tree") == 0 || cmd.indexOf("color") == 0 ||
-                                             cmd.indexOf("audio") == 0) {
-            console.log(error);
-        } else {
+        if (currentRoom == "test/fishing") console.log(error);
+        else {
             mppTitleSend(PRE_ERROR, 0);
             mppChatSend(error, 0);
             mppEndSend(0);
