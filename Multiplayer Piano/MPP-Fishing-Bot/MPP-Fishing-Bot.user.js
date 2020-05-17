@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.3
+// @version      1.5.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -186,7 +186,7 @@ MPP.client.on('a', function (msg) {
         } else if (input.includes(yourUsername + ' ' + BITTEN)) {
             losing = true;
             audioPlay(bittenSound);
-        } else if (losing && input == ' ' + LOST) {
+        } else if (losing && input == LOST) {
             casted = false;
             losing = false;
             audioPlay(lostSound);
