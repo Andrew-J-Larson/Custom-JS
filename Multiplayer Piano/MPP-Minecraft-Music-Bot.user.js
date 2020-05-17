@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.7
+// @version      2.0.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -95,8 +95,8 @@ const COMMANDS = [
     ["pause", "pauses the music at that moment in the song"],
     ["resume", "plays music right where pause left off"],
     ["song", "shows the current song playing and at what moment in time"],
-    ["repeat", "allows one song to keep repeating, choices are off (0), or on (1)"],
-    ["sustain", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
+    ["repeat", "toggles repeating current song on or off"],
+    ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
     ["autoplay (choice)", "your choices are off (0), random (1), or ordered (2), no entry shows current setting"],
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"],
@@ -104,7 +104,7 @@ const COMMANDS = [
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["active [choice]", "turns the bot on or off (bot owner only)"]
+    ["active", "toggles the bot player commands on or off (bot owner only)"]
 ];
 const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
 const ROOMCOLOR_COMMANDS = [
@@ -638,8 +638,8 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
-var active = false; // turn off the bot if needed
-var botUser = null; // gets set to _id of user running the bot
+var active = false; // turn off the bot commands if needed
+var preventsPlaying = false // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -665,7 +665,8 @@ var artDisplaying = false;
 
 // The MIDIPlayer
 var Player = new MidiPlayer.Player(function(event) {
-    if (!active || MPP.client.preventsPlaying()) return;
+    preventsPlaying = MPP.client.preventsPlaying();
+    if (preventsPlaying) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent == "Set Tempo") { // fixes tempo on some songs
@@ -904,19 +905,10 @@ var colorToHEX = function(strColor) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId, yourId) {
+var setActive = function(userId, yourId) {
     if (userId != yourId) return;
-    var choice = args[0];
-    var newActive = null;
-    switch(choice.toLowerCase()) {
-        case "false": case "off": case "no": case "0": newActive = false; break;
-        case "true": case "on": case "yes": case "1": newActive = true; break;
-        default: console.log("Invalid choice. Bot wasn't turned off or on.");
-    }
-    if (exists(newActive)) {
-        active = newActive;
-        console.log("Bot was turned " + (newActive ? "on" : "off") + '.');
-    }
+    active = !active;
+    console.log("Bot was turned " + (active ? "on" : "off") + '.');
 }
 
 // Makes all commands into one string
@@ -1044,34 +1036,6 @@ var getAutoplayValue = function(choice) {
         case "false": case "off": case "no": case "0": valid = 0; break;
         case "random": case "1": valid = 1; break;
         case "ordered": case "2": valid = 2; break;
-    }
-    return valid;
-}
-
-// Get the string/type value of the repeat option
-var getRepeatString = function(choice) {
-    if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
-    return (choice ? "" : "not") + " repeating";
-}
-var getRepeatValue = function(choice) {
-    var valid = null;
-    switch(choice.toLowerCase()) {
-        case "false": case "off": case "no": case "0": valid = false; break;
-        case "true": case "on": case "yes": case "1": valid = true; break;
-    }
-    return valid;
-}
-
-// Get the string/type value of the sustain option
-var getSustainString = function(choice) {
-    if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
-    return (choice ? "MIDI controlled" : "MPP controlled");
-}
-var getSustainValue = function(choice) {
-    var valid = null;
-    switch(choice.toLowerCase()) {
-        case "mpp": case "false": case "off": case "no": case "0": valid = false; break;
-        case "midi": case "true": case "on": case "yes": case "1": valid = true; break;
     }
     return valid;
 }
@@ -1453,50 +1417,20 @@ var album = function() {
     endDelay = mppChatMultiSend(SONG_NAMES, null, chatDelay);
     mppEndSend(endDelay);
 }
-var repeat = function(choice) {
+var repeat = function() {
     // turns on or off repeat
-    var currentRepeat = getRepeatString(repeatOption);
+    repeatOption = !repeatOption;
 
-    if (!exists(choice) || choice == "") {
-        mppTitleSend(PRE_REPEAT, 0);
-        mppChatSend("Repeat is currently set to " + currentRepeat, 0);
-    } else if (getRepeatValue(choice) == repeatOption) {
-        mppTitleSend(PRE_REPEAT, 0);
-        mppChatSend("Repeat is already set to " + currentRepeat, 0);
-    } else {
-        var valid = getRepeatValue(choice);
-        if (valid != null) {
-            repeatOption = valid;
-            mppTitleSend(PRE_REPEAT, 0);
-            mppChatSend("Repeat set to " + getRepeatString(valid), 0);
-        } else {
-            mppTitleSend(PRE_ERROR + " (repeat)", 0);
-            mppChatSend("Invalid repeat choice", 0);
-        }
-    }
+    mppTitleSend(PRE_REPEAT, 0);
+    mppChatSend("Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
     mppEndSend(0);
 }
-var sustain = function(choice) {
+var sustain = function() {
     // turns on or off sustain
-    var currentSustain = getSustainString(sustainOption);
+    sustainOption = !sustainOption;
 
-    if (!exists(choice) || choice == "") {
-        mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Sustain is currently set to " + currentSustain, 0);
-    } else if (getSustainValue(choice) == sustainOption) {
-        mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Sustain is already set to " + currentSustain, 0);
-    } else {
-        var valid = getSustainValue(choice);
-        if (valid != null) {
-            sustainOption = valid;
-            mppTitleSend(PRE_SUSTAIN, 0);
-            mppChatSend("Sustain set to " + getSustainString(valid), 0);
-        } else {
-            mppTitleSend(PRE_ERROR + " (sustain)", 0);
-            mppChatSend("Invalid sustain choice", 0);
-        }
-    }
+    mppTitleSend(PRE_SUSTAIN, 0);
+    mppChatSend("Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
     mppEndSend(0);
 }
 var autoplay = function(choice) {
@@ -1706,18 +1640,18 @@ MPP.client.on('a', function (msg) {
         var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         var arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        var preventsPlaying = MPP.client.preventsPlaying();
+        preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if (active) help(argumentsString); break;
-            case "about": case "ab": if (active) about(); break;
+            case "help": case "h": if (!preventsPlaying) help(argumentsString); break;
+            case "about": case "ab": if (!preventsPlaying) about(); break;
             case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
             case "skip": case "sk": if (active && !preventsPlaying) skip(); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
             case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
             case "resume": case "r": if (active && !preventsPlaying) resume(); break;
-            case "song": case "so": if (active && !preventsPlaying) song(); break;
-            case "repeat": case "re": if (active && !preventsPlaying) repeat(argumentsString); break;
-            case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
+            case "song": case "so": if (!preventsPlaying) song(); break;
+            case "repeat": case "re": if (active && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if (active && !preventsPlaying) sustain(); break;
             case "autoplay": case "ap": if (active && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (active) album(); break;
             case "art": if (active) art(argumentsString, yourParticipant); break;
@@ -1728,7 +1662,7 @@ MPP.client.on('a', function (msg) {
             case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": case "a": setActive(arguments, userId, yourId); break;
+            case "active": case "a": setActive(userId, yourId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
@@ -1757,7 +1691,8 @@ MPP.client.on('p', function(msg) {
 
 // Stuff that needs to be done by intervals (e.g. autoplay/repeat)
 var repeatingTasks = setInterval(function() {
-    if (!active || MPP.client.preventsPlaying()) return;
+    preventsPlaying = MPP.client.preventsPlaying();
+    if (preventsPlaying) return;
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();
     // do repeat
@@ -1781,14 +1716,12 @@ var clearSoundWarning = setInterval(function() {
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) >= 0) {
                     active = true;
-                    botUser = MPP.client.user._id;
                     autoplayOption = AUTOPLAY_RANDOM;
                     setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                     if (BOT_SOLO_PLAY) setOwnerOnlyPlay(BOT_SOLO_PLAY);
                     if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
-                    mppTitleSend(PRE_MSG + " Online!", 0);
-                    mppEndSend(0);
+                    console.log(PRE_MSG + " Online!");
                 }
             }
         }, TENTH_OF_SECOND);

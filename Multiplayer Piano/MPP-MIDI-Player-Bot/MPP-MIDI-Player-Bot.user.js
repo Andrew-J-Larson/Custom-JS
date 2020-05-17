@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.5
+// @version      1.9.6
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -85,13 +85,13 @@ const COMMANDS = [
     ["pause", "pauses the music at that moment in the song"],
     ["resume", "plays music right where pause left off"],
     ["song", "shows the current song playing and at what moment in time"],
-    ["repeat (choice)", "allows one song to keep repeating, choices are off (0), or on (1)"],
-    ["sustain (choice)", "sets the how sustain is controlled, choices are MPP (0), or MIDI (1)"],
+    ["repeat", "toggles repeating current song on or off"],
+    ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
     ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"],
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["active [choice]", "turns the bot on or off (bot owner only)"]
+    ["active", "toggles the bot player commands on or off (bot owner only)"]
 ];
 const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
 const ROOMCOLOR_COMMANDS = [
@@ -217,8 +217,8 @@ const MIDIPlayerToMPPNote = {
 
 // =============================================== VARIABLES
 
-var active = true; // turn off the bot if needed
-var preventsPlaying = null // changes when it detects prevention
+var active = false; // turn off the bot commands if needed
+var preventsPlaying = false // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -244,7 +244,8 @@ var sustainOption = true; // makes notes end according to the midi file
 
 // The MIDIPlayer
 var Player = new MidiPlayer.Player(function(event) {
-    if (!active || MPP.client.preventsPlaying()) return;
+    preventsPlaying = MPP.client.preventsPlaying();
+    if (preventsPlaying) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent == "Set Tempo") { // fixes tempo on some songs
@@ -570,19 +571,10 @@ var isOctetStream = function(raw) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId, yourId) {
+var setActive = function(userId, yourId) {
     if (userId != yourId) return;
-    var choice = args[0];
-    var newActive = null;
-    switch(choice.toLowerCase()) {
-        case "false": case "off": case "no": case "0": newActive = false; break;
-        case "true": case "on": case "yes": case "1": newActive = true; break;
-        default: console.log("Invalid choice. Bot wasn't turned off or on.");
-    }
-    if (exists(newActive)) {
-        active = newActive;
-        console.log("Bot was turned " + (newActive ? "on" : "off") + '.');
-    }
+    active = !active;
+    console.log("Bot was turned " + (active ? "on" : "off") + '.');
 }
 
 // Makes all commands into one string
@@ -707,34 +699,6 @@ var playFile = function(songFile) {
         mppChatSend("MIDI file not found", 0);
         mppEndSend(0);
     }
-}
-
-// Get the string/type value of the repeat option
-var getRepeatString = function(choice) {
-    if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
-    return (choice ? "" : "not") + " repeating";
-}
-var getRepeatValue = function(choice) {
-    var valid = null;
-    switch(choice.toLowerCase()) {
-        case "false": case "off": case "no": case "0": valid = false; break;
-        case "true": case "on": case "yes": case "1": valid = true; break;
-    }
-    return valid;
-}
-
-// Get the string/type value of the sustain option
-var getSustainString = function(choice) {
-    if (!exists(choice) || typeof choice !== "boolean") return "unknown"; // shouldn't ever get here
-    return (choice ? "MIDI controlled" : "MPP controlled");
-}
-var getSustainValue = function(choice) {
-    var valid = null;
-    switch(choice.toLowerCase()) {
-        case "mpp": case "false": case "off": case "no": case "0": valid = false; break;
-        case "midi": case "true": case "on": case "yes": case "1": valid = true; break;
-    }
-    return valid;
 }
 
 // Change the room colors
@@ -908,6 +872,7 @@ var createButtons = function() {
     var nextLocationX = BTNS_END_X;
 
     // play needs the div like all the other buttons
+    // PLAY
     var playDiv = document.createElement("div");
     playDiv.id = PRE_ELEMENT_ID + "-play";
     playDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
@@ -922,7 +887,7 @@ var createButtons = function() {
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function() {
         preventsPlaying = MPP.client.preventsPlaying();
-        if (active && !preventsPlaying && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
+        if (!preventsPlaying && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
         else console.log("No MIDI file selected");
     }
     var uploadTxt = document.createTextNode("Play");
@@ -940,11 +905,24 @@ var createButtons = function() {
     stopDiv.classList.add("ugly-button");
     stopDiv.onclick = function() {
         preventsPlaying = MPP.client.preventsPlaying();
-        if (active && !preventsPlaying) stop();
+        if (!preventsPlaying) stop();
     }
     var stopTxt = document.createTextNode("Stop");
     stopDiv.appendChild(stopTxt);
     buttonContainer.appendChild(stopDiv);
+    // REPEAT
+    nextLocationX += BTN_SPACER_X;
+    var repeatDiv = document.createElement("div");
+    repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
+    repeatDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+    repeatDiv.classList.add("ugly-button");
+    repeatDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (!preventsPlaying) repeat();
+    }
+    var repeatTxt = document.createTextNode("Repeat");
+    repeatDiv.appendChild(repeatTxt);
+    buttonContainer.appendChild(repeatDiv);
     // PAUSE
     nextLocationX = BTNS_END_X;
     var pauseDiv = document.createElement("div");
@@ -953,7 +931,7 @@ var createButtons = function() {
     pauseDiv.classList.add("ugly-button");
     pauseDiv.onclick = function() {
         preventsPlaying = MPP.client.preventsPlaying();
-        if (active && !preventsPlaying) pause();
+        if (!preventsPlaying) pause();
     }
     var pauseTxt = document.createTextNode("Pause");
     pauseDiv.appendChild(pauseTxt);
@@ -966,11 +944,24 @@ var createButtons = function() {
     resumeDiv.classList.add("ugly-button");
     resumeDiv.onclick = function() {
         preventsPlaying = MPP.client.preventsPlaying();
-        if (active && !preventsPlaying) resume();
+        if (!preventsPlaying) resume();
     }
     var resumeTxt = document.createTextNode("Resume");
     resumeDiv.appendChild(resumeTxt);
     buttonContainer.appendChild(resumeDiv);
+    // SUSTAIN
+    nextLocationX += BTN_SPACER_X;
+    var sustainDiv = document.createElement("div");
+    sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
+    sustainDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    sustainDiv.classList.add("ugly-button");
+    sustainDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (!preventsPlaying) sustain();
+    }
+    var sustainTxt = document.createTextNode("Sustain");
+    sustainDiv.appendChild(sustainTxt);
+    buttonContainer.appendChild(sustainDiv);
 
     // one more button to toggle the visibility of the other buttons
     nextLocationX = BTNS_END_X - BTN_SPACER_X;
@@ -983,14 +974,18 @@ var createButtons = function() {
         if (buttonsOn) { // if on, then turn off, else turn on
             playDiv.style.display =
             stopDiv.style.display =
+            repeatDiv.style.display =
             pauseDiv.style.display =
-            resumeDiv.style.display = "none";
+            resumeDiv.style.display =
+            sustainDiv.style.display = "none";
             buttonsOn = false;
         } else {
             playDiv.style.display =
             stopDiv.style.display =
+            repeatDiv.style.display =
             pauseDiv.style.display =
-            resumeDiv.style.display = "block";
+            resumeDiv.style.display =
+            sustainDiv.style.display = "block";
             buttonsOn = true;
         }
     }
@@ -1170,50 +1165,20 @@ var song = function() {
     }
     mppEndSend(0);
 }
-var repeat = function(choice) {
+var repeat = function() {
     // turns on or off repeat
-    var currentRepeat = getRepeatString(repeatOption);
+    repeatOption = !repeatOption;
 
-    if (!exists(choice) || choice == "") {
-        mppTitleSend(PRE_REPEAT, 0);
-        mppChatSend("Repeat is currently set to " + currentRepeat, 0);
-    } else if (getRepeatValue(choice) == repeatOption) {
-        mppTitleSend(PRE_REPEAT, 0);
-        mppChatSend("Repeat is already set to " + currentRepeat, 0);
-    } else {
-        var valid = getRepeatValue(choice);
-        if (valid != null) {
-            repeatOption = valid;
-            mppTitleSend(PRE_REPEAT, 0);
-            mppChatSend("Repeat set to " + getRepeatString(valid), 0);
-        } else {
-            mppTitleSend(PRE_ERROR + " (repeat)", 0);
-            mppChatSend("Invalid repeat choice", 0);
-        }
-    }
+    mppTitleSend(PRE_REPEAT, 0);
+    mppChatSend("Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
     mppEndSend(0);
 }
-var sustain = function(choice) {
+var sustain = function() {
     // turns on or off sustain
-    var currentSustain = getSustainString(sustainOption);
+    sustainOption = !sustainOption;
 
-    if (!exists(choice) || choice == "") {
-        mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Sustain is currently set to " + currentSustain, 0);
-    } else if (getSustainValue(choice) == sustainOption) {
-        mppTitleSend(PRE_SUSTAIN, 0);
-        mppChatSend("Sustain is already set to " + currentSustain, 0);
-    } else {
-        var valid = getSustainValue(choice);
-        if (valid != null) {
-            sustainOption = valid;
-            mppTitleSend(PRE_SUSTAIN, 0);
-            mppChatSend("Sustain set to " + getSustainString(valid), 0);
-        } else {
-            mppTitleSend(PRE_ERROR + " (sustain)", 0);
-            mppChatSend("Invalid sustain choice", 0);
-        }
-    }
+    mppTitleSend(PRE_SUSTAIN, 0);
+    mppChatSend("Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
     mppEndSend(0);
 }
 var roomcolor = function(command) {
@@ -1368,15 +1333,15 @@ MPP.client.on('a', function (msg) {
         // look through commands
         preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if (active) help(argumentsString); break;
-            case "about": case "ab": if (active) about(); break;
+            case "help": case "h": if (!preventsPlaying) help(argumentsString); break;
+            case "about": case "ab": if (!preventsPlaying) about(); break;
             case "play": case "p": if (active && !preventsPlaying) play(argumentsString); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
             case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
             case "resume": case "r": if (active && !preventsPlaying) resume(); break;
-            case "song": case "so": if (active && !preventsPlaying) song(); break;
-            case "repeat": case "re": if (active && !preventsPlaying) repeat(argumentsString); break;
-            case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
+            case "song": case "so": if (!preventsPlaying) song(); break;
+            case "repeat": case "re": if (active && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if (active && !preventsPlaying) sustain(); break;
             case "roomcolor": case "rc": if (active) roomcolor(argumentsString); break;
             case "roomcolor1": case "rc1": if (active) roomcolor1(argumentsString); break;
             case "roomcolor2": case "rc2": if (active) roomcolor2(argumentsString); break;
@@ -1384,7 +1349,7 @@ MPP.client.on('a', function (msg) {
             case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": case "a": setActive(arguments, userId, yourId); break;
+            case "active": case "a": setActive(userId, yourId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
@@ -1413,7 +1378,8 @@ MPP.client.on('p', function(msg) {
 
 // Stuff that needs to be done by intervals (e.g. repeat)
 var repeatingTasks = setInterval(function() {
-    if (!active || MPP.client.preventsPlaying()) return;
+    preventsPlaying = MPP.client.preventsPlaying();
+    if (preventsPlaying) return;
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
         ended = false;
@@ -1438,8 +1404,7 @@ var clearSoundWarning = setInterval(function() {
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                 createButtons();
-                mppTitleSend(PRE_MSG + " Online!", 0);
-                mppEndSend(0);
+                console.log(PRE_MSG + " Online!");
             }
         }, TENTH_OF_SECOND);
     }
