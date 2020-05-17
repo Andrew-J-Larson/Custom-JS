@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.0
+// @version      1.5.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -149,17 +149,20 @@ var audioToggler = function() {
 
 MPP.client.on('a', function (msg) {
     if (!active) return;
+    // if user switches to VPN, these need to update
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
     var checkCommand = input.split()[0];
     var participant = msg.p;
     var userId = participant._id;
-    var selfId = MPP.client.user._id;
     if (checkCommand.indexOf(CMD_PREFIX) == 0) {
         var command = checkCommand.substring(CMD_PREFIX.length);
         // if anyone sent anything
         if (command == CMD_HELP) MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
-        else if (userId == selfId) { // if you sent something
+        else if (userId == yourId) { // if you sent something
             // check `fishing` commands
             if (command == CMD_CAST[0] || command == CMD_CAST[1]) {
                 fishTimer = FISH_INTERVAL;
@@ -176,7 +179,6 @@ MPP.client.on('a', function (msg) {
         }
     } // check for `fishing` bot response
     else if (userId == FISHING_BOT_ID) {
-        var yourUsername = MPP.client.user.name;
         // if the `fishing` bot sent something
         if (input.includes(yourUsername + ' ' + CAUGHT)) {
             casted = false;

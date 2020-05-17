@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.4
+// @version      1.9.5
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -218,7 +218,6 @@ const MIDIPlayerToMPPNote = {
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
-var botUser = null; // gets set to _id of user running the bot
 var preventsPlaying = null // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
@@ -571,8 +570,8 @@ var isOctetStream = function(raw) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId) {
-    if (userId != botUser) return;
+var setActive = function(args, userId, yourId) {
+    if (userId != yourId) return;
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
@@ -1320,19 +1319,23 @@ var feedback = function() {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
+    // if user switches to VPN, these need to update
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
     var participant = msg.p;
     var username = participant.name;
     var userId = participant._id;
-    
+
     // check if ping
-    if (userId == botUser && pinging && input == PRE_PING) {
+    if (userId == yourId && pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
         mppChatSend("Pong! [" + pingTime + "ms]", 0 );
     }
-    
+
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the bot
@@ -1381,7 +1384,7 @@ MPP.client.on('a', function (msg) {
             case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": case "a": setActive(arguments, userId); break;
+            case "active": case "a": setActive(arguments, userId, yourId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
@@ -1430,7 +1433,6 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 active = true;
-                botUser = MPP.client.user._id;
                 currentRoom = MPP.client.channel._id;
                 setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;

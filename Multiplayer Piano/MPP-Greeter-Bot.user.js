@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.6
+// @version      0.1.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -80,7 +80,6 @@ const DESCRIPTION_SEPARATOR = " - ";
 // =============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
-var botUser = null; // gets set to _id of user running the bot
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -109,8 +108,8 @@ var quoteString = function(string) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId) {
-    if (userId != MPP.client.user._id) return;
+var setActive = function(args, userId, yourId) {
+    if (userId != yourId) return;
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
@@ -413,7 +412,6 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 active = true;
-                botUser = MPP.client.user._id;
                 currentRoom = MPP.client.channel._id;
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 mppTitleSend(PRE_MSG + " Online!", 0);

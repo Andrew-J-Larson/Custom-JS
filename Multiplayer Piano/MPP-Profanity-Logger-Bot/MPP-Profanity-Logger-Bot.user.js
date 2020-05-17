@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9.7
+// @version      0.9.8
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -89,7 +89,6 @@ const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weigh
 // ============================================== VARIABLES
 
 var active = true; // turn off the bot if needed
-var botUser = null; // gets set to _id of user running the bot
 var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
@@ -115,8 +114,8 @@ var quoteString = function(string) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId) {
-    if (userId != MPP.client.user._id) return;
+var setActive = function(args, userId, yourId) {
+    if (userId != yourId) return;
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
@@ -131,9 +130,9 @@ var setActive = function(args, userId) {
 }
 
 // Logs any filthy words used in chat from the user
-var checkForFilthyWords = function(username, userId, msg) {
+var checkForFilthyWords = function(username, userId, yourId, msg) {
     // exit if it's the bot's message
-    if (userId == MPP.client.user._id) return;
+    if (userId == yourId) return;
     // get msg as array of words
     var msgWords = msg.trim().split(' ');
     // log any users that cuss
@@ -300,13 +299,17 @@ var feedback = function() {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
+    // if user switches to VPN, these need to update
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
     var participant = msg.p;
     var username = participant.name;
     var userId = participant._id;
     // make sure the start of the input matches prefix
-    if (userId == botUser && input.startsWith(PREFIX)) {
+    if (userId == yourId && input.startsWith(PREFIX)) {
         // evaluate input into command and possible arguments
         var message = input.substring(PREFIX_LENGTH).trim();
         var hasArgs = message.indexOf(' ');
@@ -322,11 +325,11 @@ MPP.client.on('a', function (msg) {
             case "listban": case "lb": if (active) listban(); break;
             case "clear": case "cl": if (active) clear(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": case "a": setActive(arguments, userId); break;
+            case "active": case "a": setActive(arguments, userId, yourId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }
-    if (active && BOT_LOG_PROFANITY) checkForFilthyWords(username, userId, input);
+    if (active && BOT_LOG_PROFANITY) checkForFilthyWords(username, userId, yourId, input);
 });
 MPP.client.on("ch", function(msg) {
     // set new chat delay based on room ownership after changing rooms
@@ -371,7 +374,6 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 active = true;
-                botUser = MPP.client.user._id;
                 currentRoom = MPP.client.channel._id;
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 mppTitleSend(PRE_MSG + " Online!", 0);

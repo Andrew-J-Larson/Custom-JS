@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.6
+// @version      2.0.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -904,8 +904,8 @@ var colorToHEX = function(strColor) {
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId) {
-    if (userId != MPP.client.user._id) return;
+var setActive = function(args, userId, yourId) {
+    if (userId != yourId) return;
     var choice = args[0];
     var newActive = null;
     switch(choice.toLowerCase()) {
@@ -1523,11 +1523,11 @@ var autoplay = function(choice) {
     }
     mppEndSend(0);
 }
-var art = function(name) {
+var art = function(name, yourParticipant) {
     // sends Minecraft mob ASCII art, when some isn't already being displayed
     if (exists(name) && !artDisplaying) {
         // depending on color, show normal or inverted art
-        var userColor = MPP.client.user.color;
+        var userColor = yourParticipant.color;
         var colorIsDark = getContrast(userColor) == 'black';
         switch(name.toLowerCase()) {
             case "cow": mppArtSend(colorIsDark ? cowArt : cowArtInverted, 0); break;
@@ -1659,6 +1659,10 @@ var feedback = function() {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
+    // if user switches to VPN, these need to update
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
 
@@ -1716,7 +1720,7 @@ MPP.client.on('a', function (msg) {
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(argumentsString); break;
             case "autoplay": case "ap": if (active && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (active) album(); break;
-            case "art": if (active) art(argumentsString); break;
+            case "art": if (active) art(argumentsString, yourParticipant); break;
             case "roomcolor": case "rc": if (active) roomcolor(argumentsString); break;
             case "roomcolor1": case "rc1": if (active) roomcolor1(argumentsString); break;
             case "roomcolor2": case "rc2": if (active) roomcolor2(argumentsString); break;
@@ -1724,7 +1728,7 @@ MPP.client.on('a', function (msg) {
             case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
-            case "active": case "a": setActive(arguments, userId); break;
+            case "active": case "a": setActive(arguments, userId, yourId); break;
             default: if (active) cmdNotFound(command); break;
         }
     }

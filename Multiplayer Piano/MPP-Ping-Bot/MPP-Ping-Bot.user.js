@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.7
+// @version      0.0.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -40,6 +40,8 @@ const AUDIO_EXENSION = "mp3";
 
 // Bot custom constants
 const PING_PREFIX = '@';
+const PING_START = '<';
+const PING_END = '>';
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 
 // =============================================== OBJECT INITIALIZERS
@@ -65,34 +67,52 @@ var exists = function(element) {
 
 MPP.client.on('a', function (msg) {
     // if user switches to VPN, these need to update
-    var botUser = MPP.client.user;
-    var botUsername = botUser.name;
-    var botId = botUser._id;
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
     var participant = msg.p;
-    var username = participant.name;
     var userId = participant._id;
+    var username = participant.name;
     var pinged = false;
-    // check if input contains the prefix
-    var arguments = input.split(' ');
+    // check if input contains the prefix + argument
+    var possibleArgs = [yourId, yourUsername, "help", "self", "all", "online", "everyone"];
     var i;
-    for(i = 0; i < arguments.length; i++) {
-        if (arguments[i][0] = PING_PREFIX) {
-            var pinging = arguments[i].substring(PING_PREFIX.length);
-            var pingingLC = pinging.toLowerCase();
-            // commands to do if you are the user who sent them
-            if (userId == botId) {
-                // show help if we need to
-                if (i == 0 && pinging == "help") MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
-                // ping yourself, because apparently you need to do that for some reason
-                if (pinging == "self") pinged = true;
+    for(i = 0; i < possibleArgs.length; i++) {
+        var possiblePing = possibleArgs[i];
+        var possiblePingLength = possiblePing.length;
+        var pingFormatted = PING_PREFIX + PING_START + possiblePing + PING_END;
+        var pingStartingLength = PING_PREFIX.length + PING_START.length;
+        var pingFormattedLength = pingFormatted.length;
+
+        // check by case sensitivity
+        var match = null;
+        var caseSensitive = (possiblePing == yourId || possiblePing == yourUsername);
+        if (caseSensitive) {
+            var caseSensitiveCheck = input.indexOf(pingFormatted);
+            var caseSensitiveStart = caseSensitiveCheck + pingStartingLength;
+            if (caseSensitiveCheck >= 0) match = input.substring(caseSensitiveStart, caseSensitiveStart + possiblePingLength);
+        } else {
+            var inputLC = input.toLowerCase();
+            var caseInsensitiveCheck = inputLC.indexOf(pingFormatted);
+            var caseInsensitiveStart = caseInsensitiveCheck + pingStartingLength;
+            if (caseInsensitiveCheck >= 0) match = inputLC.substring(caseInsensitiveStart, caseInsensitiveStart + possiblePingLength);
+        }
+
+        // only execute command if we found a match
+        if (match != null) {
+            // any user can use these
+            switch(match) {
+                case yourId: case yourUsername:
+                case "all": case "online": case "everyone": pinged = true; break;
             }
-            // check if we are pinging a user, or all users
-            if (pinging == botUsername) pinged = true; // pinging bot user by their username
-            switch(pingingLC) {
-                case "all": case "everyone": case "online":
-                case botId: pinged = true; break;
+            // execute some commands for only the bot user
+            if (userId == yourId) {
+                switch(match) {
+                    case "help": MPP.chat.send(PRE_MSG + DOWNLOAD_URL); break;
+                    case "self": pinged = true; break;
+                }
             }
         }
     }
