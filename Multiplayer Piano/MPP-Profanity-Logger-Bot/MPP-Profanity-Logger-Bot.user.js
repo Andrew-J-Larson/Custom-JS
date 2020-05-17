@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -73,6 +73,7 @@ const COMMANDS = [
     ["about", "get information about this bot"],
     ["ban [user id]","bans the player while running the bot"],
     ["unban [user id]","unbans the player if they were banned while running the bot"],
+    ["listban", "shows all the permanently and temporarily banned players"],
     ["clear", "clears the chat"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
