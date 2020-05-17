@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -331,6 +331,10 @@ var ban = function(userId, yourId) {
                 mppTitleSend(PRE_BAN, 0);
                 mppChatSend(quoteString(username) + " (" + userId + ") has been banned", 0);
                 mppEndSend(0);
+            } else {
+                mppTitleSend(PRE_BAN, 0);
+                mppChatSend(quoteString(userId) + " isn't a valid user id", 0);
+                mppEndSend(0);
             }
         }
     }
@@ -393,6 +397,10 @@ var unban = function(userId, yourId) {
                 tempBannedPlayers.splice(index, 1);
                 mppTitleSend(PRE_BAN, 0);
                 mppChatSend(quoteString(username) + " (" + userId + ") has been unbanned", 0);
+                mppEndSend(0);
+            } else {
+                mppTitleSend(PRE_BAN, 0);
+                mppChatSend(quoteString(userId) + " isn't a valid user id", 0);
                 mppEndSend(0);
             }
         }
