@@ -1087,7 +1087,7 @@ var play = function(url) {
         urlToBlob(url, function(blob) {
             if (blob == null) {
                 mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url)+ "... " + WHERE_TO_FIND_MIDIS, 0);
+                mppChatSend("Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS, 0);
                 mppEndSend(0);
             } else if (isMidi(blob) || isOctetStream(blob)) {
                 fileOrBlobToBase64(blob, function(base64data) {
@@ -1105,7 +1105,7 @@ var play = function(url) {
                 });
             } else {
                 mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS", 0);
+                mppChatSend("Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS, 0);
                 mppEndSend(0);
             }
         });
