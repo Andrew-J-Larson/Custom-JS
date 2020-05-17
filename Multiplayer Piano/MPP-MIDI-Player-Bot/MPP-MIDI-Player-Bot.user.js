@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.6
+// @version      1.9.7
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1087,7 +1087,7 @@ var play = function(url) {
         urlToBlob(url, function(blob) {
             if (blob == null) {
                 mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, there is no file, or the file requires a manual download from " + quoteString(url), 0);
+                mppChatSend("Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url)+ "... " + WHERE_TO_FIND_MIDIS, 0);
                 mppEndSend(0);
             } else if (isMidi(blob) || isOctetStream(blob)) {
                 fileOrBlobToBase64(blob, function(base64data) {
@@ -1105,7 +1105,7 @@ var play = function(url) {
                 });
             } else {
                 mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, this is not a MIDI file", 0);
+                mppChatSend("Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS", 0);
                 mppEndSend(0);
             }
         });
