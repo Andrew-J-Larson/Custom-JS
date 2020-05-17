@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -317,7 +317,7 @@ var ban = function(userId, yourId) {
             var usersInRoom = Object.values(MPP.client.ppl);
             var k;
             for(k = 0; k < usersInRoom.length; k++) {
-                var possibleParticipant = usersInRoom[0];
+                var possibleParticipant = usersInRoom[k];
                 var possibleUserId = possibleParticipant._id;
                 var possibleUsername = possibleParticipant.name;
                 if (userId == possibleUserId) {
