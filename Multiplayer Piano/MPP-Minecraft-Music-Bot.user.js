@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.8
+// @version      2.0.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
