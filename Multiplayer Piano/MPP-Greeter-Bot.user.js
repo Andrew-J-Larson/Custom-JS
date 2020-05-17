@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.7
+// @version      0.1.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -305,13 +305,17 @@ var feedback = function() {
 // =============================================== MAIN
 
 MPP.client.on('a', function (msg) {
+    // if user switches to VPN, these need to update
+    var yourParticipant = MPP.client.getOwnParticipant();
+    var yourId = yourParticipant._id;
+    var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
     var participant = msg.p;
     var username = participant.name;
     var userId = participant._id;
     // make sure the start of the input matches prefix
-    if (userId == botUser && input.startsWith(PREFIX)) {
+    if (userId == yourId && input.startsWith(PREFIX)) {
         // evaluate input into command and possible arguments
         var message = input.substring(PREFIX_LENGTH).trim();
         var hasArgs = message.indexOf(' ');
