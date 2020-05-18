@@ -207,8 +207,8 @@ var getPlayers = function(playersArray) {
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
-    // if cmd is empty somehow, show it
     var error = PRE_ERROR;
+    // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
         // if we're in the fishing room, ignore the fishing commands
         error += " Invalid command, " + quoteString(cmd) + " doesn't exist";

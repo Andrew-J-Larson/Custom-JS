@@ -184,12 +184,9 @@ var cmdNotFound = function(cmd) {
         // if we're in the fishing room, ignore the fishing commands
         error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing") console.log(error);
-        else mppChatSend(error, 0);
-    } else {
-        error += " No command entered";
-        mppChatSend(error, 0);
-    }
+    } else error += " No command entered";
+    if (currentRoom == "test/fishing") console.log(error);
+    else mppChatSend(error, 0);
 }
 
 // Commands
