@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.0
+// @version      1.6.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -58,7 +58,7 @@ const CMD_PICK = "pick";
 const CMD_TREE = "tree";
 const CMD_BOT_AUDIO_TOGGLER = "audio";
 const CMD_BOT_FEEDBACK = "feedback";
-const HELP_DESC = "The only command is " + CMD_PREFIX + "audio - toggles the audio on/off";
+const HELP_DESC = "The only commands are: • " + CMD_PREFIX + "help - shows the commands • " + CMD_PREFIX + "link - get the download link for this bot • " + CMD_PREFIX + "audio - toggles the audio on/off";
 const CAUGHT = "caught";
 const ATE = "ate";
 const COLORED = "made him/her turn";
