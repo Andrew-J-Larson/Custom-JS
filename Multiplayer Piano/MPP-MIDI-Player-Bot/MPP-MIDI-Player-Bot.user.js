@@ -1113,9 +1113,8 @@ var roomcolor = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppChatSend(PRE_HELP + ' ' + formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
 }
 var roomcolor1 = function(color) {
