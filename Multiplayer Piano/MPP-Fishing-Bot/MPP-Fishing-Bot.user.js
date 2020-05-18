@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.6
+// @version      1.5.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -56,6 +56,7 @@ const CMD_BOT_FEEDBACK = "feedback";
 const CAUGHT = "caught";
 const ATE = "ate";
 const COLORED = "made him/her turn";
+const NOT_REALLY = "Upon looking in a mirror he/she finds it didn't actually do so, though.";
 const BITTEN = "is getting a bite";
 const LOST = "Some of the fish were lost in the disaster...";
 const FRUITFUL = "picked";
@@ -195,7 +196,7 @@ MPP.client.on('a', function (msg) {
             if (input.includes(' ' + FRUIT)) {
                 fruit = false;
                 if (input.includes(' ' + BOOST)) audioPlay(boostSound);
-            } else if (input.includes(' ' + COLORED)) audioPlay(coloredSound);
+            } else if (input.includes(' ' + COLORED) && !input.includes(' ' + NOT_REALLY)) audioPlay(coloredSound);
         } else if (input.includes(yourUsername + ' ' + FRUITFUL)) {
             fruit = true;
             audioPlay(fruitfulSound);
