@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.9
+// @version      0.2.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -48,8 +48,6 @@ const GREET_COLOR = "$COLOR";
 const GREET_PLAYER = '"' + GREET_NAME + '" [' + GREET_COLOR + ']';
 const PREFIX = "!";
 const PREFIX_LENGTH = PREFIX.length;
-const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
-const THIN_BORDER = "══════════════════════════════════════════════════════════════════════";
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey."
@@ -144,17 +142,6 @@ var mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, delay);
 }
 
-// Titles for some commands
-var mppTitleSend = function(str, delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str, delay);
-}
-
-// Sends in a bottom border if needed
-var mppEndSend = function(delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THIN_BORDER, delay);
-}
-
 // Send multiline chats, and return final delay to make things easier for timings
 var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
@@ -191,30 +178,24 @@ var mppCmdSend = function(commandsArray, cmdSubstring, delay) {
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
+    var error = PRE_ERROR;
     // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
         // if we're in the fishing room, ignore the fishing commands
-        var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
+        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
         if (currentRoom == "test/fishing") console.log(error);
-        else {
-            mppTitleSend(PRE_ERROR, 0);
-            mppChatSend(error, 0);
-            mppEndSend(0);
-        }
+        else mppChatSend(error, 0);
     } else {
-        mppTitleSend(PRE_ERROR, 0);
-        mppChatSend("No command entered", 0);
-        mppEndSend(0);
+        error += " No command entered";
+        mppChatSend(error, 0);
     }
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") {
-        mppTitleSend(PRE_HELP, 0);
-        mppChatSend("Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
-    } else {
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    else {
         var valid = null;
         var commandIndex = null;
         command = command.toLowerCase();
@@ -227,25 +208,19 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(COMMANDS, commandIndex), 0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
-    mppEndSend(0);
 }
 var about = function() {
-    mppTitleSend(PRE_ABOUT, 0);
-    mppChatSend(BOT_DESCRIPTION, 0);
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
-    mppEndSend(0);
 }
 var greetMsgSet = function(cmd, intGreet, msg) {
     var greet = "The ";
     var title;
     if (intGreet == GREET_HI) title = PRE_HI;
     else if (intGreet == GREET_BYE) title = PRE_BYE;
-    mppTitleSend(title, 0);
     if (!exists(msg)) mppCmdSend(COMMANDS, cmd + ' ', 0);
     else {
         var sameMsg = false;
@@ -253,10 +228,9 @@ var greetMsgSet = function(cmd, intGreet, msg) {
             case GREET_HI: greet += "welcome"; hiMessage == msg ? sameMsg = true : hiMessage = msg; break;
             case GREET_BYE: greet += "goodbye"; byeMessage == msg ? sameMsg = true : byeMessage = msg; break;
         }
-        if (sameMsg) mppChatSend(greet + " message wasn't changed", 0);
-        else mppChatSend(greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_COLOR,"[usercolor here]"), 0);
+        if (sameMsg) mppChatSend(title + ' ' + greet + " message wasn't changed", 0);
+        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_COLOR,"[usercolor here]"), 0);
     }
-    mppEndSend(0);
 }
 var greetToggle = function(cmd, intGreet, boolChoice) {
     // check greet, then check current bool, lastly set it if not already
@@ -277,10 +251,9 @@ var greetToggle = function(cmd, intGreet, boolChoice) {
     }
 
     // display message
-    mppTitleSend(PRE_MSG + '[' + cmd + ']', 0);
-    if (alreadySet) mppChatSend(greet + " message is already turned " + (boolChoice ? "on" : "off"), 0);
-    else mppChatSend(greet + " message has been turned " + (boolChoice ? "on" : "off"), 0);
-    mppEndSend(0);
+    var title = PRE_MSG + '[' + cmd + ']';
+    if (alreadySet) mppChatSend(title + ' ' + greet + " message is already turned " + (boolChoice ? "on" : "off"), 0);
+    else mppChatSend(title + ' ' + greet + " message has been turned " + (boolChoice ? "on" : "off"), 0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -292,9 +265,7 @@ var clear = function() {
 }
 var feedback = function() {
     // just sends feedback url to user
-    mppTitleSend(PRE_FEEDBACK, 0);
-    mppChatSend("Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
 }
 
 // =============================================== MAIN
@@ -414,8 +385,7 @@ var clearSoundWarning = setInterval(function() {
                 active = true;
                 currentRoom = MPP.client.channel._id;
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
-                mppTitleSend(PRE_MSG + " Online!", 0);
-                mppEndSend(0);
+                console.log(PRE_MSG + " Online!");
             }
         }, TENTH_OF_SECOND);
     }
