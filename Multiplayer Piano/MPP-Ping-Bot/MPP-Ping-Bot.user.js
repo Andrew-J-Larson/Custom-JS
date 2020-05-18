@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.3
+// @version      0.1.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -45,6 +45,7 @@ const PING_END = '>';
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_LINK = PRE_MSG + "[Link]";
+const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const HELP_DESC = "Ping usage is as follows: Get everyone's attention with @<all>, @<online>, or @<everyone>, or to ping a specific user, use @<A Username Here> or @<a user id here>";
 
 // =============================================== OBJECT INITIALIZERS
@@ -114,8 +115,8 @@ MPP.client.on('a', function (msg) {
             if (userId == yourId) {
                 switch(match) {
                     case "help": MPP.chat.send(PRE_HELP + ' ' + HELP_DESC); break;
-                    case "link": MPP.chat.send(PRE_LINK + ' ' + DOWNLOAD_URL); break;
-                    case "feedback": MPP.chat.send(PRE_MSG + FEEDBACK_URL); break;
+                    case "link": MPP.chat.send(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL); break;
+                    case "feedback": MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback."); break;
                     case "self": pinged = true; break;
                 }
             }

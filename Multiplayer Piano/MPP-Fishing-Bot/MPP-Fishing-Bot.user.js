@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.9
+// @version      1.6.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -41,6 +41,7 @@ const PICK_INTERVAL = FIVE_MINUTES;
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_LINK = PRE_MSG + "[Link]";
+const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_AUDIO = PRE_MSG + "[Audio]";
 // `fishing` bot specific strings
 const CMD_PREFIX = '/';
@@ -168,14 +169,14 @@ MPP.client.on('a', function (msg) {
         var command = checkCommand.substring(CMD_PREFIX.length);
         // if anyone sent anything
         if (command == CMD_HELP) MPP.chat.send(PRE_HELP + ' ' + HELP_DESC);
-        else if (command == CMD_LINK) MPP.chat.send(PRE_LINK + ' ' + DOWNLOAD_URL);
+        else if (command == CMD_LINK) MPP.chat.send(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
         else if (userId == yourId) { // if you sent something
             // check `fishing` commands
             if (command == CMD_CAST[0] || command == CMD_CAST[1]) {
                 fishTimer = FISH_INTERVAL;
                 casted = true;
                 audioPlay(castedSound);
-            } else if (command == CMD_REEL) { //DECIDE TO KEEP!
+            } else if (command == CMD_REEL) {
                 casted = false;
                 audioPlay(reeledSound);
             } else if (command == CMD_PICK) {
@@ -183,7 +184,7 @@ MPP.client.on('a', function (msg) {
                 audioPlay(pickedSound);
             }
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
-            else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_MSG + FEEDBACK_URL);
+            else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
         }
     } // check for `fishing` bot response
     else if (userId == FISHING_BOT_ID) {
