@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.4
+// @version      2.1.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -131,6 +131,7 @@ const PRE_ART = PRE_MSG + "[Art]";
 const PRE_ROOMCOLOR = PRE_MSG + "[Roomcolor]";
 const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
+const PRE_ACTIVE = PRE_MSG + "[Active]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
@@ -908,7 +909,7 @@ var colorToHEX = function(strColor) {
 var setActive = function(userId, yourId) {
     if (userId != yourId) return;
     active = !active;
-    mppChatSend("Public bot commands were turned " + (active ? "on" : "off"), 0);
+    mppChatSend(PRE_ACTIVE + " Public bot commands were turned " + (active ? "on" : "off"), 0);
 }
 
 // Makes all commands into one string

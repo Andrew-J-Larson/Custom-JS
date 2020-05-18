@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.3
+// @version      2.0.4
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -116,6 +116,7 @@ const PRE_ROOMCOLOR = PRE_MSG + "[Roomcolor]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
 const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
+const PRE_ACTIVE = PRE_MSG + "[Active]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload at https://bitmidi.com/ and https://midiworld.com/, or you can upload your own at a site like https://www.file.io/";
@@ -575,7 +576,7 @@ var isOctetStream = function(raw) {
 var setActive = function(userId, yourId) {
     if (userId != yourId) return;
     active = !active;
-    mppChatSend("Public bot commands were turned " + (active ? "on" : "off"), 0);
+    mppChatSend(PRE_ACTIVE + " Public bot commands were turned " + (active ? "on" : "off"), 0);
 }
 
 // Makes all commands into one string
