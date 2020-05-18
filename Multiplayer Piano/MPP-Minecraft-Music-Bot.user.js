@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.0
+// @version      2.1.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -75,8 +75,6 @@ const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an o
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
-const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
-const THIN_BORDER = "══════════════════════════════════════════════════════════════════════";
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
 const ADDITIONAL_FEEDBACK_INFO = ", including links to other Minecraft songs as MIDIs or sheet music"; // must keep the comma
 const BOT_ROOM_KEYPHRASE = "MINECRAFT"; // this is used for auto enabling the bot in the room that contains the key phrase (character case doesn't matter)
@@ -932,17 +930,6 @@ var mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, delay);
 }
 
-// Titles for some commands
-var mppTitleSend = function(str, delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str, delay);
-}
-
-// Sends in a bottom border if needed
-var mppEndSend = function(delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THIN_BORDER, delay);
-}
-
 // Send multiline chats, and return final delay to make things easier for timings
 var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
@@ -992,15 +979,12 @@ var playSong = function(songIndex) {
         ended = false;
         stopped = false;
         setTimeout(function() {Player.play()}, (autoplayOption != AUTOPLAY_OFF) ? END_SONG_DELAY : 0); // nice delay before next song
-        mppTitleSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-        mppChatSend("Now playing " + quoteString(currentSongName), 0);
+        mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongIndex != null) Player.loadDataUri(SONG_MIDIS[previousSongIndex]);
-        mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend(error, 0);
+        mppChatSend(PRE_ERROR + " (play) " + error, 0);
     }
-    mppEndSend(0);
 }
 
 // plays a random song, but not the same song twice in a row
@@ -1182,16 +1166,10 @@ var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OU
             case "lobby": case "test": color = MPP_LOBBY_ROOMCOLORS[area]; break;
         }
 
-        if (!setRoomColor(area, color)) {
-            mppTitleSend(PRE_ERROR + " (roomcolor" + (area + 1) + ")", delay);
-            mppChatSend("Invalid " + roomColorAreaToString(area) + " room color", delay);
-            mppEndSend(0);
-        }
+        if (!setRoomColor(area, color)) mppChatSend(PRE_ERROR + " (roomcolor" + (area + 1) + ") Invalid " + roomColorAreaToString(area) + " room color", delay);
     } else {
         color = currentRoomColor(area);
-        mppTitleSend(PRE_ROOMCOLOR, delay);
-        mppChatSend("The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
-        mppEndSend(0);
+        mppChatSend(PRE_ROOMCOLOR + " The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
     }
 }
 
@@ -1231,37 +1209,26 @@ var setOwnerOnlyPlay = function(choice) {
 // Shows limited message for user
 var playerLimited = function(username) {
     // displays message with their name about being limited
-    mppTitleSend(PRE_LIMITED, 0);
-    mppChatSend("You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot", 0);
 }
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
+    var error = PRE_ERROR;
     // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
         // if we're in the fishing room, ignore the fishing commands
-        var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
+        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing") console.log(error);
-        else {
-            mppTitleSend(PRE_ERROR, 0);
-            mppChatSend(error, 0);
-            mppEndSend(0);
-        }
-    } else {
-        mppTitleSend(PRE_ERROR, 0);
-        mppChatSend("No command entered", 0);
-        mppEndSend(0);
-    }
+    } else error += " No command entered";
+    if (currentRoom == "test/fishing") console.log(error);
+    else mppChatSend(error, 0);
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") {
-        mppTitleSend(PRE_HELP, 0);
-        mppChatSend("Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
-    } else {
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    else {
         var valid = null;
         var commandIndex = null;
         command = command.toLowerCase();
@@ -1274,29 +1241,20 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(COMMANDS, commandIndex), 0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
-    mppEndSend(0);
 }
 var about = function() {
-    mppTitleSend(PRE_ABOUT, 0);
-    mppChatSend(BOT_DESCRIPTION, 0);
+    mppChatSend(PRE_ABOUT + ' '+ BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
-    mppEndSend(0);
 }
 var play = function(args, argsString) {
+    var error = PRE_ERROR + " (play)";
     // args should contain one number related to a song
     if (args == null || args == "") {
-        if (autoplayOption == AUTOPLAY_OFF) {
-            playRandom();
-        } else {
-            mppTitleSend(PRE_ERROR + " (play)", 0);
-            mppChatSend("No song entered", 0);
-            mppEndSend(0);
-        }
+        if (autoplayOption == AUTOPLAY_OFF) playRandom();
+        else mppChatSend(error + " No song entered", 0);
     } else {
         var valid = null;
         // check which song was picked, and validate it
@@ -1342,115 +1300,90 @@ var play = function(args, argsString) {
             case "21":
             case "22":
             case "23": valid = parseInt(choice); playSong(valid - 1); break;
-            default: mppTitleSend(PRE_ERROR + " (play)", 0); mppChatSend("Invalid song selection", 0); mppEndSend(0); break;
+            default: mppChatSend(error + " Invalid song selection", 0); break;
         }
     }
 }
 var skip = function() {
     // skips the current song if on autoplay
     if (autoplayOption != AUTOPLAY_OFF) {
-        mppTitleSend(PRE_SKIP, 0);
-        if (ended) {
-            mppChatSend(NO_SONG, 0);
-        } else {
-            mppChatSend("Skipped song", 0);
+        if (ended) mppChatSend(PRE_SKIP + ' ' + NO_SONG, 0);
+        else {
+            mppChatSend(PRE_SKIP + " Skipped song", 0);
             Player.stop();
             ended = true;
         }
-    } else {
-        mppTitleSend(PRE_ERROR + " (skip)", 0);
-        mppChatSend("Need to be on random or ordered autoplay mode", 0);
-    }
-    mppEndSend(0);
+    } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode", 0);
 }
 var stop = function() {
     // stops the current song
-    mppTitleSend(PRE_STOP, 0);
-    if (ended) mppChatSend(NO_SONG, 0);
+    if (ended) mppChatSend(PRE_STOP + ' ' + NO_SONG, 0);
     else {
         stopSong();
         paused = false;
-        mppChatSend("Stopped playing " + quoteString(currentSongName), 0);
+        mppChatSend(PRE_STOP + " Stopped playing " + quoteString(currentSongName), 0);
         currentSongIndex = currentSongName = null;
     }
-    mppEndSend(0);
 }
 var pause = function() {
     // pauses the current song
-    mppTitleSend(PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-    if (ended) mppChatSend(NO_SONG, 0);
-    else if (paused) mppChatSend("The song is already paused", 0);
+    var title = PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
+    if (ended) mppChatSend(title + ' ' + NO_SONG, 0);
+    else if (paused) mppChatSend(title + " The song is already paused", 0);
     else {
         Player.pause();
         paused = true;
-        mppChatSend("Paused " + quoteString(currentSongName), 0);
+        mppChatSend(title + " Paused " + quoteString(currentSongName), 0);
     }
-    mppEndSend(0);
 }
 var resume = function() {
     // resumes the current song
-    mppTitleSend(PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0)
-    if (ended) mppChatSend(NO_SONG, 0);
+    var title = PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
+    if (ended) mppChatSend(title + ' ' + NO_SONG, 0);
     else if (paused) {
         Player.play();
         paused = false;
-        mppChatSend("Resumed " + quoteString(currentSongName), 0);
-    } else mppChatSend("The song is already playing", 0);
-    mppEndSend(0);
+        mppChatSend(title + " Resumed " + quoteString(currentSongName), 0);
+    } else mppChatSend(title + " The song is already playing", 0);
 }
 var song = function() {
     // shows current song playing
-    mppTitleSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+    var title = PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend("Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
-    } else mppChatSend(NO_SONG, 0);
-    mppEndSend(0);
+        mppChatSend(title + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
+    } else mppChatSend(title + ' ' + NO_SONG, 0);
 }
 var album = function() {
     // show list of songs available
-    mppTitleSend(PRE_ALBUM, 0);
-    endDelay = mppChatMultiSend(SONG_NAMES, null, chatDelay);
-    mppEndSend(endDelay);
+    mppChatSend(PRE_ALBUM, 0);
+    mppChatMultiSend(SONG_NAMES, null, chatDelay);
 }
 var repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
-    mppTitleSend(PRE_REPEAT, 0);
-    mppChatSend("Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_REPEAT + " Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
 }
 var sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
-    mppTitleSend(PRE_SUSTAIN, 0);
-    mppChatSend("Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
-    mppEndSend(0);
+    mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
 }
 var autoplay = function(choice) {
     // changes the type of autoplay
     var currentAutoplay = getAutoplayString(autoplayOption);
 
-    if (!exists(choice) || choice == "") {
-        mppTitleSend(PRE_AUTOPLAY, 0);
-        mppChatSend("Autoplay is currently set to " + currentAutoplay, 0);
-    } else if (getAutoplayValue(choice) == autoplayOption) {
-        mppTitleSend(PRE_AUTOPLAY, 0);
-        mppChatSend("Autoplay is already set to " + currentAutoplay, 0);
-    } else {
+    if (!exists(choice) || choice == "") mppChatSend(PRE_AUTOPLAY + " Autoplay is currently set to " + currentAutoplay, 0);
+    else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_AUTOPLAY + " Autoplay is already set to " + currentAutoplay, 0);
+    else {
         var valid = getAutoplayValue(choice);
         if (valid != null) {
             stopped = false;
             toggleAutoplay(valid);
-            mppTitleSend(PRE_AUTOPLAY, 0);
-            mppChatSend("Autoplay set to " + getAutoplayString(valid), 0);
-        } else {
-            mppTitleSend(PRE_ERROR + " (autoplay)", 0);
-            mppChatSend("Invalid autoplay choice", 0);
-        }
+            mppChatSend(PRE_AUTOPLAY + " Autoplay set to " + getAutoplayString(valid), 0);
+        } else mppChatSend(PRE_ERROR + " (autoplay) Invalid autoplay choice", 0);
     }
-    mppEndSend(0);
 }
 var art = function(name, yourParticipant) {
     // sends Minecraft mob ASCII art, when some isn't already being displayed
@@ -1475,22 +1408,14 @@ var art = function(name, yourParticipant) {
             case "grass": case "dirt": mppArtSend(colorIsDark ? grassArt : grassArtInverted, 0); break;
             case "cobble": case "stone": case "cobblestone": mppArtSend(colorIsDark ? cobblestoneArt : cobblestoneArtInverted, 0); break;
             case "tnt": mppArtSend(colorIsDark ? tntArt : tntArtInverted, 0); break;
-            default: mppTitleSend(PRE_ERROR + " (art)", 0); mppChatSend("There is no art for " + quoteString(name), 0); mppEndSend(0); break;
+            default: mppChatSend(PRE_ERROR + " (art) There is no art for " + quoteString(name), 0); break;
         }
-    } else {
-        if (!artDisplaying) {
-            mppTitleSend(PRE_ART, 0);
-            mppChatSend("Your choices are " + ART_CHOICES, 0);
-        }
-        mppEndSend(0);
-    }
+    } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
 var roomcolor = function(command) {
     if (!exists(command) || command == "") {
-        mppTitleSend(PRE_ROOMCOLOR, 0);
-        mppChatSend(ROOMCOLOR_OPTIONS, 0);
+        mppChatSend(PRE_ROOMCOLOR + ' ' + ROOMCOLOR_OPTIONS, 0);
         mppChatSend("Commands: " + formattedCommands(ROOMCOLOR_COMMANDS, LIST_BULLET + PREFIX, true), 0);
-        mppEndSend(0);
     } else {
         var valid = null;
         var commandIndex = null;
@@ -1504,11 +1429,8 @@ var roomcolor = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
-            mppEndSend(0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
 }
 var roomcolor1 = function(color) {
@@ -1522,6 +1444,7 @@ var roomcolors = function(argsColors) {
     var color1 = currentRoomColor(INNER_ROOM_COLOR);
     var color2 = currentRoomColor(OUTER_ROOM_COLOR);
     if (exists(argsColors) && argsColors.length > 0) {
+        var error = PRE_ERROR + " (roomcolors)";
         // make sure extra spaces aren't being used (will show up as extra arguments)
         if (argsColors.length <= 2) {
             // get color1
@@ -1543,22 +1466,10 @@ var roomcolors = function(argsColors) {
                 default: color2 = newColor2;
             }
 
-            if (!setRoomColors(color1, color2)) {
-                mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-                mppChatSend(MPP.client.isOwner() ? "Invalid room color(s)" : NOT_OWNER, 0);
-                mppEndSend(0);
-            }
-        } else {
-            mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-            mppChatSend("Too many arguments (are you sure you removed spaces from the color values?)", 0);
-            mppEndSend(0);
-        }
-    } else {
-        // show the room colors
-        mppTitleSend(PRE_ROOMCOLOR, 0);
-        mppChatSend("The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
-        mppEndSend(0);
-    }
+            if (!setRoomColors(color1, color2)) mppChatSend(error + ' ' + (MPP.client.isOwner() ? "Invalid room color(s)" : NOT_OWNER), 0);
+        } else mppChatSend(error + "Too many arguments (are you sure you removed spaces from the color values?)", 0);
+    } // show the room colors
+    else mppChatSend(PRE_ROOMCOLOR + " The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -1580,9 +1491,7 @@ var ping = function() {
 }
 var feedback = function() {
     // just sends feedback url to user
-    mppTitleSend(PRE_FEEDBACK, 0);
-    mppChatSend("Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
 }
 
 // =============================================== MAIN
