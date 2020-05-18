@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.9
+// @version      2.0.0
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -71,8 +71,6 @@ const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an o
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
-const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
-const THIN_BORDER = "══════════════════════════════════════════════════════════════════════";
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
@@ -598,17 +596,6 @@ var mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, delay);
 }
 
-// Titles for some commands
-var mppTitleSend = function(str, delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str, delay);
-}
-
-// Sends in a bottom border if needed
-var mppEndSend = function(delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THIN_BORDER, delay);
-}
-
 // Send multiline chats, and return final delay to make things easier for timings
 var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
@@ -652,15 +639,12 @@ var playSong = function(songName, songData) {
         ended = false;
         stopped = false;
         Player.play();
-        mppTitleSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-        mppChatSend("Now playing " + quoteString(currentSongName), 0);
+        mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongData != null) Player.loadDataUri(previousSongData);
-        mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend(error, 0);
+        mppChatSend(PRE_ERROR + " (play) " + error, 0);
     }
-    mppEndSend(0);
 }
 
 // Plays the song from a URL if it's a MIDI
@@ -673,6 +657,7 @@ var playURL = function(songUrl, songData) {
 var playFile = function(songFile) {
     var songName = null;
 
+    var error = PRE_ERROR + " (play)";
     // load in the file
     if (exists(songFile)) {
         songName = songFile.name.split(/(\\|\/)/g).pop();
@@ -683,22 +668,10 @@ var playFile = function(songFile) {
                     currentFileLocation = songFile.name;
                     playSong(songName, base64data);
                     uploadButton.value = ""; // reset file input
-                } else {
-                    mppTitleSend(PRE_ERROR + " (play)", 0);
-                    mppChatSend("Unexpected result, MIDI file couldn't load", 0);
-                    mppEndSend(0);
-                }
+                } else mppChatSend(error + " Unexpected result, MIDI file couldn't load", 0);
             });
-        } else {
-            mppTitleSend(PRE_ERROR + " (play)", 0);
-            mppChatSend("The file choosen, is either corrupted, or it's not really a MIDI file", 0);
-            mppEndSend(0);
-        }
-    } else {
-        mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend("MIDI file not found", 0);
-        mppEndSend(0);
-    }
+        } else mppChatSend(error + " The file choosen, is either corrupted, or it's not really a MIDI file", 0);
+    } else mppChatSend(error + " MIDI file not found", 0);
 }
 
 // Change the room colors
@@ -835,16 +808,10 @@ var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OU
             case "lobby": case "test": color = MPP_LOBBY_ROOMCOLORS[area]; break;
         }
 
-        if (!setRoomColor(area, color)) {
-            mppTitleSend(PRE_ERROR + " (roomcolor" + (area + 1) + ")", delay);
-            mppChatSend("Invalid " + roomColorAreaToString(area) + " room color", delay);
-            mppEndSend(0);
-        }
+        if (!setRoomColor(area, color)) mppChatSend(PRE_ERROR + " (roomcolor" + (area + 1) + ") Invalid " + roomColorAreaToString(area) + " room color", delay);
     } else {
         color = currentRoomColor(area);
-        mppTitleSend(PRE_ROOMCOLOR, delay);
-        mppChatSend("The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
-        mppEndSend(0);
+        mppChatSend(PRE_ROOMCOLOR + " The " + roomColorAreaToString(area) + " room color is currently set to " + color, delay);
     }
 }
 
@@ -1015,37 +982,26 @@ var getSongTimesFormatted = function(elapsed, duration) {
 // Shows limited message for user
 var playerLimited = function(username) {
     // displays message with their name about being limited
-    mppTitleSend(PRE_LIMITED, 0);
-    mppChatSend("You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot", 0);
 }
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
+    var error = PRE_ERROR;
     // if cmd is empty somehow, show it
     if (exists(cmd) && cmd != "") {
         // if we're in the fishing room, ignore the fishing commands
-        var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
+        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing") console.log(error);
-        else {
-            mppTitleSend(PRE_ERROR, 0);
-            mppChatSend(error, 0);
-            mppEndSend(0);
-        }
-    } else {
-        mppTitleSend(PRE_ERROR, 0);
-        mppChatSend("No command entered", 0);
-        mppEndSend(0);
-    }
+    } else error += " No command entered";
+    if (currentRoom == "test/fishing") console.log(error);
+    else mppChatSend(error, 0);
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") {
-        mppTitleSend(PRE_HELP, 0);
-        mppChatSend("Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
-    } else {
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    else {
         var valid = null;
         var commandIndex = null;
         command = command.toLowerCase();
@@ -1058,33 +1014,23 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(COMMANDS, commandIndex), 0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
-    mppEndSend(0);
 }
 var about = function() {
-    mppTitleSend(PRE_ABOUT, 0);
-    mppChatSend(BOT_DESCRIPTION, 0);
+    mppChatSend(PRE_ABOUT + ' '+ BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
-    mppEndSend(0);
 }
 var play = function(url) {
+    var error = PRE_ERROR + " (play)";
     // URL needs to be entered to play a song
-    if (!exists(url) || url == "") {
-        mppTitleSend(PRE_ERROR + " (play)", 0);
-        mppChatSend("No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
-        mppEndSend(0);
-    } else {
+    if (!exists(url) || url == "") mppChatSend(error + " No MIDI url entered... " + WHERE_TO_FIND_MIDIS, 0);
+    else {
         // downloads file if possible and then plays it if it's a MIDI
         urlToBlob(url, function(blob) {
-            if (blob == null) {
-                mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS, 0);
-                mppEndSend(0);
-            } else if (isMidi(blob) || isOctetStream(blob)) {
+            if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS, 0);
+            else if (isMidi(blob) || isOctetStream(blob)) {
                 fileOrBlobToBase64(blob, function(base64data) {
                     // play song only if we got data
                     if (exists(base64data)) {
@@ -1092,96 +1038,68 @@ var play = function(url) {
                             base64data = base64data.replace("application/octet-stream", "audio/midi");
                         }
                         playURL(url, base64data);
-                    } else {
-                        mppTitleSend(PRE_ERROR + " (play)", 0);
-                        mppChatSend("Unexpected result, MIDI file couldn't load", 0);
-                        mppEndSend(0);
-                    }
+                    } else mppChatSend(error + " Unexpected result, MIDI file couldn't load", 0);
                 });
-            } else {
-                mppTitleSend(PRE_ERROR + " (play)", 0);
-                mppChatSend("Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS, 0);
-                mppEndSend(0);
-            }
+            } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS, 0);
         });
     }
 }
 var stop = function() {
     // stops the current song
-    mppTitleSend(PRE_STOP, 0);
-    if (ended) mppChatSend(NO_SONG, 0);
+    if (ended) mppChatSend(PRE_STOP + ' ' + NO_SONG, 0);
     else {
         stopSong();
         paused = false;
-        mppChatSend("Stopped playing " + quoteString(currentSongName), 0);
+        mppChatSend(PRE_STOP + " Stopped playing " + quoteString(currentSongName), 0);
         currentFileLocation = currentSongName = null;
     }
-    mppEndSend(0);
 }
 var pause = function() {
     // pauses the current song
-    if (ended) {
-        mppTitleSend(PRE_PAUSE, 0);
-        mppChatSend(NO_SONG, 0);
-    } else {
-        mppTitleSend(PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-        if (paused) mppChatSend("The song is already paused", 0);
+    if (ended) mppChatSend(PRE_PAUSE + ' ' + NO_SONG, 0);
+    else {
+        var title = PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
+        if (paused) mppChatSend(title + " The song is already paused", 0);
         else {
             Player.pause();
             paused = true;
-            mppChatSend("Paused " + quoteString(currentSongName), 0);
+            mppChatSend(title + " Paused " + quoteString(currentSongName), 0);
         }
     }
-    mppEndSend(0);
 }
 var resume = function() {
     // resumes the current song
-    if (ended) {
-        mppTitleSend(PRE_RESUME, 0);
-        mppChatSend(NO_SONG, 0);
-    } else {
-        mppTitleSend(PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
+    if (ended) mppChatSend(PRE_RESUME + ' ' + NO_SONG, 0);
+    else {
+        var title = PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
         if (paused) {
             Player.play();
             paused = false;
-            mppChatSend("Resumed " + quoteString(currentSongName), 0);
-        } else mppChatSend("The song is already playing", 0);
+            mppChatSend(title + " Resumed " + quoteString(currentSongName), 0);
+        } else mppChatSend(title + " The song is already playing", 0);
     }
-    mppEndSend(0);
 }
 var song = function() {
     // shows current song playing
-    if (exists(currentSongName) && currentSongName != "") {
-        mppTitleSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted), 0);
-        mppChatSend("Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
-    } else {
-        mppTitleSend(PRE_SONG, 0);
-        mppChatSend(NO_SONG, 0);
-    }
-    mppEndSend(0);
+    if (exists(currentSongName) && currentSongName != "") mppChatSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName), 0);
+    else mppChatSend(PRE_SONG + ' ' + NO_SONG, 0);
 }
 var repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
-    mppTitleSend(PRE_REPEAT, 0);
-    mppChatSend("Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_REPEAT + " Repeat set to " + (repeatOption ? "" : "not") + " repeating", 0);
 }
 var sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
-    mppTitleSend(PRE_SUSTAIN, 0);
-    mppChatSend("Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
-    mppEndSend(0);
+    mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"), 0);
 }
 var roomcolor = function(command) {
     if (!exists(command) || command == "") {
-        mppTitleSend(PRE_ROOMCOLOR, 0);
-        mppChatSend(ROOMCOLOR_OPTIONS, 0);
+        mppChatSend(PRE_ROOMCOLOR + ' ' + ROOMCOLOR_OPTIONS, 0);
         mppChatSend("Commands: " + formattedCommands(ROOMCOLOR_COMMANDS, LIST_BULLET + PREFIX, true), 0);
-        mppEndSend(0);
     } else {
         var valid = null;
         var commandIndex = null;
@@ -1196,9 +1114,7 @@ var roomcolor = function(command) {
         }
         // display info on command if it exists
         if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
-            mppEndSend(0);
+            mppChatSend(PRE_HELP + ' ' + formatCommandInfo(ROOMCOLOR_COMMANDS, commandIndex), 0);
         } else cmdNotFound(command);
     }
 }
@@ -1213,6 +1129,7 @@ var roomcolors = function(argsColors) {
     var color1 = currentRoomColor(INNER_ROOM_COLOR);
     var color2 = currentRoomColor(OUTER_ROOM_COLOR);
     if (exists(argsColors) && argsColors.length > 0) {
+        var error = PRE_ERROR + " (roomcolors)";
         // make sure extra spaces aren't being used (will show up as extra arguments)
         if (argsColors.length <= 2) {
             // get color1
@@ -1234,22 +1151,10 @@ var roomcolors = function(argsColors) {
                 default: color2 = newColor2;
             }
 
-            if (!setRoomColors(color1, color2)) {
-                mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-                mppChatSend(MPP.client.isOwner() ? "Invalid room color(s)" : NOT_OWNER, 0);
-                mppEndSend(0);
-            }
-        } else {
-            mppTitleSend(PRE_ERROR + " (roomcolors)", 0);
-            mppChatSend("Too many arguments (are you sure you removed spaces from the color values?)", 0);
-            mppEndSend(0);
-        }
-    } else {
-        // show the room colors
-        mppTitleSend(PRE_ROOMCOLOR, 0);
-        mppChatSend("The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
-        mppEndSend(0);
-    }
+            if (!setRoomColors(color1, color2)) mppChatSend(error + ' ' + (MPP.client.isOwner() ? "Invalid room color(s)" : NOT_OWNER), 0);
+        } else mppChatSend(error + "Too many arguments (are you sure you removed spaces from the color values?)", 0);
+    } // show the room colors
+    else mppChatSend(PRE_ROOMCOLOR + " The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -1271,9 +1176,7 @@ var ping = function() {
 }
 var feedback = function() {
     // just sends feedback url to user
-    mppTitleSend(PRE_FEEDBACK, 0);
-    mppChatSend("Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
 }
 
 // =============================================== MAIN
