@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.1
+// @version      2.0.2
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -43,6 +43,7 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
+const END_SONG_DELAY = SECOND; // makes transitioning songs in autoplay feel better
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
@@ -261,7 +262,6 @@ var Player = new MidiPlayer.Player(function(event) {
         } else if (sustainOption && (currentEvent == "Note off" || (currentEvent == "Note on" && event.velocity == 0))) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
         paused = false;
         if (!repeatOption) {
@@ -642,6 +642,7 @@ var playSong = function(songName, songData) {
         ended = false;
         stopped = false;
         Player.play();
+        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
     } catch(error) {
         // reload the previous working file if there is one
@@ -1287,7 +1288,8 @@ var repeatingTasks = setInterval(function() {
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
         ended = false;
-        Player.play();
+        // nice delay before playing song again
+        setTimeout(function() {Player.play()}, END_SONG_DELAY);
     }
 }, TENTH_OF_SECOND);
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.2
+// @version      2.1.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -682,7 +682,6 @@ var Player = new MidiPlayer.Player(function(event) {
         } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
         paused = false;
         if (!repeatOption) currentSongIndex = null;
@@ -981,8 +980,12 @@ var playSong = function(songIndex) {
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
         ended = false;
         stopped = false;
-        setTimeout(function() {Player.play()}, (autoplayOption != AUTOPLAY_OFF) ? END_SONG_DELAY : 0); // nice delay before next song
-        mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
+        // nice delay before next song
+        setTimeout(function() {
+            Player.play();
+            currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+            mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
+        }, (autoplayOption != AUTOPLAY_OFF) ? END_SONG_DELAY : 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongIndex != null) Player.loadDataUri(SONG_MIDIS[previousSongIndex]);
@@ -1609,7 +1612,8 @@ var repeatingTasks = setInterval(function() {
     // do repeat
     else if (repeatOption && ended && !stopped && exists(currentSongIndex)) {
         ended = false;
-        Player.play();
+        // nice delay before playing song again
+        setTimeout(function() {Player.play()}, END_SONG_DELAY);
     }
 }, TENTH_OF_SECOND);
 
