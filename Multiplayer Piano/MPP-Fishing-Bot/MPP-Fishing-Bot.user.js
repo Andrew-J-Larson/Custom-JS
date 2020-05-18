@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.5
+// @version      1.5.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -32,7 +32,7 @@ const MINUTE = 60 * SECOND;
 const FIVE_MINUTES = 5 * MINUTE;
 
 // URLs
-const FEEDBACK_URL = "------------------------";
+const FEEDBACK_URL = "https://forms.gle/YJRWFTvh7sFZBuDCA";
 
 // Bot custom constants
 const FISHING_BOT_ID = "565887aa860ba601611b7615";
@@ -51,8 +51,8 @@ const CMD_PICK = "pick";
 // const CMD_TREE = "tree";
 // const CMD_COLOR = "color";
 const CMD_TREE = "tree";
-const CMD_BOT_USER_COLOR = "color";
 const CMD_BOT_AUDIO_TOGGLER = "audio";
+const CMD_BOT_FEEDBACK = "feedback";
 const CAUGHT = "caught";
 const ATE = "ate";
 const COLORED = "made him/her turn";
@@ -176,6 +176,7 @@ MPP.client.on('a', function (msg) {
                 audioPlay(pickedSound);
             }
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
+            else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_MSG + FEEDBACK_URL);
         }
     } // check for `fishing` bot response
     else if (userId == FISHING_BOT_ID) {
