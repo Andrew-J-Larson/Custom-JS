@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.0
+// @version      0.2.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -23,6 +23,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -55,6 +56,7 @@ const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
+    ["link", "get the download link for this bot"],
     ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
     ["hi_[choice]", "turns the welcome message on or off; e.g. " + PREFIX + "hi_on"],
     ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
@@ -66,6 +68,7 @@ const COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
+const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_HI = PRE_MSG + "[Hi]";
 const PRE_BYE = PRE_MSG + "[Bye]";
 const PRE_PING = PRE_MSG + "[Ping]";
@@ -213,6 +216,9 @@ var about = function() {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
 }
+var link = function() {
+    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+}
 var greetMsgSet = function(cmd, intGreet, msg) {
     var greet = "The ";
     var title;
@@ -290,6 +296,7 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
+            case "link": case "li": if (active) link(); break;
             case "hi": if (active) greetMsgSet(command.toLowerCase(), GREET_HI, argumentsString); break;
             case "bye": if (active) greetMsgSet(command.toLowerCase(), GREET_BYE, argumentsString); break;
             case "hi_on": if (active) greetToggle(command.toLowerCase(), GREET_HI, true); break;

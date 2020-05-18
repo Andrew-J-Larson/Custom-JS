@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.0
+// @version      2.0.1
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -36,6 +36,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -78,6 +79,7 @@ const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
+    ["link", "get the download link for this bot"],
     ["play [URL]", "plays a specific song (URL must be a direct link)"],
     ["stop", "stops all music from playing"],
     ["pause", "pauses the music at that moment in the song"],
@@ -101,6 +103,7 @@ const ROOMCOLOR_COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
+const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_PLAY = PRE_MSG + "[Play]";
 const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
@@ -1022,6 +1025,9 @@ var about = function() {
     mppChatSend(PRE_ABOUT + ' '+ BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
 }
+var link = function() {
+    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+}
 var play = function(url) {
     var error = PRE_ERROR + " (play)";
     // URL needs to be entered to play a song
@@ -1232,6 +1238,7 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (!preventsPlaying) help(argumentsString); break;
             case "about": case "ab": if (!preventsPlaying) about(); break;
+            case "link": case "li": if (!preventsPlaying) link(); break;
             case "play": case "p": if (active && !preventsPlaying) play(argumentsString); break;
             case "stop": case "s": if (active && !preventsPlaying) stop(); break;
             case "pause": case "pa": if (active && !preventsPlaying) pause(); break;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.7
+// @version      1.5.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -42,6 +42,7 @@ const PRE_MSG = NAME + " (v" + VERSION + "): ";
 // `fishing` bot specific strings
 const CMD_PREFIX = '/';
 const CMD_HELP = "help";
+const CMD_LINK = "link";
 const CMD_CAST = ["cast", "fish"];
 const CMD_REEL = "reel";
 //const CMD_SACK = ["sack", "caught", "count_fish"];
@@ -162,7 +163,8 @@ MPP.client.on('a', function (msg) {
     if (checkCommand.indexOf(CMD_PREFIX) == 0) {
         var command = checkCommand.substring(CMD_PREFIX.length);
         // if anyone sent anything
-        if (command == CMD_HELP) MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
+        if (command == CMD_HELP) console.log("NOT IMPLEMENTED"); // NEED TO CODE ME
+        else if (command == CMD_LINK) MPP.chat.send(PRE_MSG + DOWNLOAD_URL);
         else if (userId == yourId) { // if you sent something
             // check `fishing` commands
             if (command == CMD_CAST[0] || command == CMD_CAST[1]) {

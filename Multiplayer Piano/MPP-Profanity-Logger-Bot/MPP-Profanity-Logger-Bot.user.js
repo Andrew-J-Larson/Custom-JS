@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -14,6 +14,8 @@
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
+
+// ============================================================================ TODO: Fix recognising bad words before/after punctuation.
 
 /* globals MPP */
 
@@ -35,6 +37,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -69,6 +72,7 @@ const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
+    ["link", "get the download link for this bot"],
     ["ban [user id]","bans the player while running the bot"],
     ["unban [user id]","unbans the player if they were banned while running the bot"],
     ["listban", "shows all the permanently and temporarily banned players"],
@@ -79,6 +83,7 @@ const COMMANDS = [
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
+const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_BAN = PRE_MSG + "[Ban]";
 const PRE_UNBAN = PRE_MSG + "[Unban]";
 const PRE_LISTBAN = PRE_MSG + "[Listban]";
@@ -242,6 +247,9 @@ var about = function() {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
 }
+var link = function() {
+    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+}
 var ban = function(userId, yourId) {
     var error = PRE_ERROR + " (ban)";
     if (!exists(userId)) {
@@ -395,6 +403,7 @@ MPP.client.on('a', function (msg) {
         switch (command.toLowerCase()) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
+            case "link": case "li": if (active) link(); break;
             case "ban": case "b": if (active) ban(argumentsString, yourId); break;
             case "unban": case "ub": if (active) unban(argumentsString, yourId); break;
             case "listban": case "lb": if (active) listban(); break;
