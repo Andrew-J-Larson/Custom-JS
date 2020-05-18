@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -62,8 +62,6 @@ const BOT_LOG_PROFANITY = true; // this is just to log anyone swearing in the ro
 // Bot custom constants
 const PREFIX = "!";
 const PREFIX_LENGTH = PREFIX.length;
-const THICK_BORDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
-const THIN_BORDER = "══════════════════════════════════════════════════════════════════════";
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to LDNOOBW for the list of filthy words that are constantly updated."
@@ -175,17 +173,6 @@ var mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, delay);
 }
 
-// Titles for some commands
-var mppTitleSend = function(str, delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THICK_BORDER, delay);
-    mppChatSend(str, delay);
-}
-
-// Sends in a bottom border if needed
-var mppEndSend = function(delay) {
-    if (chatDelay != SLOW_CHAT_DELAY) mppChatSend(THIN_BORDER, delay);
-}
-
 // Send multiline chats, and return final delay to make things easier for timings
 var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
@@ -221,29 +208,20 @@ var getPlayers = function(playersArray) {
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     // if cmd is empty somehow, show it
+    var error = PRE_ERROR;
     if (exists(cmd) && cmd != "") {
         // if we're in the fishing room, ignore the fishing commands
-        var error = "Invalid command, " + quoteString(cmd) + " doesn't exist";
+        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
         cmd = cmd.toLowerCase();
-        if (currentRoom == "test/fishing") console.log(error);
-        else {
-            mppTitleSend(PRE_ERROR, 0);
-            mppChatSend(error, 0);
-            mppEndSend(0);
-        }
-    } else {
-        mppTitleSend(PRE_ERROR, 0);
-        mppChatSend("No command entered", 0);
-        mppEndSend(0);
-    }
+    } else error += " No command entered";
+    if (currentRoom == "test/fishing") console.log(error);
+    else mppChatSend(error, 0);
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") {
-        mppTitleSend(PRE_HELP, 0);
-        mppChatSend("Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
-    } else {
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    else {
         var valid = null;
         var commandIndex = null;
         command = command.toLowerCase();
@@ -256,32 +234,23 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) {
-            mppTitleSend(PRE_HELP, 0);
-            mppChatSend(formatCommandInfo(COMMANDS, commandIndex), 0);
-        } else cmdNotFound(command);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        else cmdNotFound(command);
     }
-    mppEndSend(0);
 }
 var about = function() {
-    mppTitleSend(PRE_ABOUT, 0);
-    mppChatSend(BOT_DESCRIPTION, 0);
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION, 0);
     mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
-    mppEndSend(0);
 }
 var ban = function(userId, yourId) {
+    var error = PRE_ERROR + " (ban)";
     if (!exists(userId)) {
-        mppTitleSend(PRE_ERROR + " (ban)", 0);
-        mppChatSend("Nothing entered", 0);
-        mppEndSend(0);
+        mppChatSend(error + " Nothing entered", 0);
         return;
     } else userId = userId.toLowerCase();
     // check user is not self
-    if (userId == yourId) {
-        mppTitleSend(PRE_ERROR + " (ban)", 0);
-        mppChatSend("Can't ban yourself", 0);
-        mppEndSend(0);
-    } else {
+    if (userId == yourId) mppChatSend(error + " Can't ban yourself", 0);
+    else {
         var permBanned = false;
         var tempBanned = false;
         // check if user is in perm ban
@@ -291,9 +260,7 @@ var ban = function(userId, yourId) {
             for(i = 0; i < bannedPlayersSize; ++i) {
                 if (userId == BANNED_PLAYERS[i][0]) {
                     permBanned = true;
-                    mppTitleSend(PRE_ERROR + " (ban)", 0);
-                    mppChatSend("This user is already permanently banned (set by script constants)", 0);
-                    mppEndSend(0);
+                    mppChatSend(error + " This user is already permanently banned (set by script constants)", 0);
                 };
             }
         }
@@ -304,9 +271,7 @@ var ban = function(userId, yourId) {
             for(j = 0; j < tempBannedPlayersSize; ++j) {
                 if (userId == tempBannedPlayers[j][0]) {
                     tempBanned = true;
-                    mppTitleSend(PRE_ERROR + " (ban)", 0);
-                    mppChatSend("This user is already temporarily banned (set by using the command)", 0);
-                    mppEndSend(0);
+                    mppChatSend(error + " This user is already temporarily banned (set by using the command)", 0);
                 }
             }
         }
@@ -328,30 +293,20 @@ var ban = function(userId, yourId) {
             if (username != null) {
                 tempBannedPlayers.push([userId, username]);
                 MPP.client.sendArray([{m: "kickban", _id: userId, ms: 3600000}]);
-                mppTitleSend(PRE_BAN, 0);
-                mppChatSend(quoteString(username) + " (" + userId + ") has been banned", 0);
-                mppEndSend(0);
-            } else {
-                mppTitleSend(PRE_BAN, 0);
-                mppChatSend(quoteString(userId) + " isn't a valid user id", 0);
-                mppEndSend(0);
-            }
+                mppChatSend(PRE_BAN + ' ' + quoteString(username) + " (" + userId + ") has been banned", 0);
+            } else mppChatSend(PRE_BAN + ' ' + quoteString(userId) + " isn't a valid user id", 0);
         }
     }
 }
 var unban = function(userId, yourId) {
+    var error = PRE_ERROR + " (unban)";
     if (!exists(userId)) {
-        mppTitleSend(PRE_ERROR + " (unban)", 0);
-        mppChatSend("Nothing entered", 0);
-        mppEndSend(0);
+        mppChatSend(error + " Nothing entered", 0);
         return;
     } else userId = userId.toLowerCase();
     // check user is not self
-    if (userId == yourId) {
-        mppTitleSend(PRE_ERROR + " (unban)", 0);
-        mppChatSend("Can't unban yourself", 0);
-        mppEndSend(0);
-    } else {
+    if (userId == yourId) mppChatSend(error + " Can't unban yourself", 0);
+    else {
         var permBanned = false;
         var tempBanned = false;
         // check if user is in perm ban
@@ -361,9 +316,7 @@ var unban = function(userId, yourId) {
             for(i = 0; i < bannedPlayersSize; ++i) {
                 if (userId == BANNED_PLAYERS[i][0]) {
                     permBanned = true;
-                    mppTitleSend(PRE_ERROR + " (unban)", 0);
-                    mppChatSend("Permanently banned players can only be unbanned from editing the script constants", 0);
-                    mppEndSend(0);
+                    mppChatSend(error + " Permanently banned players can only be unbanned from editing the script constants", 0);
                 };
             }
         }
@@ -395,22 +348,15 @@ var unban = function(userId, yourId) {
             // add to ban list
             if (index != null) {
                 tempBannedPlayers.splice(index, 1);
-                mppTitleSend(PRE_BAN, 0);
-                mppChatSend(quoteString(username) + " (" + userId + ") has been unbanned", 0);
-                mppEndSend(0);
-            } else {
-                mppTitleSend(PRE_BAN, 0);
-                mppChatSend(quoteString(userId) + " isn't a valid user id", 0);
-                mppEndSend(0);
-            }
+                mppChatSend(PRE_UNBAN + ' ' + quoteString(username) + " (" + userId + ") has been unbanned", 0);
+            } else mppChatSend(PRE_UNBAN + ' ' + quoteString(userId) + " isn't a valid user id", 0);
         }
     }
 }
 var listban = function() {
-    mppTitleSend(PRE_LISTBAN, 0);
+    mppChatSend(PRE_LISTBAN, 0);
     mppChatSend("Permanent: " + getPlayers(BANNED_PLAYERS), 0);
     mppChatSend("Temporary: " + getPlayers(tempBannedPlayers), 0);
-    mppEndSend(0);
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -422,9 +368,7 @@ var clear = function() {
 }
 var feedback = function() {
     // just sends feedback url to user
-    mppTitleSend(PRE_FEEDBACK, 0);
-    mppChatSend("Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
-    mppEndSend(0);
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
 }
 
 // =============================================== MAIN
@@ -507,8 +451,7 @@ var clearSoundWarning = setInterval(function() {
                 active = true;
                 currentRoom = MPP.client.channel._id;
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
-                mppTitleSend(PRE_MSG + " Online!", 0);
-                mppEndSend(0);
+                console.log(PRE_MSG + " Online!");
             }
         }, TENTH_OF_SECOND);
     }
