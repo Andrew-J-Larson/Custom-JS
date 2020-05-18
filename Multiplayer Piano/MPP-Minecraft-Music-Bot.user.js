@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.3
+// @version      2.1.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -104,7 +104,7 @@ const COMMANDS = [
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["active", "toggles the bot player commands on or off (bot owner only)"]
+    ["active", "toggles the public bot commands on or off (owner only)"]
 ];
 const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
 const ROOMCOLOR_COMMANDS = [
@@ -908,7 +908,7 @@ var colorToHEX = function(strColor) {
 var setActive = function(userId, yourId) {
     if (userId != yourId) return;
     active = !active;
-    console.log("Bot was turned " + (active ? "on" : "off") + '.');
+    mppChatSend("Public bot commands were turned " + (active ? "on" : "off"), 0);
 }
 
 // Makes all commands into one string

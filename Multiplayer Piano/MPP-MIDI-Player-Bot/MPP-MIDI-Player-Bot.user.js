@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.2
+// @version      2.0.3
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -92,7 +92,7 @@ const COMMANDS = [
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["active", "toggles the bot player commands on or off (bot owner only)"]
+    ["active", "toggles the public bot commands on or off (owner only)"]
 ];
 const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
 const ROOMCOLOR_COMMANDS = [
@@ -575,7 +575,7 @@ var isOctetStream = function(raw) {
 var setActive = function(userId, yourId) {
     if (userId != yourId) return;
     active = !active;
-    console.log("Bot was turned " + (active ? "on" : "off") + '.');
+    mppChatSend("Public bot commands were turned " + (active ? "on" : "off"), 0);
 }
 
 // Makes all commands into one string
