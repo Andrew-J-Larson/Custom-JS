@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.6
+// @version      2.1.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -52,8 +52,8 @@ const END_SONG_DELAY = SECOND; // makes transitioning songs in autoplay feel bet
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = ["1251d6256fc2264660957fb9","98a00e1626613fa4a683c14e"];
-const LIMITED_PLAYERS = ["9f435879f55c87c238a1575d","a1c39199a3676112afce1cff"];
+const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e"];
+const LIMITED_PLAYERS = ["1251d6256fc2264660957fb9"];
 
 // MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer
 const MPP_DEFAULT_ROOMCOLORS = ["rgb(59, 80, 84)", "rgb(0, 16, 20)"];
@@ -1583,6 +1583,8 @@ MPP.client.on('a', function (msg) {
     }
 });
 MPP.client.on("ch", function(msg) {
+    // stop any songs that might have been playing before changing rooms
+    stopSong();
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
