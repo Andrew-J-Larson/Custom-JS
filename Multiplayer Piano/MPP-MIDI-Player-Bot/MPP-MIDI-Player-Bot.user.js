@@ -1261,13 +1261,13 @@ MPP.client.on('a', function (msg) {
     }
 });
 MPP.client.on("ch", function(msg) {
-    // stop any songs that might have been playing before changing rooms
-    stopSong();
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
     currentRoom = MPP.client.channel._id;
+    // stop any songs that might have been playing before changing rooms
+    stopSong();
 });
 MPP.client.on('p', function(msg) {
     var userId = msg._id;
