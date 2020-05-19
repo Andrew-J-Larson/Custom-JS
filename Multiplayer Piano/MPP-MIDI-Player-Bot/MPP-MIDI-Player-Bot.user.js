@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.1
+// @version      2.1.2
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -49,7 +49,7 @@ const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat fee
 const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e"];
+const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e","f9939450771338dbe01385b1"];
 const LIMITED_PLAYERS = ["1251d6256fc2264660957fb9"];
 
 // MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer

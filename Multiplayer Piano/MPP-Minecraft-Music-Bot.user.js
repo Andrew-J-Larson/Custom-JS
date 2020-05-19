@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.2
+// @version      2.2.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -52,7 +52,7 @@ const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat/aut
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e"];
+const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e","f9939450771338dbe01385b1"];
 const LIMITED_PLAYERS = ["1251d6256fc2264660957fb9"];
 
 // MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer
