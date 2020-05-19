@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.2
+// @version      0.2.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -44,9 +44,10 @@ const CLEAR_TEXT = "—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬
 // Bot custom constants
 const GREET_HI = 0;
 const GREET_BYE = 1;
+const GREET_ID = "$ID";
 const GREET_NAME = "$NAME";
 const GREET_COLOR = "$COLOR";
-const GREET_PLAYER = '"' + GREET_NAME + '" [' + GREET_COLOR + ']';
+const GREET_PLAYER = '"' + GREET_NAME + '" (' + GREET_ID + ') [' + GREET_COLOR + ']';
 const PREFIX = "!";
 const PREFIX_LENGTH = PREFIX.length;
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
@@ -57,9 +58,9 @@ const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
-    ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
+    ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
     ["hi_[choice]", "turns the welcome message on or off; e.g. " + PREFIX + "hi_on"],
-    ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = user name, " + GREET_COLOR + " = user color"],
+    ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
     ["bye_[choice]", "turns the goodbye message on or off e.g. " + PREFIX + "bye_on"],
     ["clear", "clears the chat"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
@@ -231,7 +232,7 @@ var greetMsgSet = function(cmd, intGreet, msg) {
             case GREET_BYE: greet += "goodbye"; byeMessage == msg ? sameMsg = true : byeMessage = msg; break;
         }
         if (sameMsg) mppChatSend(title + ' ' + greet + " message wasn't changed", 0);
-        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_COLOR,"[usercolor here]"), 0);
+        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_ID,"[user ID here]").replace(GREET_COLOR,"[user color here]"), 0);
     }
 }
 var greetToggle = function(cmd, intGreet, boolChoice) {
@@ -340,7 +341,7 @@ MPP.client.on("ch", function(msg) {
                         var k;
                         for(k = 0; k < updatedPlayers.length; k++) {
                             // if added _id matches in updatedPlayers, then get name and show hiMessage
-                            if (added_ids[j] == updatedPlayers[k][0]) mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1]).replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])), 0);
+                            if (added_ids[j] == updatedPlayers[k][0]) mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1]).replace(GREET_ID,updatedPlayers[k][0]).replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])), 0);
                         }
                     }
                 }
@@ -360,7 +361,7 @@ MPP.client.on("ch", function(msg) {
                         var m;
                         for(m = 0; m < currentPlayers.length; m++) {
                             // if removed _id matches in currentPlayers, then get name and show byeMessage
-                            if (removed_ids[l] == currentPlayers[m][0]) mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1]).replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])), 0);
+                            if (removed_ids[l] == currentPlayers[m][0]) mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1]).replace(GREET_ID,updatedPlayers[k][0]).replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])), 0);
                         }
                     }
                 }
