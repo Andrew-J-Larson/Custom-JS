@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.7
+// @version      2.1.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -39,7 +39,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
-const DOWNLOAD_URL = SCRIPT.downloadURL;
+const DOWNLOAD_URL = "(there is no download, only source code at ...) https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Minecraft-Music-Bot.user.js"; // SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
