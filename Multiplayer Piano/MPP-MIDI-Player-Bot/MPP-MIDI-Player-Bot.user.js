@@ -43,7 +43,7 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
-const END_SONG_DELAY = 2 * TENTH_OF_SECOND; // makes transitioning songs in autoplay feel better
+const END_SONG_DELAY = TENTH_OF_SECOND; // makes transitioning songs in autoplay feel better
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
