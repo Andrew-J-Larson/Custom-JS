@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.9
+// @version      2.2.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1587,9 +1587,12 @@ MPP.client.on("ch", function(msg) {
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
-    currentRoom = MPP.client.channel._id;
-    // stop any songs that might have been playing before changing rooms
-    if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) == -1) stopSong();
+    var newRoom = MPP.client.channel._id;
+    if (currentRoom != newRoom) {
+        currentRoom = MPP.client.channel._id;
+        // stop any songs that might have been playing before changing rooms
+        if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) == -1) stopSong();
+    }
 });
 MPP.client.on('p', function(msg) {
     var userId = msg._id;

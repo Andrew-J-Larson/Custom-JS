@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.7
+// @version      2.0.8
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1265,9 +1265,12 @@ MPP.client.on("ch", function(msg) {
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
-    currentRoom = MPP.client.channel._id;
-    // stop any songs that might have been playing before changing rooms
-    stopSong();
+    var newRoom = MPP.client.channel._id;
+    if (currentRoom != newRoom) {
+        currentRoom = MPP.client.channel._id;
+        // stop any songs that might have been playing before changing rooms
+        stopSong();
+    }
 });
 MPP.client.on('p', function(msg) {
     var userId = msg._id;
@@ -1307,8 +1310,8 @@ var clearSoundWarning = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 
-                active = true;
                 currentRoom = MPP.client.channel._id;
+                active = true;
                 setRoomColors(BOT_ROOM_COLORS[0], BOT_ROOM_COLORS[1]);
                 if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                 if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
