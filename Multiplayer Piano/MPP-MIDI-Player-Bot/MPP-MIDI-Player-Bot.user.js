@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.0.9
+// @version      2.1.0
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
