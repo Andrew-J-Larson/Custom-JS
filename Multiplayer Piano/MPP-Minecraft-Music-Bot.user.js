@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.1
+// @version      2.2.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1253,8 +1253,7 @@ var help = function(command) {
     }
 }
 var about = function() {
-    mppChatSend(PRE_ABOUT + ' '+ BOT_DESCRIPTION, 0);
-    mppChatSend(BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
 }
 var link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
