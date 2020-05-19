@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.0
+// @version      2.2.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -46,7 +46,7 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
-const END_SONG_DELAY = SECOND; // makes transitioning songs in autoplay feel better
+const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat/autoplay feel better
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
@@ -986,7 +986,7 @@ var playSong = function(songIndex) {
             Player.play();
             currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
             mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName), 0);
-        }, (autoplayOption != AUTOPLAY_OFF) ? END_SONG_DELAY : 0);
+        }, (autoplayOption != AUTOPLAY_OFF) ? REPEAT_DELAY : 0);
     } catch(error) {
         // reload the previous working file if there is one
         if (previousSongIndex != null) Player.loadDataUri(SONG_MIDIS[previousSongIndex]);
@@ -1619,9 +1619,9 @@ var repeatingTasks = setInterval(function() {
     else if (repeatOption && ended && !stopped && exists(currentSongIndex)) {
         ended = false;
         // nice delay before playing song again
-        setTimeout(function() {Player.play()}, END_SONG_DELAY);
+        setTimeout(function() {Player.play()}, REPEAT_DELAY);
     }
-}, TENTH_OF_SECOND);
+}, 1);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
