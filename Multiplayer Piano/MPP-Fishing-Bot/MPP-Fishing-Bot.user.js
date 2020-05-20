@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.3
+// @version      1.6.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -52,24 +52,26 @@ const CMD_REEL = "reel";
 const CMD_EAT = "eat";
 //const CMD_GIVE = ["give", "bestow"];
 const CMD_PICK = "pick";
-// const CMD_TAKE = "take";
+const CMD_TAKE = "take";
 // const CMD_YEET = "yeet";
 // const CMD_TREE = "tree";
+const CMD_LOOK = "look";
 // const CMD_COLOR = "color";
 const CMD_TREE = "tree";
 const CMD_BOT_AUDIO_TOGGLER = "audio";
 const CMD_BOT_FEEDBACK = "feedback";
 const HELP_DESC = "The only commands are: • " + CMD_PREFIX + "help - shows the commands • " + CMD_PREFIX + "link - get the download link for this bot • " + CMD_PREFIX + "audio - toggles the audio on/off";
 const FRUIT = "kek";
+const NON_EDIBLES = ["Can"];
 const CAUGHT = "caught";
 const ATE = "ate";
 const TOOK = "took";
-const NO_TOOK = ": You can't take " + FRUIT + " from outside.";
 const COLORED = "made him/her turn";
 const NOT_REALLY = "Upon looking in a mirror he/she finds it didn't actually do so, though.";
 const BITTEN = "is getting a bite";
 const LOST = "Some of the fish were lost in the disaster...";
 const FRUIT_FALL = "A kekklefruit was knocked to the ground.";
+const SAW_ITEMS = "An island where there's water and fishing going on. And that stuff on the ground. There's ";
 const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
 
@@ -103,12 +105,14 @@ var active = true; // turn off the bot if needed
 var audioEnabled = true; // allows user to turn off sound
 var currentRoom = null; // updates when it connects to a room
 var fishTimer = 0; // changes while rod is cast
+var invNonEditables = []; // changes when we get a nonedible item, used in yeeting at tree
 // The following variables are used in command execution detection
 var casted = false;
 var losing = false;
 var picked = false;
 var fruitFell = false;
 var gotFruit = false;
+var takeNonEdible = ""; // changes to item it can take when available
 
 // =============================================== FUNCTIONS
 
@@ -149,6 +153,16 @@ var eat = function(item) {
 }
 var pick = function() {
     chatSend(CMD_PREFIX + CMD_PICK);
+}
+var take = function(item) {
+    chatSend(CMD_PREFIX + CMD_TAKE + ' ' + item);
+}
+var look = function() {
+    chatSend(CMD_PREFIX + CMD_LOOK);
+}
+// Format string for when you can't take an item
+var noTook = function(username, item) {
+    return "Friend " + username + ": You can't take " + item + " from outside.";
 }
 
 // For this bot
@@ -197,6 +211,10 @@ MPP.client.on('a', function (msg) {
         // if the `fishing` bot sent something
         if (input.includes(yourUsername + ' ' + CAUGHT)) {
             casted = false;
+            var i;
+            for(i = 0; i < NON_EDIBLES.length; i++) {
+                if (input.includes(NON_EDIBLES[i])) invNonEditables.push(NON_EDIBLES[i]);
+            }
             audioPlay(caughtSound);
         } else if (input.includes(yourUsername + ' ' + BITTEN)) {
             losing = true;
@@ -216,11 +234,33 @@ MPP.client.on('a', function (msg) {
         } else if (input.includes(' ' + FRUIT_FALL)) {
             fruitFell = true;
             audioPlay(fruitFellSound);
-        } else if (input.includes(yourUsername + ' ' + TOOK) && input.includes(FRUIT)) {
-            fruitFell = false;
-            gotFruit = true;
-            audioPlay(gotFruitSound);
-        } else if (input.includes(yourUsername + NO_TOOK)) fruitFell = false;
+        } else if (input.indexOf(SAW_ITEMS) == 0) {
+            // pick up noneditables if we need them to throw at tree
+            if (invNonEditables.length < 1) {
+                // check if a nonedible is found
+                var j;
+                for(j = 0; j < NON_EDIBLES.length; j++) {
+                    var currentNonEdible = NON_EDIBLES[i].toLowerCase();
+                    if (takeNonEdible == "" && input.includes(currentNonEdible)) {
+                        takeNonEdible = NON_EDIBLES[i];
+                    }
+                }
+            }
+        } else if (input.includes(yourUsername + ' ' + TOOK)) {
+            // check if we took a nonedible
+            if (input.includes(takeNonEdible)) {
+                var taken = takeNonEdible;
+                takeNonEdible = "";
+                invNonEditables.push(taken);
+            }
+            if (input.includes(FRUIT)) {
+                fruitFell = false;
+                gotFruit = true;
+                audioPlay(gotFruitSound);
+            }
+        } else if (input == noTook(yourUsername, takeNonEdible.toLowerCase())) {
+            takeNonEdible = "";
+        } else if (input == noTook(yourUsername, FRUIT)) fruitFell = false;
     }
 });
 MPP.client.on("ch", function(msg) {
@@ -243,6 +283,14 @@ var checkMessages = function() {
         if (!casted) cast();
         if (!picked) pick();
         if (gotFruit) eat(FRUIT);
+        if (invNonEditables.length > 0) {
+            var i;
+            for(i = 0; i < invNonEditables.length; i++) {
+                // YEET THE ITEM
+                // TODO
+            }
+        }
+        if (takeNonEdible != "") take(takeNonEdible);
     }
     setTimeout(checkMessages, SECOND);
 }
