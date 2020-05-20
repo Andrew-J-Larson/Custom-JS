@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.4
+// @version      1.6.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -48,12 +48,13 @@ const CMD_HELP = "help";
 const CMD_LINK = "link";
 const CMD_CAST = ["cast", "fish"];
 const CMD_REEL = "reel";
-//const CMD_SACK = ["sack", "caught", "count_fish"];
+const CMD_SACK = ["sack", "caught"];
+// const CMD_COUNT_FISH = "count_fish";
 const CMD_EAT = "eat";
 //const CMD_GIVE = ["give", "bestow"];
 const CMD_PICK = "pick";
 const CMD_TAKE = "take";
-// const CMD_YEET = "yeet";
+const CMD_YEET = "yeet";
 // const CMD_TREE = "tree";
 const CMD_LOOK = "look";
 // const CMD_COLOR = "color";
@@ -105,13 +106,15 @@ var active = true; // turn off the bot if needed
 var audioEnabled = true; // allows user to turn off sound
 var currentRoom = null; // updates when it connects to a room
 var fishTimer = 0; // changes while rod is cast
-var invNonEditables = []; // changes when we get a nonedible item, used in yeeting at tree
+var invNonEdibles = []; // changes when we get a nonedible item, used in yeeting at tree
 // The following variables are used in command execution detection
 var casted = false;
 var losing = false;
 var picked = false;
 var fruitFell = false;
 var gotFruit = false;
+var notYeeted = false;
+var checkingSack = false;
 var takeNonEdible = ""; // changes to item it can take when available
 
 // =============================================== FUNCTIONS
@@ -148,6 +151,9 @@ var cast = function() {
 var reel = function() {
     chatSend(CMD_PREFIX + CMD_REEL);
 }
+var sack = function() {
+    chatSend(CMD_PREFIX + CMD_SACK);
+}
 var eat = function(item) {
     chatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
 }
@@ -157,12 +163,20 @@ var pick = function() {
 var take = function(item) {
     chatSend(CMD_PREFIX + CMD_TAKE + ' ' + item);
 }
+var yeet = function(item) {
+    chatSend(CMD_PREFIX + CMD_YEET + ' ' + item.toLowerCase());
+}
 var look = function() {
     chatSend(CMD_PREFIX + CMD_LOOK);
 }
-// Format string for when you can't take an item
+// Format strings for when ...
 var noTook = function(username, item) {
+    // you can't take an item
     return "Friend " + username + ": You can't take " + item + " from outside.";
+}
+var sackContents = function(username) {
+    // you're looking at your sack of items
+    return "Contents of " + username + "'s fish sack: ";
 }
 
 // For this bot
@@ -202,7 +216,25 @@ MPP.client.on('a', function (msg) {
             } else if (command == CMD_PICK) {
                 picked = true;
                 audioPlay(pickedSound);
-            } // other commands not by the `fishing` bot
+            } else if (command == CMD_YEET) {
+                notYeeted = false;
+                // get rid of the nonEdible we yeeted if we did yeet one
+                var invNonEdiblesLength = invNonEdibles.length;
+                if (invNonEdiblesLength > 0) {
+                    var toYeet = input.substring(input.indexOf(checkCommand) + checkCommand.length).toLowerCase();
+                    var haveYeet = false;
+                    var n = 0;
+                    while (haveYeet && n < invNonEdiblesLength) {
+                        var checkNonEdible = invNonEdibles[n].toLowerCase();
+                        if (checkNonEdible.includes(toYeet)) {
+                            haveYeet = true;
+                            invNonEdibles.splice(n,1);
+                        }
+                        n++;
+                    }
+                }
+            } else if (command == CMD_SACK) checkingSack = true;
+            // other commands not by the `fishing` bot
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
             else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
         }
@@ -213,7 +245,7 @@ MPP.client.on('a', function (msg) {
             casted = false;
             var i;
             for(i = 0; i < NON_EDIBLES.length; i++) {
-                if (input.includes(NON_EDIBLES[i])) invNonEditables.push(NON_EDIBLES[i]);
+                if (input.includes(NON_EDIBLES[i])) invNonEdibles.push(NON_EDIBLES[i]);
             }
             audioPlay(caughtSound);
         } else if (input.includes(yourUsername + ' ' + BITTEN)) {
@@ -236,13 +268,13 @@ MPP.client.on('a', function (msg) {
             audioPlay(fruitFellSound);
         } else if (input.indexOf(SAW_ITEMS) == 0) {
             // pick up noneditables if we need them to throw at tree
-            if (invNonEditables.length < 1) {
+            if (invNonEdibles.length < 1) {
                 // check if a nonedible is found
                 var j;
                 for(j = 0; j < NON_EDIBLES.length; j++) {
-                    var currentNonEdible = NON_EDIBLES[i].toLowerCase();
+                    var currentNonEdible = NON_EDIBLES[j].toLowerCase();
                     if (takeNonEdible == "" && input.includes(currentNonEdible)) {
-                        takeNonEdible = NON_EDIBLES[i];
+                        takeNonEdible = NON_EDIBLES[j];
                     }
                 }
             }
@@ -251,16 +283,39 @@ MPP.client.on('a', function (msg) {
             if (input.includes(takeNonEdible)) {
                 var taken = takeNonEdible;
                 takeNonEdible = "";
-                invNonEditables.push(taken);
-            }
-            if (input.includes(FRUIT)) {
+                invNonEdibles.push(taken);
+            } else if (input.includes(FRUIT)) {
                 fruitFell = false;
                 gotFruit = true;
                 audioPlay(gotFruitSound);
             }
-        } else if (input == noTook(yourUsername, takeNonEdible.toLowerCase())) {
-            takeNonEdible = "";
-        } else if (input == noTook(yourUsername, FRUIT)) fruitFell = false;
+        } else if (checkingSack && input.indexOf(sackContents) == 0) {
+            checkingSack = false;
+            // put all nonedibles into sack
+            var k;
+            for(k = 0; k < NON_EDIBLES.length; k++) {
+                var theNonEdible = NON_EDIBLES[k];
+                var found = input.toLowerCase().indexOf(theNonEdible + " x");
+                var inputEnd = input.length - 1;
+                if (found != -1) {
+                    // get how many there is
+                    var foundEnd = found + 1;
+                    // find last digit
+                    var checkingDigit = true;
+                    while (foundEnd < inputEnd && checkingDigit) {
+                        var character = input.substring(foundEnd, foundEnd + 1);
+                        if (character >= '0' && character <= '9') {
+                            foundEnd++;
+                        } checkingDigit = false;
+                    }
+                    var amount = parseInt(input.substring(found, foundEnd));
+                    // now add that amount to the inventory
+                    var m;
+                    for(m = 0; m < amount; m++) invNonEdibles.push(theNonEdible);
+                }
+            }
+        } else if (input == noTook(yourUsername, takeNonEdible.toLowerCase())) takeNonEdible = "";
+        else if (input == noTook(yourUsername, FRUIT)) fruitFell = false;
     }
 });
 MPP.client.on("ch", function(msg) {
@@ -282,13 +337,11 @@ var checkMessages = function() {
         }
         if (!casted) cast();
         if (!picked) pick();
+        if (checkingSack) sack();
         if (gotFruit) eat(FRUIT);
-        if (invNonEditables.length > 0) {
-            var i;
-            for(i = 0; i < invNonEditables.length; i++) {
-                // YEET THE ITEM
-                // TODO
-            }
+        if (notYeeted && invNonEdibles.length > 0) {
+            // yeet the nonEdible hopefully hitting the tree
+            yeet(invNonEdibles[0]);
         }
         if (takeNonEdible != "") take(takeNonEdible);
     }
