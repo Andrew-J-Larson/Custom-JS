@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.1
+// @version      1.6.2
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -37,7 +37,6 @@ const FEEDBACK_URL = "https://forms.gle/YJRWFTvh7sFZBuDCA";
 // Bot custom constants
 const FISHING_BOT_ID = "565887aa860ba601611b7615";
 const FISH_INTERVAL = FIVE_MINUTES;
-const PICK_INTERVAL = FIVE_MINUTES;
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_LINK = PRE_MSG + "[Link]";
@@ -53,21 +52,26 @@ const CMD_REEL = "reel";
 const CMD_EAT = "eat";
 //const CMD_GIVE = ["give", "bestow"];
 const CMD_PICK = "pick";
+// const CMD_TAKE = "take";
+// const CMD_YEET = "yeet";
 // const CMD_TREE = "tree";
 // const CMD_COLOR = "color";
 const CMD_TREE = "tree";
 const CMD_BOT_AUDIO_TOGGLER = "audio";
 const CMD_BOT_FEEDBACK = "feedback";
 const HELP_DESC = "The only commands are: • " + CMD_PREFIX + "help - shows the commands • " + CMD_PREFIX + "link - get the download link for this bot • " + CMD_PREFIX + "audio - toggles the audio on/off";
+const FRUIT = "kek";
 const CAUGHT = "caught";
 const ATE = "ate";
+const TOOK = "took";
+const NO_TOOK = ": You can't take " + FRUIT + " from outside.";
 const COLORED = "made him/her turn";
 const NOT_REALLY = "Upon looking in a mirror he/she finds it didn't actually do so, though.";
 const BITTEN = "is getting a bite";
 const LOST = "Some of the fish were lost in the disaster...";
-const FRUITFUL = "picked";
+const FRUIT_FALL = "A kekklefruit was knocked to the ground.";
+const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
-const FRUIT = "kekklefruit";
 
 // Audio
 const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/smb_audio/";
@@ -88,7 +92,8 @@ var pickedSound = newAudio("Big Jump");
 var caughtSound = newAudio("1up");
 var bittenSound = newAudio("Thwomp");
 var lostSound = newAudio("Die");
-var fruitfulSound = newAudio("Coin");
+var gotFruitSound = newAudio("Coin");
+var fruitFellSound = newAudio("Break");
 var boostSound = newAudio("Powerup");
 var coloredSound = newAudio("Item");
 
@@ -102,7 +107,8 @@ var fishTimer = 0; // changes while rod is cast
 var casted = false;
 var losing = false;
 var picked = false;
-var fruit = false;
+var fruitFell = false;
+var gotFruit = false;
 
 // =============================================== FUNCTIONS
 
@@ -182,7 +188,7 @@ MPP.client.on('a', function (msg) {
             } else if (command == CMD_PICK) {
                 picked = true;
                 audioPlay(pickedSound);
-            }
+            } // other commands not by the `fishing` bot
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
             else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
         }
@@ -201,13 +207,13 @@ MPP.client.on('a', function (msg) {
             audioPlay(lostSound);
         } else if (input.includes(yourUsername + ' ' + ATE)) {
             if (input.includes(' ' + FRUIT)) {
-                fruit = false;
+                gotFruit = false;
                 if (input.includes(' ' + BOOST)) audioPlay(boostSound);
             } else if (input.includes(' ' + COLORED) && !input.includes(' ' + NOT_REALLY)) audioPlay(coloredSound);
-        } else if (input.includes(yourUsername + ' ' + FRUITFUL)) {
-            fruit = true;
-            audioPlay(fruitfulSound);
-        }
+        } else if ((input.includes(yourUsername + ' ' + TOOK) && input.includes(FRUIT)) || input.includes(yourUsername + ' ' + FRUIT_PICK)) {
+            gotFruit = true;
+            audioPlay(gotFruitSound);
+        } else if (input.includes(' ' + FRUIT_FALL)) audioPlay(fruitFellSound);
     }
 });
 MPP.client.on("ch", function(msg) {
@@ -223,10 +229,13 @@ MPP.client.on("ch", function(msg) {
 var checkMessages = function() {
     if (active) {
         if (fishTimer > 0) fishTimer -= SECOND;
-        else if (casted) reel();
+        else if (casted) {
+            picked = false; // pick fruit again if we are catching fish slowly
+            reel();
+        }
         if (!casted) cast();
         if (!picked) pick();
-        if (fruit) eat(FRUIT);
+        if (gotFruit) eat(FRUIT);
     }
     setTimeout(checkMessages, SECOND);
 }
@@ -243,12 +252,8 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
                 console.log(PRE_MSG + "Online!");
 
+                // start repeating checks
                 checkMessages();
-
-                // make sure to wait before picking fruit again
-                setInterval(function() {
-                    if (active) picked = false;
-                }, PICK_INTERVAL);
             }
         }, TENTH_OF_SECOND);
     }
