@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.4
+// @version      2.2.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -67,8 +67,6 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
-const CLEAR_LINES = 9; // may be changed if needed, but this number seems to be the magic number
-const CLEAR_TEXT = "—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬";
 const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
 const BOT_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
@@ -100,7 +98,6 @@ const COMMANDS = [
     ["autoplay (choice)", "your choices are off (0), random (1), or ordered (2), no entry shows current setting"],
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"],
-    ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"]
 ];
@@ -1488,14 +1485,6 @@ var roomcolors = function(argsColors) {
     } // show the room colors
     else mppChatSend(PRE_ROOMCOLOR + " The room colors are currently set to: " + roomColorAreaToString(INNER_ROOM_COLOR) + " = " + color1 + ", " + roomColorAreaToString(OUTER_ROOM_COLOR) + " = " + color2, 0);
 }
-var clear = function() {
-    // clear the chat of current messages (can be slow)
-    var i;
-    for (i = 0; i < CLEAR_LINES; ++i) {
-        mppChatSend(CLEAR_TEXT, chatDelay * i);
-        if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
-    }
-}
 var ping = function() {
     // get a response back in milliseconds
     pinging = true;
@@ -1581,7 +1570,6 @@ MPP.client.on('a', function (msg) {
             case "roomcolor1": case "rc1": if (active) roomcolor1(argumentsString); break;
             case "roomcolor2": case "rc2": if (active) roomcolor2(argumentsString); break;
             case "roomcolors": case "rcs": if (active) roomcolors(arguments); break;
-            case "clear": case "cl": if (active) clear(); break;
             case "ping": case "pi": if (active) ping(); break;
             case "feedback": case "fb": if (active) feedback(); break;
             case "active": case "a": setActive(userId, yourId); break;
