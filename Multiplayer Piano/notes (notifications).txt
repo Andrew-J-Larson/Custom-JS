@@ -15,7 +15,7 @@
 // * the "short" class value shows only the text/html
 // * using a value of "-1" on duration causes the notification to be sticky
 // * it's better to use single quotes around entire html
-var exampleNotification = {
+var notificationSetup = {
   m: "notification", // CONSTANT
   title: "Title",
   text: "Text.",
@@ -23,4 +23,7 @@ var exampleNotification = {
 };
 
 // Execute notification
-new MPP.Notification(exampleNotification);
+var exampleNotification = new MPP.Notification(exampleNotification);
+
+// Close notification (prematurely or when it's sticky)
+// exampleNotification.close();
