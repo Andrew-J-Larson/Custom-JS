@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.0
+// @version      2.3.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -95,7 +95,7 @@ const BOT_COMMANDS = [
     ["song", "shows the current song playing and at what moment in time"],
     ["repeat", "toggles repeating current song on or off"],
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
-    ["autoplay (choice)", "your choices are off (0), random (1), or ordered (2), no entry shows current setting"],
+    ["autoplay (choice)", "your choices are off, random, or ordered, no entry shows current setting"],
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
@@ -119,7 +119,7 @@ const PRE_AUTOPLAY = PRE_MSG + "[Autoplay]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ART = PRE_MSG + "[Art]";
-const PRE_ACTIVE = PRE_MSG + "[Active]";
+const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
@@ -628,7 +628,7 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
-var active = false; // turn off the bot commands if needed
+var public = false; // turn off the public bot commands if needed
 var preventsPlaying = false // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
@@ -778,11 +778,11 @@ var getContrast = function (hexcolor){
 
 }
 
-// Set the bot on or off (only from bot)
-var setActive = function(userId, yourId) {
+// Set the public bot commands on or off (only from bot)
+var setPublic = function(userId, yourId) {
     if (userId != yourId) return;
-    active = !active;
-    mppChatSend(PRE_ACTIVE + " Public bot commands were turned " + (active ? "on" : "off"));
+    public = !public;
+    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (public ? "on" : "off"));
 }
 
 // Makes all commands into one string
@@ -941,7 +941,7 @@ var playerLimited = function(username) {
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
-    if (active) mppChatSend(error);
+    if (public) mppChatSend(error);
     else console.log(error);
 }
 
@@ -950,7 +950,7 @@ var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+                             + (public ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
@@ -1225,20 +1225,20 @@ MPP.client.on('a', function (msg) {
             case "help": case "h": if (!preventsPlaying) help(argumentsString, userId, yourId); break;
             case "about": case "ab": if (!preventsPlaying) about(); break;
             case "link": case "li": if (!preventsPlaying) link(); break;
-            case "feedback": case "fb": if (active) feedback(); break;
-            case "ping": case "pi": if (active) ping(); break;
-            case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
-            case "skip": case "sk": if (active && !preventsPlaying) skip(); break;
-            case "stop": case "s": if (active && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
-            case "resume": case "r": if (active && !preventsPlaying) resume(); break;
+            case "feedback": case "fb": if (public) feedback(); break;
+            case "ping": case "pi": if (public) ping(); break;
+            case "play": case "p": if (public && !preventsPlaying) play(arguments, argumentsString); break;
+            case "skip": case "sk": if (public && !preventsPlaying) skip(); break;
+            case "stop": case "s": if (public && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if (public && !preventsPlaying) pause(); break;
+            case "resume": case "r": if (public && !preventsPlaying) resume(); break;
             case "song": case "so": if (!preventsPlaying) song(); break;
-            case "repeat": case "re": if (active && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if (active && !preventsPlaying) sustain(); break;
-            case "autoplay": case "ap": if (active && !preventsPlaying) autoplay(argumentsString); break;
-            case "album": case "al": case "list": if (active) album(); break;
-            case "art": if (active) art(argumentsString, yourParticipant); break;
-            case BOT_ACTIVATOR: setActive(userId, yourId); break;
+            case "repeat": case "re": if (public && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if (public && !preventsPlaying) sustain(); break;
+            case "autoplay": case "ap": if (public && !preventsPlaying) autoplay(argumentsString); break;
+            case "album": case "al": case "list": if (public) album(); break;
+            case "art": if (public) art(argumentsString, yourParticipant); break;
+            case BOT_ACTIVATOR: setPublic(userId, yourId); break;
         }
     }
 });
@@ -1296,7 +1296,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    active = true;
+                    public = true;
                     autoplayOption = AUTOPLAY_RANDOM;
                     if (BOT_SOLO_PLAY) setOwnerOnlyPlay(BOT_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");

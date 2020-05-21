@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.1
+// @version      2.2.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -102,7 +102,7 @@ const PRE_SONG = PRE_MSG + "[Song]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
-const PRE_ACTIVE = PRE_MSG + "[Active]";
+const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload at https://bitmidi.com/ and https://midiworld.com/, or you can upload your own at a site like https://www.file.io/";
@@ -206,7 +206,7 @@ const MIDIPlayerToMPPNote = {
 
 // =============================================== VARIABLES
 
-var active = false; // turn off the bot commands if needed
+var public = false; // turn off the public bot commands if needed
 var preventsPlaying = false // changes when it detects prevention
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
@@ -443,11 +443,11 @@ var isOctetStream = function(raw) {
     else return false;
 }
 
-// Set the bot on or off (only from bot)
-var setActive = function(userId, yourId) {
+// Set the public bot commands on or off (only from bot)
+var setPublic = function(userId, yourId) {
     if (userId != yourId) return;
-    active = !active;
-    mppChatSend(PRE_ACTIVE + " Public bot commands were turned " + (active ? "on" : "off"));
+    public = !public;
+    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (public ? "on" : "off"));
 }
 
 // Makes all commands into one string
@@ -683,7 +683,7 @@ var createButtons = function() {
     publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
     publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
     publicDiv.classList.add("ugly-button");
-    publicDiv.onclick = function() { setActive(true, true) }
+    publicDiv.onclick = function() { setPublic(true, true) }
     var publicTxt = document.createTextNode("Public");
     publicDiv.appendChild(publicTxt);
     buttonContainer.appendChild(publicDiv);
@@ -737,7 +737,7 @@ var playerLimited = function(username) {
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
-    if (active) mppChatSend(error);
+    if (public) mppChatSend(error);
     else console.log(error);
 }
 
@@ -746,7 +746,7 @@ var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+                             + (public ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
@@ -933,16 +933,16 @@ MPP.client.on('a', function (msg) {
             case "help": case "h": if (!preventsPlaying) help(argumentsString, userId, yourId); break;
             case "about": case "ab": if (!preventsPlaying) about(); break;
             case "link": case "li": if (!preventsPlaying) link(); break;
-            case "feedback": case "fb": if (active) feedback(); break;
-            case "ping": case "pi": if (active) ping(); break;
-            case "play": case "p": if (active && !preventsPlaying) play(argumentsString); break;
-            case "stop": case "s": if (active && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if (active && !preventsPlaying) pause(); break;
-            case "resume": case "r": if (active && !preventsPlaying) resume(); break;
+            case "feedback": case "fb": if (public) feedback(); break;
+            case "ping": case "pi": if (public) ping(); break;
+            case "play": case "p": if (public && !preventsPlaying) play(argumentsString); break;
+            case "stop": case "s": if (public && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if (public && !preventsPlaying) pause(); break;
+            case "resume": case "r": if (public && !preventsPlaying) resume(); break;
             case "song": case "so": if (!preventsPlaying) song(); break;
-            case "repeat": case "re": if (active && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if (active && !preventsPlaying) sustain(); break;
-            case BOT_ACTIVATOR: setActive(userId, yourId); break;
+            case "repeat": case "re": if (public && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if (public && !preventsPlaying) sustain(); break;
+            case BOT_ACTIVATOR: setPublic(userId, yourId); break;
         }
     }
 });
@@ -997,7 +997,7 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
-                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) active = true;
+                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) public = true;
                 createButtons();
                 console.log(PRE_MSG + " Online!");
             }
