@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.8
+// @version      1.6.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -153,7 +153,7 @@ var reel = function() {
     chatSend(CMD_PREFIX + CMD_REEL);
 }
 var sack = function() {
-    chatSend(CMD_PREFIX + CMD_SACK);
+    chatSend(CMD_PREFIX + CMD_SACK[0]);
 }
 var eat = function(item) {
     chatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
@@ -234,7 +234,7 @@ MPP.client.on('a', function (msg) {
                         n++;
                     }
                 }
-            } else if (command == CMD_SACK) {
+            } else if (command == CMD_SACK[0] || command == CMD_SACK[1]) {
                 checkingSack = false;
                 lookingSack = true;
             } // other commands not by the `fishing` bot
