@@ -52,7 +52,7 @@ const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat/aut
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e","f9939450771338dbe01385b1"];
+const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e"];
 const LIMITED_PLAYERS = ["1251d6256fc2264660957fb9"];
 
 // MPP Constants (these are not meant to be changed); roomcolor arrays: [0] = inner, [1] = outer
@@ -100,11 +100,13 @@ const COMMANDS = [
     ["autoplay (choice)", "your choices are off (0), random (1), or ordered (2), no entry shows current setting"],
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"],
-    ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"],
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active", "toggles the public bot commands on or off (owner only)"]
+];
+const ROOM_OWNER_COMMANDS = [
+    ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"]
 ];
 const ROOMCOLOR_OPTIONS = "Options: normal [bot set room color(s)], default [the MPP general room color(s)], lobby [the MPP lobby room color(s)], but entering nothing shows the current color(s)";
 const ROOMCOLOR_COMMANDS = [
@@ -1234,7 +1236,8 @@ var cmdNotFound = function(cmd) {
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    var isOwner = MPP.client.isOwner();
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true) + (exists(isOwner) && isOwner ? ' ' + formattedCommands(ROOM_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''), 0);
     else {
         var valid = null;
         var commandIndex = null;
