@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.0
+// @version      1.7.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -115,8 +115,8 @@ var picked = false;
 var fruitFell = false;
 var gotFruit = false;
 var notYeeted = false;
-var lookingSack = false;
-var checkingSack = true;
+var checkingSack = false;
+var invSack = true;
 var takeNonEdible = ""; // changes to item it can take when available
 
 // =============================================== FUNCTIONS
@@ -236,8 +236,8 @@ MPP.client.on('a', function (msg) {
                     }
                 }
             } else if (command == CMD_SACK[0] || command == CMD_SACK[1]) {
-                checkingSack = false;
-                lookingSack = true;
+                invSack = false;
+                checkingSack = true;
             } // other commands not by the `fishing` bot
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
             else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -293,29 +293,32 @@ MPP.client.on('a', function (msg) {
                 takeNonEdible = "";
                 invNonEdibles.push(taken);
             }
-        } else if (lookingSack && input.indexOf(sackContents) == 0) {
-            lookingSack = false;
-            // put all nonedibles into sack
-            var k;
-            for(k = 0; k < NON_EDIBLES.length; k++) {
-                var theNonEdible = NON_EDIBLES[k];
-                var found = input.toLowerCase().indexOf(INV_BULLET + theNonEdible + " x");
-                var inputEnd = input.length - 1;
-                if (found != -1) {
-                    // get how many there is
-                    var foundEnd = found + 1;
-                    // find last digit
-                    var checkingDigit = true;
-                    while (foundEnd < inputEnd && checkingDigit) {
-                        var character = input.substring(foundEnd, foundEnd + 1);
-                        if (character >= '0' && character <= '9') {
-                            foundEnd++;
-                        } checkingDigit = false;
+        } else if (input.indexOf(sackContents) == 0) {
+            if (input.includes(FRUIT)) gotFruit = true;
+            // put all nonEdibles into inventory
+            if (checkingSack) {
+                checkingSack = false;
+                var k;
+                for(k = 0; k < NON_EDIBLES.length; k++) {
+                    var theNonEdible = NON_EDIBLES[k];
+                    var found = input.toLowerCase().indexOf(INV_BULLET + theNonEdible + " x");
+                    var inputEnd = input.length - 1;
+                    if (found != -1) {
+                        // get how many there is
+                        var foundEnd = found + 1;
+                        // find last digit
+                        var checkingDigit = true;
+                        while (foundEnd < inputEnd && checkingDigit) {
+                            var character = input.substring(foundEnd, foundEnd + 1);
+                            if (character >= '0' && character <= '9') {
+                                foundEnd++;
+                            } checkingDigit = false;
+                        }
+                        var amount = parseInt(input.substring(found, foundEnd));
+                        // now add that amount to the inventory
+                        var m;
+                        for(m = 0; m < amount; m++) invNonEdibles.push(theNonEdible);
                     }
-                    var amount = parseInt(input.substring(found, foundEnd));
-                    // now add that amount to the inventory
-                    var m;
-                    for(m = 0; m < amount; m++) invNonEdibles.push(theNonEdible);
                 }
             }
         } else if (input == noTook(yourUsername, takeNonEdible.toLowerCase())) takeNonEdible = "";
@@ -336,12 +339,14 @@ var checkMessages = function() {
     if (active) {
         if (fishTimer > 0) fishTimer -= SECOND;
         else if (casted) {
-            picked = false; // pick fruit again if we are catching fish slowly
+            // things we should check after not catching anything for a while
+            picked = false;
+            invSack = true;
             reel();
         }
         if (!casted) cast();
         if (!picked) pick();
-        if (checkingSack) sack();
+        if (invSack) sack();
         if (fruitFell) take(FRUIT);
         if (gotFruit) eat(FRUIT);
         if (notYeeted && invNonEdibles.length > 0) {
