@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.8
+// @version      2.2.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -78,12 +78,14 @@ const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thank
 const BOT_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
 const BOT_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
-const COMMANDS = [
+const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["ping", "gets the milliseconds response time"],
+    ["ping", "gets the milliseconds response time"]
+];
+const BOT_COMMANDS = [
     ["play (song)", "plays a specific song by name or number, no entry plays a random song"],
     ["skip", "skips the current song (if autoplay is on)"],
     ["stop", "stops all music from playing (this stops autoplay too)"],
@@ -946,22 +948,41 @@ var cmdNotFound = function(cmd) {
 var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true)
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
+                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
+        var commandArray = null;
         command = command.toLowerCase();
-        // check commands array
+        // check commands arrays
         var i;
-        for(i = 0; i < COMMANDS.length; ++i) {
-            if (COMMANDS[i][0].indexOf(command) == 0) {
+        for(i = 0; i < BASE_COMMANDS.length; i++) {
+            if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
+                commandArray = BASE_COMMANDS;
                 commandIndex = i;
             }
         }
+        var j;
+        for(j = 0; j < BOT_COMMANDS.length; j++) {
+            if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_COMMANDS;
+                commandIndex = j;
+            }
+        }
+        var k;
+        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_OWNER_COMMANDS;
+                commandIndex = k;
+            }
+        }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex));
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
 }

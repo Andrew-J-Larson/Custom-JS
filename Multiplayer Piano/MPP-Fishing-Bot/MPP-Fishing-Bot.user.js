@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.4
+// @version      1.7.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -64,7 +64,7 @@ const CMD_YEET = "yeet";
 const CMD_LOOK = "look";
 // const CMD_COLOR = "color";
 const CMD_TREE = "tree";
-const COMMANDS = [
+const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
@@ -225,22 +225,32 @@ var cmdNotFound = function(cmd) {
 var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + CMD_PREFIX, true)
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + CMD_PREFIX, true)
                              + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + CMD_PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
+        var commandArray = null;
         command = command.toLowerCase();
-        // check commands array
+        // check commands arrays
         var i;
-        for(i = 0; i < COMMANDS.length; ++i) {
-            if (COMMANDS[i][0].indexOf(command) == 0) {
+        for(i = 0; i < BASE_COMMANDS.length; i++) {
+            if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
+                commandArray = BASE_COMMANDS;
                 commandIndex = i;
             }
         }
+        var k;
+        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_OWNER_COMMANDS;
+                commandIndex = k;
+            }
+        }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex),);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
 }

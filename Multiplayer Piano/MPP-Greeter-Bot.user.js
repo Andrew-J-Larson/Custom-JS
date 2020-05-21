@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.4
+// @version      0.2.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -50,16 +50,20 @@ const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
-const COMMANDS = [
+const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
+    ["feedback", "shows link to send feedback about the bot to the developer"]
+];
+const BOT_COMMANDS = [
     ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
     ["hi_[choice]", "turns the welcome message on or off; e.g. " + PREFIX + "hi_on"],
     ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
-    ["bye_[choice]", "turns the goodbye message on or off e.g. " + PREFIX + "bye_on"],
-    ["active [choice]", "turns the bot on or off (bot owner only)"]
+    ["bye_[choice]", "turns the goodbye message on or off e.g. " + PREFIX + "bye_on"]
+];
+const BOT_OWNER_COMMANDS = [
+    ["active", "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -182,22 +186,44 @@ var cmdNotFound = function(cmd) {
 }
 
 // Commands
-var help = function(command) {
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true));
-    else {
+var help = function(command, userId, yourId) {
+    var isOwner = MPP.client.isOwner();
+    if (!exists(command) || command == "") {
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
+                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+    } else {
         var valid = null;
         var commandIndex = null;
+        var commandArray = null;
         command = command.toLowerCase();
-        // check commands array
+        // check commands arrays
         var i;
-        for(i = 0; i < COMMANDS.length; ++i) {
-            if (COMMANDS[i][0].indexOf(command) == 0) {
+        for(i = 0; i < BASE_COMMANDS.length; i++) {
+            if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
+                commandArray = BASE_COMMANDS;
                 commandIndex = i;
             }
         }
+        var j;
+        for(j = 0; j < BOT_COMMANDS.length; j++) {
+            if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_COMMANDS;
+                commandIndex = j;
+            }
+        }
+        var k;
+        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_OWNER_COMMANDS;
+                commandIndex = k;
+            }
+        }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex));
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
 }
@@ -215,7 +241,7 @@ var greetMsgSet = function(cmd, intGreet, msg) {
     var title;
     if (intGreet == GREET_HI) title = PRE_HI;
     else if (intGreet == GREET_BYE) title = PRE_BYE;
-    if (!exists(msg)) mppCmdSend(COMMANDS, cmd + ' ');
+    if (!exists(msg)) mppCmdSend(BOT_COMMANDS, cmd + ' ');
     else {
         var sameMsg = false;
         switch(intGreet) {

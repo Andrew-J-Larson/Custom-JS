@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -69,16 +69,20 @@ const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to LDNOOBW for the list of filthy words that are constantly updated."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
-const COMMANDS = [
+const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
     ["feedback", "shows link to send feedback about the bot to the developer"],
+];
+const BOT_COMMANDS = [
     ["ban [user id]","bans the player while running the bot"],
     ["unban [user id]","unbans the player if they were banned while running the bot"],
     ["listban", "shows all the permanently and temporarily banned players"],
-    ["clear", "clears the chat"],
-    ["active [choice]", "turns the bot on or off (bot owner only)"]
+    ["clear", "clears the chat"]
+];
+const BOT_OWNER_COMMANDS = [
+    ["active", "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -218,22 +222,44 @@ var cmdNotFound = function(cmd) {
 }
 
 // Commands
-var help = function(command) {
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true));
-    else {
+var help = function(command, userId, yourId) {
+    var isOwner = MPP.client.isOwner();
+    if (!exists(command) || command == "") {
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
+                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+    } else {
         var valid = null;
         var commandIndex = null;
+        var commandArray = null;
         command = command.toLowerCase();
-        // check commands array
+        // check commands arrays
         var i;
-        for(i = 0; i < COMMANDS.length; ++i) {
-            if (COMMANDS[i][0].indexOf(command) == 0) {
+        for(i = 0; i < BASE_COMMANDS.length; i++) {
+            if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
+                commandArray = BASE_COMMANDS;
                 commandIndex = i;
             }
         }
+        var j;
+        for(j = 0; j < BOT_COMMANDS.length; j++) {
+            if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_COMMANDS;
+                commandIndex = j;
+            }
+        }
+        var k;
+        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+                valid = command;
+                commandArray = BOT_OWNER_COMMANDS;
+                commandIndex = k;
+            }
+        }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex));
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
 }
