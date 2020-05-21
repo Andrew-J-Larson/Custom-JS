@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.3
+// @version      2.2.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -102,8 +102,10 @@ const COMMANDS = [
     ["art (choice)", "displays ascii art, no choice shows the choices"],
     ["clear", "clears the chat"],
     ["ping", "gets the milliseconds response time"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
-    ["active", "toggles the public bot commands on or off (owner only)"]
+    ["feedback", "shows link to send feedback about the bot to the developer"]
+];
+const BOT_OWNER_COMMANDS = [
+    ["active", "toggles the public bot commands on or off"]
 ];
 const ROOM_OWNER_COMMANDS = [
     ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"]
@@ -1235,10 +1237,13 @@ var cmdNotFound = function(cmd) {
 }
 
 // Commands
-var help = function(command) {
+var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true) + (exists(isOwner) && isOwner ? ' ' + formattedCommands(ROOM_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''), 0);
-    else {
+    if (!exists(command) || command == "") {
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true)
+                             + (exists(isOwner) && isOwner ? ' ' + formattedCommands(ROOM_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''), 0);
+    } else {
         var valid = null;
         var commandIndex = null;
         command = command.toLowerCase();
@@ -1558,7 +1563,7 @@ MPP.client.on('a', function (msg) {
         // look through commands
         preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if (!preventsPlaying) help(argumentsString); break;
+            case "help": case "h": if (!preventsPlaying) help(argumentsString, userId, yourId); break;
             case "about": case "ab": if (!preventsPlaying) about(); break;
             case "link": case "li": if (!preventsPlaying) link(); break;
             case "play": case "p": if (active && !preventsPlaying) play(arguments, argumentsString); break;
