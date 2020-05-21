@@ -13,6 +13,7 @@
 // NOTES
 // * the text property takes precedence over html
 // * the "short" class value shows only the text/html
+// * using a value of "-1" on duration causes the notification to be sticky
 // * it's better to use single quotes around entire html
 var exampleNotification = {
   m: "notification", // CONSTANT
