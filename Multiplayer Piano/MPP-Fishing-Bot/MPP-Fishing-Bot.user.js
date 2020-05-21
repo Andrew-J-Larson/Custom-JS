@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.9
+// @version      1.7.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -64,6 +64,7 @@ const CMD_BOT_FEEDBACK = "feedback";
 const HELP_DESC = "The only commands are: • " + CMD_PREFIX + "help - shows the commands • " + CMD_PREFIX + "link - get the download link for this bot • " + CMD_PREFIX + "audio - toggles the audio on/off";
 const FRUIT = "kek";
 const NON_EDIBLES = ["Can"];
+const INV_BULLET = "◍";
 const CAUGHT = "caught";
 const ATE = "ate";
 const TOOK = "took";
@@ -298,7 +299,7 @@ MPP.client.on('a', function (msg) {
             var k;
             for(k = 0; k < NON_EDIBLES.length; k++) {
                 var theNonEdible = NON_EDIBLES[k];
-                var found = input.toLowerCase().indexOf(theNonEdible + " x");
+                var found = input.toLowerCase().indexOf(INV_BULLET + theNonEdible + " x");
                 var inputEnd = input.length - 1;
                 if (found != -1) {
                     // get how many there is
