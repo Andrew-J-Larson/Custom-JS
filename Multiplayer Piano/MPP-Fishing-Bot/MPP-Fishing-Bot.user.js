@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.1
+// @version      1.7.2
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -73,7 +73,7 @@ const NOT_REALLY = "Upon looking in a mirror he/she finds it didn't actually do 
 const BITTEN = "is getting a bite";
 const LOST = "Some of the fish were lost in the disaster...";
 const FRUIT_FALL = "A kekklefruit was knocked to the ground.";
-const SAW_ITEMS = "An island where there's water and fishing going on. And that stuff on the ground. There's ";
+const SAW_ITEMS = "An island where there's water and fishing going on.  And that stuff on the ground. There's ";
 const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
 
@@ -108,6 +108,7 @@ var audioEnabled = true; // allows user to turn off sound
 var currentRoom = null; // updates when it connects to a room
 var fishTimer = 0; // changes while rod is cast
 var invNonEdibles = []; // changes when we get a nonedible item, used in yeeting at tree
+var tooMuchCarried = false;
 // The following variables are used in command execution detection
 var casted = false;
 var losing = false;
@@ -117,6 +118,7 @@ var gotFruit = false;
 var notYeeted = false;
 var checkingSack = false;
 var invSack = true;
+var seen = true;
 var takeNonEdible = ""; // changes to item it can take when available
 
 // =============================================== FUNCTIONS
@@ -180,6 +182,10 @@ var sackContents = function(username) {
     // you're looking at your sack of items
     return "Contents of " + username + "'s fish sack: ";
 }
+var carryingTooMuch = function(username) {
+    // can't take anything when carrying too much
+    return "Friend " + username + " is carrying too much.";
+}
 
 // For this bot
 var audioToggler = function() {
@@ -218,15 +224,16 @@ MPP.client.on('a', function (msg) {
             } else if (command == CMD_PICK) {
                 picked = true;
                 audioPlay(pickedSound);
-            } else if (command == CMD_YEET) {
+            } else if (command.indexOf(CMD_YEET) == 0) {
+                tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
                 notYeeted = false;
                 // get rid of the nonEdible we yeeted if we did yeet one
                 var invNonEdiblesLength = invNonEdibles.length;
+                var toYeet = command.length > CMD_YEET.length ? command.substring(CMD_YEET.length + 1).trim().toLowerCase() : null;
                 if (invNonEdiblesLength > 0) {
-                    var toYeet = input.substring(input.indexOf(checkCommand) + checkCommand.length).toLowerCase();
                     var haveYeet = false;
                     var n = 0;
-                    while (haveYeet && n < invNonEdiblesLength) {
+                    while (!haveYeet && n < invNonEdiblesLength) {
                         var checkNonEdible = invNonEdibles[n].toLowerCase();
                         if (checkNonEdible.includes(toYeet)) {
                             haveYeet = true;
@@ -238,7 +245,9 @@ MPP.client.on('a', function (msg) {
             } else if (command == CMD_SACK[0] || command == CMD_SACK[1]) {
                 invSack = false;
                 checkingSack = true;
-            } // other commands not by the `fishing` bot
+            } else if (command.indexOf(CMD_EAT) == 0) tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
+            else if (command == CMD_LOOK) seen = true;
+            // other commands not by the `fishing` bot
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
             else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
         }
@@ -262,6 +271,7 @@ MPP.client.on('a', function (msg) {
         } else if (input.includes(yourUsername + ' ' + ATE)) {
             if (input.includes(' ' + FRUIT)) {
                 gotFruit = false;
+                invSack = true;
                 if (input.includes(' ' + BOOST)) audioPlay(boostSound);
             } else if (input.includes(' ' + COLORED) && !input.includes(' ' + NOT_REALLY)) audioPlay(coloredSound);
         } else if (input.includes(yourUsername + ' ' + FRUIT_PICK)) {
@@ -270,15 +280,16 @@ MPP.client.on('a', function (msg) {
         } else if (input.includes(' ' + FRUIT_FALL)) {
             fruitFell = true;
             audioPlay(fruitFellSound);
-        } else if (input.indexOf(SAW_ITEMS) == 0) {
+        } else if (!tooMuchCarried && input.indexOf(SAW_ITEMS) == 0) {
             // pick up noneditables if we need them to throw at tree
             if (invNonEdibles.length < 1) {
+                var inputLC = input.toLowerCase();
                 // check if a nonedible is found
                 var j;
                 for(j = 0; j < NON_EDIBLES.length; j++) {
                     var currentNonEdible = NON_EDIBLES[j].toLowerCase();
-                    if (takeNonEdible == "" && input.includes(currentNonEdible)) {
-                        takeNonEdible = NON_EDIBLES[j];
+                    if (takeNonEdible == "" && inputLC.includes(currentNonEdible)) {
+                        takeNonEdible = currentNonEdible;
                     }
                 }
             }
@@ -288,12 +299,12 @@ MPP.client.on('a', function (msg) {
                 fruitFell = false;
                 gotFruit = true;
                 audioPlay(gotFruitSound);
-            } else if (input.includes(takeNonEdible)) {
+            } else if (takeNonEdible != "" && input.includes(takeNonEdible)) {
                 var taken = takeNonEdible;
                 takeNonEdible = "";
                 invNonEdibles.push(taken);
             }
-        } else if (input.indexOf(sackContents) == 0) {
+        } else if (input.indexOf(sackContents(yourUsername)) == 0) {
             if (input.includes(FRUIT)) gotFruit = true;
             // put all nonEdibles into inventory
             if (checkingSack) {
@@ -301,7 +312,8 @@ MPP.client.on('a', function (msg) {
                 var k;
                 for(k = 0; k < NON_EDIBLES.length; k++) {
                     var theNonEdible = NON_EDIBLES[k];
-                    var found = input.toLowerCase().indexOf(INV_BULLET + theNonEdible + " x");
+                    var finding = INV_BULLET + theNonEdible + " x";
+                    var found = input.toLowerCase().indexOf(finding.toLowerCase()) + finding.length;
                     var inputEnd = input.length - 1;
                     if (found != -1) {
                         // get how many there is
@@ -317,12 +329,16 @@ MPP.client.on('a', function (msg) {
                         var amount = parseInt(input.substring(found, foundEnd));
                         // now add that amount to the inventory
                         var m;
-                        for(m = 0; m < amount; m++) invNonEdibles.push(theNonEdible);
+                        for(m = 0; m < amount; m++) {
+                            invNonEdibles.push(theNonEdible);
+                            notYeeted = true;
+                        }
                     }
                 }
             }
         } else if (input == noTook(yourUsername, takeNonEdible.toLowerCase())) takeNonEdible = "";
         else if (input == noTook(yourUsername, FRUIT)) fruitFell = false;
+        else if (input == carryingTooMuch(yourUsername)) tooMuchCarried = true;
     }
 });
 MPP.client.on("ch", function(msg) {
@@ -349,11 +365,12 @@ var checkMessages = function() {
         if (invSack) sack();
         if (fruitFell) take(FRUIT);
         if (gotFruit) eat(FRUIT);
-        if (notYeeted && invNonEdibles.length > 0) {
+        if (!tooMuchCarried && notYeeted && invNonEdibles.length > 0) {
             // yeet the nonEdible hopefully hitting the tree
             yeet(invNonEdibles[0]);
         }
-        if (takeNonEdible != "") take(takeNonEdible);
+        if (!tooMuchCarried && takeNonEdible != "") take(takeNonEdible);
+        if (!seen) look();
     }
     setTimeout(checkMessages, SECOND);
 }
