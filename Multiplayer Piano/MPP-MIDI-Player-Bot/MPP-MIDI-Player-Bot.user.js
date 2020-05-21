@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.9
+// @version      2.2.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -970,11 +970,9 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
-                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    active = true;
-                    createButtons();
-                    console.log(PRE_MSG + " Online!");
-                }
+                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) active = true;
+                createButtons();
+                console.log(PRE_MSG + " Online!");
             }
         }, TENTH_OF_SECOND);
     }
