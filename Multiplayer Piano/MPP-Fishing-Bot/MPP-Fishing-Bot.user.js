@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.6
+// @version      1.6.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -280,14 +280,14 @@ MPP.client.on('a', function (msg) {
             }
         } else if (input.includes(yourUsername + ' ' + TOOK)) {
             // check if we took a nonedible
-            if (input.includes(takeNonEdible)) {
-                var taken = takeNonEdible;
-                takeNonEdible = "";
-                invNonEdibles.push(taken);
-            } else if (input.includes(FRUIT)) {
+            if (input.includes(FRUIT)) {
                 fruitFell = false;
                 gotFruit = true;
                 audioPlay(gotFruitSound);
+            } else if (input.includes(takeNonEdible)) {
+                var taken = takeNonEdible;
+                takeNonEdible = "";
+                invNonEdibles.push(taken);
             }
         } else if (checkingSack && input.indexOf(sackContents) == 0) {
             checkingSack = false;
