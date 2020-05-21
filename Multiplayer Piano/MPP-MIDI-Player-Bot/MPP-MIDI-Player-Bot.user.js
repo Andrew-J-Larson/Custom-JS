@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.6
+// @version      2.1.7
 // @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -58,12 +58,12 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
-const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
+const BOT_ROOM_KEYPHRASE = "MIDI"; // this is used for auto enabling the public commands in a room that contains the key phrase (character case doesn't matter)
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
@@ -693,19 +693,6 @@ var createButtons = function() {
     buttonContainer.appendChild(togglerDiv);
 }
 
-// Sets the name of the bot
-var setOwnerUsername = function(username) {
-    if (exists(username) && username != "") {
-        var set = {name: username};
-        MPP.client.sendArray([{m: "userset", set: set}]);
-        console.log("Username set to " + quoteString(username));
-        return true;
-    } else {
-        console.log("Invalid username. Username wasn't set.");
-        return false;
-    }
-}
-
 // Sends back the current time in the song against total time
 var getSongTimesFormatted = function(elapsed, duration) {
     return '[' + elapsed + " / " + duration + ']';
@@ -919,7 +906,7 @@ MPP.client.on("ch", function(msg) {
     if (currentRoom != newRoom) {
         currentRoom = MPP.client.channel._id;
         // stop any songs that might have been playing before changing rooms
-        stopSong();
+        if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) == -1) stopSong();
     }
 });
 MPP.client.on('p', function(msg) {
@@ -961,11 +948,11 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
-                active = true;
-                if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
-                if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
-                createButtons();
-                console.log(PRE_MSG + " Online!");
+                if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) >= 0) {
+                    active = true;
+                    createButtons();
+                    console.log(PRE_MSG + " Online!");
+                }
             }
         }, TENTH_OF_SECOND);
     }

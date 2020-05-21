@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.7
+// @version      2.2.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -63,7 +63,6 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
-const CHANGE_NAME = false; // allows the bot to change your name to the bot's name
 const BOT_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
@@ -910,19 +909,6 @@ var toggleAutoplay = function(choice) {
     autoplayOption = choice;
 }
 
-// Sets the name of the bot
-var setOwnerUsername = function(username) {
-    if (exists(username) && username != "") {
-        var set = {name: username};
-        MPP.client.sendArray([{m: "userset", set: set}]);
-        console.log("Username set to " + quoteString(username));
-        return true;
-    } else {
-        console.log("Invalid username. Username wasn't set.");
-        return false;
-    }
-}
-
 // Sends back the current time in the song against total time
 var getSongTimesFormatted = function(elapsed, duration) {
     return '[' + elapsed + " / " + duration + ']';
@@ -1290,9 +1276,7 @@ var clearSoundWarning = setInterval(function() {
                 if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) >= 0) {
                     active = true;
                     autoplayOption = AUTOPLAY_RANDOM;
-                    if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
                     if (BOT_SOLO_PLAY) setOwnerOnlyPlay(BOT_SOLO_PLAY);
-                    if (CHANGE_NAME) setOwnerUsername(BOT_USERNAME);
                     console.log(PRE_MSG + " Online!");
                 }
             }
