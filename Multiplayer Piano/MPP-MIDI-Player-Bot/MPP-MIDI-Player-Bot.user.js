@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.1.8
-// @description  Plays MIDI files by URL (anyone), or by upload (bot owner only)!
+// @version      2.1.9
+// @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/MPP-MIDI-Player-Bot.user.js
@@ -63,7 +63,8 @@ const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an o
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
-const BOT_ROOM_KEYPHRASE = "MIDI"; // this is used for auto enabling the public commands in a room that contains the key phrase (character case doesn't matter)
+const BOT_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
+const BOT_ACTIVATOR = BOT_KEYWORD.toLowerCase();
 const BOT_USERNAME = NAME + " [" + PREFIX + "help]";
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
@@ -85,7 +86,7 @@ const BOT_COMMANDS = [
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
 ];
 const BOT_OWNER_COMMANDS = [
-    ["active", "toggles the public bot commands on or off"]
+    [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
@@ -914,7 +915,7 @@ MPP.client.on('a', function (msg) {
             case "song": case "so": if (!preventsPlaying) song(); break;
             case "repeat": case "re": if (active && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if (active && !preventsPlaying) sustain(); break;
-            case "active": case "a": setActive(userId, yourId); break;
+            case BOT_ACTIVATOR: setActive(userId, yourId); break;
         }
     }
 });
@@ -927,7 +928,7 @@ MPP.client.on("ch", function(msg) {
     if (currentRoom != newRoom) {
         currentRoom = MPP.client.channel._id;
         // stop any songs that might have been playing before changing rooms
-        if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) == -1) stopSong();
+        if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) == -1) stopSong();
     }
 });
 MPP.client.on('p', function(msg) {
@@ -969,7 +970,7 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
-                if (currentRoom.toUpperCase().indexOf(BOT_ROOM_KEYPHRASE) >= 0) {
+                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
                     active = true;
                     createButtons();
                     console.log(PRE_MSG + " Online!");
