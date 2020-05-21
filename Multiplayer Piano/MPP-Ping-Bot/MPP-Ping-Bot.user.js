@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.4
+// @version      0.1.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -46,7 +46,7 @@ const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
-const HELP_DESC = "Ping usage is as follows: Get everyone's attention with @<all>, @<online>, or @<everyone>, or to ping a specific user, use @<A Username Here> or @<a user id here>";
+const HELP_DESC = "Ping usage is as follows: Get everyone's attention with @<all>, @<online>, or @<everyone>, or to ping a specific user, use @<A Username Here> or @<a user id here>. Use @<link> to get bot download URL, or use @<feedback> to submit feedback.";
 
 // =============================================== OBJECT INITIALIZERS
 

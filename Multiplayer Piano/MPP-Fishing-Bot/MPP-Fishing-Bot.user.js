@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.3
+// @version      1.7.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -35,17 +35,22 @@ const FIVE_MINUTES = 5 * MINUTE;
 const FEEDBACK_URL = "https://forms.gle/YJRWFTvh7sFZBuDCA";
 
 // Bot custom constants
-const FISHING_BOT_ID = "565887aa860ba601611b7615";
-const FISH_INTERVAL = FIVE_MINUTES;
+const BOT_NAMESPACE = '(' + NAMESPACE + ')';
+const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS library."
+const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
+const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_AUDIO = PRE_MSG + "[Audio]";
-// `fishing` bot specific strings
+const PRE_ERROR = PRE_MSG + "Error!";
+const LIST_BULLET = "• ";
+const DESCRIPTION_SEPARATOR = " - ";
+// `fishing` specific constants
+const FISHING_BOT_ID = "565887aa860ba601611b7615";
+const FISH_INTERVAL = FIVE_MINUTES;
 const CMD_PREFIX = '/';
-const CMD_HELP = "help";
-const CMD_LINK = "link";
 const CMD_CAST = ["cast", "fish"];
 const CMD_REEL = "reel";
 const CMD_SACK = ["sack", "caught"];
@@ -59,9 +64,15 @@ const CMD_YEET = "yeet";
 const CMD_LOOK = "look";
 // const CMD_COLOR = "color";
 const CMD_TREE = "tree";
-const CMD_BOT_AUDIO_TOGGLER = "audio";
-const CMD_BOT_FEEDBACK = "feedback";
-const HELP_DESC = "The only commands are: • " + CMD_PREFIX + "help - shows the commands • " + CMD_PREFIX + "link - get the download link for this bot • " + CMD_PREFIX + "audio - toggles the audio on/off";
+const COMMANDS = [
+    ["help (command)", "displays info about command, but no command entered shows the commands"],
+    ["about", "get information about this bot"],
+    ["link", "get the download link for this bot"],
+    ["feedback", "shows link to send feedback about the bot to the developer"]
+];
+const BOT_OWNER_COMMANDS = [
+    ["audio", "toggles the audio on or off"]
+];
 const FRUIT = "kek";
 const NON_EDIBLES = ["Can"];
 const INV_BULLET = "◍";
@@ -141,37 +152,53 @@ var audioPlay = function(audioObj) {
     if (audioEnabled) audioObj.play();
 }
 
-// =============================================== COMMANDS
+// =============================================== FUNCTIONS
 
-// From MPP
-var chatSend = function(message) {
-    MPP.chat.send(message);
+// Send messages without worrying about timing
+var mppChatSend = function(str, delay) {
+    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
 }
 
-// For `fishing` bot
+// Makes all commands into one string
+var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+    if (!exists(prefix)) prefix = '';
+    var commands = '';
+    var i;
+    for(i = 0; i < commandsArray.length; ++i) {
+        commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
+    }
+    return commands;
+}
+
+// Gets 1 command and info about it into a string
+var formatCommandInfo = function(commandsArray, commandIndex) {
+    return LIST_BULLET + CMD_PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
+}
+
+// Commands for `fishing`
 var cast = function() {
-    chatSend(CMD_PREFIX + CMD_CAST[0]);
+    mppChatSend(CMD_PREFIX + CMD_CAST[0]);
 }
 var reel = function() {
-    chatSend(CMD_PREFIX + CMD_REEL);
+    mppChatSend(CMD_PREFIX + CMD_REEL);
 }
 var sack = function() {
-    chatSend(CMD_PREFIX + CMD_SACK[0]);
+    mppChatSend(CMD_PREFIX + CMD_SACK[0]);
 }
 var eat = function(item) {
-    chatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
+    mppChatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
 }
 var pick = function() {
-    chatSend(CMD_PREFIX + CMD_PICK);
+    mppChatSend(CMD_PREFIX + CMD_PICK);
 }
 var take = function(item) {
-    chatSend(CMD_PREFIX + CMD_TAKE + ' ' + item);
+    mppChatSend(CMD_PREFIX + CMD_TAKE + ' ' + item);
 }
 var yeet = function(item) {
-    chatSend(CMD_PREFIX + CMD_YEET + ' ' + item.toLowerCase());
+    mppChatSend(CMD_PREFIX + CMD_YEET + ' ' + item.toLowerCase());
 }
 var look = function() {
-    chatSend(CMD_PREFIX + CMD_LOOK);
+    mppChatSend(CMD_PREFIX + CMD_LOOK);
 }
 // Format strings for when ...
 var noTook = function(username, item) {
@@ -187,7 +214,87 @@ var carryingTooMuch = function(username) {
     return "Friend " + username + " is carrying too much.";
 }
 
-// For this bot
+// When there is an incorrect command, show this error
+var cmdNotFound = function(cmd) {
+    var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
+    if (active) mppChatSend(error);
+    else console.log(error);
+}
+
+// Commands for this bot
+var help = function(command, userId, yourId) {
+    var isOwner = MPP.client.isOwner();
+    if (!exists(command) || command == "") {
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + CMD_PREFIX, true)
+                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + CMD_PREFIX, true) : ''));
+    } else {
+        var valid = null;
+        var commandIndex = null;
+        command = command.toLowerCase();
+        // check commands array
+        var i;
+        for(i = 0; i < COMMANDS.length; ++i) {
+            if (COMMANDS[i][0].indexOf(command) == 0) {
+                valid = command;
+                commandIndex = i;
+            }
+        }
+        // display info on command if it exists
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex),);
+        else cmdNotFound(command);
+    }
+}
+var about = function() {
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
+}
+var link = function() {
+    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+}
+var feedback = function() {
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
+}
+var didCast = function() {
+    fishTimer = FISH_INTERVAL;
+    casted = true;
+    audioPlay(castedSound);
+}
+var didReel = function() {
+    casted = false;
+    audioPlay(reeledSound);
+}
+var didPick = function() {
+    picked = true;
+    audioPlay(pickedSound);
+}
+var didYeet = function(argsString) {
+    tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
+    notYeeted = false;
+    // get rid of the nonEdible we yeeted if we did yeet one
+    var invNonEdiblesLength = invNonEdibles.length;
+    var toYeet = (exists(argsString) && argsString != "") ? argsString.toLowerCase() : null;
+    if (invNonEdiblesLength > 0) {
+        var haveYeet = false;
+        var n = 0;
+        while (!haveYeet && n < invNonEdiblesLength) {
+            var checkNonEdible = invNonEdibles[n].toLowerCase();
+            if (checkNonEdible.includes(toYeet)) {
+                haveYeet = true;
+                invNonEdibles.splice(n,1);
+            }
+            n++;
+        }
+    }
+}
+var didSack = function() {
+    invSack = false;
+    checkingSack = true;
+}
+var didEat = function() {
+    tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
+}
+var didLook = function() {
+    seen = true;
+}
 var audioToggler = function() {
     // toggles audio on/off
     audioEnabled = !audioEnabled;
@@ -204,56 +311,32 @@ MPP.client.on('a', function (msg) {
     var yourUsername = yourParticipant.name;
     // get the message as string
     var input = msg.a.trim();
-    var checkCommand = input.split()[0];
     var participant = msg.p;
     var userId = participant._id;
-    if (checkCommand.indexOf(CMD_PREFIX) == 0) {
-        var command = checkCommand.substring(CMD_PREFIX.length);
-        // if anyone sent anything
-        if (command == CMD_HELP) MPP.chat.send(PRE_HELP + ' ' + HELP_DESC);
-        else if (command == CMD_LINK) MPP.chat.send(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
-        else if (userId == yourId) { // if you sent something
+    if (input.indexOf(CMD_PREFIX) == 0) {
+        var message = input.substring(CMD_PREFIX.length).trim();
+        var hasArgs = message.indexOf(' ');
+        var command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
+        var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1).trim() : null;
+        // look through commands
+        switch(command.toLowerCase()) {
+            case "help": case "h": help(argumentsString, userId, yourId); break;
+            case "about": case "ab": about(); break;
+            case "link": case "li": link(); break;
+            case "feedback": case "fb": feedback(); break;
+            case "audio": case "au": if (userId == yourId) audioToggler(); break;
             // check `fishing` commands
-            if (command == CMD_CAST[0] || command == CMD_CAST[1]) {
-                fishTimer = FISH_INTERVAL;
-                casted = true;
-                audioPlay(castedSound);
-            } else if (command == CMD_REEL) {
-                casted = false;
-                audioPlay(reeledSound);
-            } else if (command == CMD_PICK) {
-                picked = true;
-                audioPlay(pickedSound);
-            } else if (command.indexOf(CMD_YEET) == 0) {
-                tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
-                notYeeted = false;
-                // get rid of the nonEdible we yeeted if we did yeet one
-                var invNonEdiblesLength = invNonEdibles.length;
-                var toYeet = command.length > CMD_YEET.length ? command.substring(CMD_YEET.length + 1).trim().toLowerCase() : null;
-                if (invNonEdiblesLength > 0) {
-                    var haveYeet = false;
-                    var n = 0;
-                    while (!haveYeet && n < invNonEdiblesLength) {
-                        var checkNonEdible = invNonEdibles[n].toLowerCase();
-                        if (checkNonEdible.includes(toYeet)) {
-                            haveYeet = true;
-                            invNonEdibles.splice(n,1);
-                        }
-                        n++;
-                    }
-                }
-            } else if (command == CMD_SACK[0] || command == CMD_SACK[1]) {
-                invSack = false;
-                checkingSack = true;
-            } else if (command.indexOf(CMD_EAT) == 0) tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
-            else if (command == CMD_LOOK) seen = true;
-            // other commands not by the `fishing` bot
-            else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
-            else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
+            case CMD_CAST[0]: case CMD_CAST[1]: if (userId == yourId) didCast(); break;
+            case CMD_REEL: if (userId == yourId) didReel(); break;
+            case CMD_PICK: if (userId == yourId) didPick(); break;
+            case CMD_YEET: if (userId == yourId) didYeet(argumentsString); break;
+            case CMD_SACK[0]: case CMD_SACK[1]: if (userId == yourId) didSack(); break;
+            case CMD_EAT: if (userId == yourId) didEat(); break;
+            case CMD_LOOK: if (userId == yourId) didLook(); break;
         }
-    } // check for `fishing` bot response
+    } // check for `fishing` response
     else if (userId == FISHING_BOT_ID) {
-        // if the `fishing` bot sent something
+        // if the `fishing` sent something
         if (input.includes(yourUsername + ' ' + CAUGHT)) {
             casted = false;
             var i;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.3
+// @version      0.2.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -37,10 +37,6 @@ const FEEDBACK_URL = "https://forms.gle/SzpZYTzVKRe7B4Wc7";
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 
-// Bot constant settings
-const CLEAR_LINES = 9; // may be changed if needed, but this number seems to be the magic number
-const CLEAR_TEXT = "—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬—▬";
-
 // Bot custom constants
 const GREET_HI = 0;
 const GREET_BYE = 1;
@@ -58,22 +54,20 @@ const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
+    ["feedback", "shows link to send feedback about the bot to the developer"],
     ["hi [message]", "sets the welcome message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
     ["hi_[choice]", "turns the welcome message on or off; e.g. " + PREFIX + "hi_on"],
     ["bye [message]", "sets the goodbye message for users; " + GREET_NAME + " = username, " + GREET_ID + " = user ID, " + GREET_COLOR + " = user color"],
     ["bye_[choice]", "turns the goodbye message on or off e.g. " + PREFIX + "bye_on"],
-    ["clear", "clears the chat"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
+const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_HI = PRE_MSG + "[Hi]";
 const PRE_BYE = PRE_MSG + "[Bye]";
-const PRE_PING = PRE_MSG + "[Ping]";
-const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const LIST_BULLET = "• ";
@@ -143,7 +137,7 @@ var formatCommandInfo = function(commandsArray, commandIndex) {
 
 // Send messages without worrying about timing
 var mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, delay);
+    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
@@ -182,20 +176,14 @@ var mppCmdSend = function(commandsArray, cmdSubstring, delay) {
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
-    var error = PRE_ERROR;
-    // if cmd is empty somehow, show it
-    if (exists(cmd) && cmd != "") {
-        // if we're in the fishing room, ignore the fishing commands
-        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
-        cmd = cmd.toLowerCase();
-    } else error += " No command entered";
-    if (currentRoom == "test/fishing") console.log(error);
-    else mppChatSend(error, 0);
+    var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
+    if (active) mppChatSend(error);
+    else console.log(error);
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true));
     else {
         var valid = null;
         var commandIndex = null;
@@ -209,30 +197,33 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex));
         else cmdNotFound(command);
     }
 }
 var about = function() {
-    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
 var link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+}
+var feedback = function() {
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
 }
 var greetMsgSet = function(cmd, intGreet, msg) {
     var greet = "The ";
     var title;
     if (intGreet == GREET_HI) title = PRE_HI;
     else if (intGreet == GREET_BYE) title = PRE_BYE;
-    if (!exists(msg)) mppCmdSend(COMMANDS, cmd + ' ', 0);
+    if (!exists(msg)) mppCmdSend(COMMANDS, cmd + ' ');
     else {
         var sameMsg = false;
         switch(intGreet) {
             case GREET_HI: greet += "welcome"; hiMessage == msg ? sameMsg = true : hiMessage = msg; break;
             case GREET_BYE: greet += "goodbye"; byeMessage == msg ? sameMsg = true : byeMessage = msg; break;
         }
-        if (sameMsg) mppChatSend(title + ' ' + greet + " message wasn't changed", 0);
-        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_ID,"[user ID here]").replace(GREET_COLOR,"[user color here]"), 0);
+        if (sameMsg) mppChatSend(title + ' ' + greet + " message wasn't changed");
+        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_ID,"[user ID here]").replace(GREET_COLOR,"[user color here]"));
     }
 }
 var greetToggle = function(cmd, intGreet, boolChoice) {
@@ -255,20 +246,8 @@ var greetToggle = function(cmd, intGreet, boolChoice) {
 
     // display message
     var title = PRE_MSG + '[' + cmd + ']';
-    if (alreadySet) mppChatSend(title + ' ' + greet + " message is already turned " + (boolChoice ? "on" : "off"), 0);
-    else mppChatSend(title + ' ' + greet + " message has been turned " + (boolChoice ? "on" : "off"), 0);
-}
-var clear = function() {
-    // clear the chat of current messages (can be slow)
-    var i;
-    for (i = 0; i < CLEAR_LINES; ++i) {
-        mppChatSend(CLEAR_TEXT, chatDelay * i);
-        if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
-    }
-}
-var feedback = function() {
-    // just sends feedback url to user
-    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
+    if (alreadySet) mppChatSend(title + ' ' + greet + " message is already turned " + (boolChoice ? "on" : "off"));
+    else mppChatSend(title + ' ' + greet + " message has been turned " + (boolChoice ? "on" : "off"));
 }
 
 // =============================================== MAIN
@@ -297,16 +276,14 @@ MPP.client.on('a', function (msg) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
             case "link": case "li": if (active) link(); break;
+            case "feedback": case "fb": if (active) feedback(); break;
             case "hi": if (active) greetMsgSet(command.toLowerCase(), GREET_HI, argumentsString); break;
             case "bye": if (active) greetMsgSet(command.toLowerCase(), GREET_BYE, argumentsString); break;
             case "hi_on": if (active) greetToggle(command.toLowerCase(), GREET_HI, true); break;
             case "hi_off": if (active) greetToggle(command.toLowerCase(), GREET_HI, false); break;
             case "bye_on": if (active) greetToggle(command.toLowerCase(), GREET_BYE, true); break;
             case "bye_off": if (active) greetToggle(command.toLowerCase(), GREET_BYE, false); break;
-            case "clear": case "cl": if (active) clear(); break;
-            case "feedback": case "fb": if (active) feedback(); break;
             case "active": case "a": setActive(arguments, userId); break;
-            default: if (active) cmdNotFound(command); break;
         }
     }
 });
@@ -341,7 +318,11 @@ MPP.client.on("ch", function(msg) {
                         var k;
                         for(k = 0; k < updatedPlayers.length; k++) {
                             // if added _id matches in updatedPlayers, then get name and show hiMessage
-                            if (added_ids[j] == updatedPlayers[k][0]) mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1]).replace(GREET_ID,updatedPlayers[k][0]).replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])), 0);
+                            if (added_ids[j] == updatedPlayers[k][0]) {
+                                mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1])
+                                                               .replace(GREET_ID,updatedPlayers[k][0])
+                                                               .replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])));
+                            }
                         }
                     }
                 }
@@ -361,7 +342,11 @@ MPP.client.on("ch", function(msg) {
                         var m;
                         for(m = 0; m < currentPlayers.length; m++) {
                             // if removed _id matches in currentPlayers, then get name and show byeMessage
-                            if (removed_ids[l] == currentPlayers[m][0]) mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1]).replace(GREET_ID,updatedPlayers[k][0]).replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])), 0);
+                            if (removed_ids[l] == currentPlayers[m][0]) {
+                                mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1])
+                                                                .replace(GREET_ID,updatedPlayers[k][0])
+                                                                .replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])));
+                            }
                         }
                     }
                 }

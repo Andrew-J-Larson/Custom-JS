@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -73,21 +73,21 @@ const COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
+    ["feedback", "shows link to send feedback about the bot to the developer"],
     ["ban [user id]","bans the player while running the bot"],
     ["unban [user id]","unbans the player if they were banned while running the bot"],
     ["listban", "shows all the permanently and temporarily banned players"],
     ["clear", "clears the chat"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
     ["active [choice]", "turns the bot on or off (bot owner only)"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
+const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_BAN = PRE_MSG + "[Ban]";
 const PRE_UNBAN = PRE_MSG + "[Unban]";
 const PRE_LISTBAN = PRE_MSG + "[Listban]";
-const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const LIST_BULLET = "• ";
@@ -175,7 +175,7 @@ var formatCommandInfo = function(commandsArray, commandIndex) {
 
 // Send messages without worrying about timing
 var mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, delay);
+    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
@@ -212,20 +212,14 @@ var getPlayers = function(playersArray) {
 
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
-    var error = PRE_ERROR;
-    // if cmd is empty somehow, show it
-    if (exists(cmd) && cmd != "") {
-        // if we're in the fishing room, ignore the fishing commands
-        error += " Invalid command, " + quoteString(cmd) + " doesn't exist";
-        cmd = cmd.toLowerCase();
-    } else error += " No command entered";
-    if (currentRoom == "test/fishing") console.log(error);
-    else mppChatSend(error, 0);
+    var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
+    if (active) mppChatSend(error);
+    else console.log(error);
 }
 
 // Commands
 var help = function(command) {
-    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true), 0);
+    if (!exists(command) || command == "") mppChatSend(PRE_HELP + " Commands: " + formattedCommands(COMMANDS, LIST_BULLET + PREFIX, true));
     else {
         var valid = null;
         var commandIndex = null;
@@ -239,24 +233,27 @@ var help = function(command) {
             }
         }
         // display info on command if it exists
-        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex), 0);
+        if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(COMMANDS, commandIndex));
         else cmdNotFound(command);
     }
 }
 var about = function() {
-    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE, 0);
+    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
 var link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
 }
+var feedback = function() {
+    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
+}
 var ban = function(userId, yourId) {
     var error = PRE_ERROR + " (ban)";
     if (!exists(userId)) {
-        mppChatSend(error + " Nothing entered", 0);
+        mppChatSend(error + " Nothing entered");
         return;
     } else userId = userId.toLowerCase();
     // check user is not self
-    if (userId == yourId) mppChatSend(error + " Can't ban yourself", 0);
+    if (userId == yourId) mppChatSend(error + " Can't ban yourself");
     else {
         var permBanned = false;
         var tempBanned = false;
@@ -267,7 +264,7 @@ var ban = function(userId, yourId) {
             for(i = 0; i < bannedPlayersSize; ++i) {
                 if (userId == BANNED_PLAYERS[i][0]) {
                     permBanned = true;
-                    mppChatSend(error + " This user is already permanently banned (set by script constants)", 0);
+                    mppChatSend(error + " This user is already permanently banned (set by script constants)");
                 };
             }
         }
@@ -278,7 +275,7 @@ var ban = function(userId, yourId) {
             for(j = 0; j < tempBannedPlayersSize; ++j) {
                 if (userId == tempBannedPlayers[j][0]) {
                     tempBanned = true;
-                    mppChatSend(error + " This user is already temporarily banned (set by using the command)", 0);
+                    mppChatSend(error + " This user is already temporarily banned (set by using the command)");
                 }
             }
         }
@@ -300,19 +297,19 @@ var ban = function(userId, yourId) {
             if (username != null) {
                 tempBannedPlayers.push([userId, username]);
                 MPP.client.sendArray([{m: "kickban", _id: userId, ms: 3600000}]);
-                mppChatSend(PRE_BAN + ' ' + quoteString(username) + " (" + userId + ") has been banned", 0);
-            } else mppChatSend(PRE_BAN + ' ' + quoteString(userId) + " isn't a valid user id", 0);
+                mppChatSend(PRE_BAN + ' ' + quoteString(username) + " (" + userId + ") has been banned");
+            } else mppChatSend(PRE_BAN + ' ' + quoteString(userId) + " isn't a valid user id");
         }
     }
 }
 var unban = function(userId, yourId) {
     var error = PRE_ERROR + " (unban)";
     if (!exists(userId)) {
-        mppChatSend(error + " Nothing entered", 0);
+        mppChatSend(error + " Nothing entered");
         return;
     } else userId = userId.toLowerCase();
     // check user is not self
-    if (userId == yourId) mppChatSend(error + " Can't unban yourself", 0);
+    if (userId == yourId) mppChatSend(error + " Can't unban yourself");
     else {
         var permBanned = false;
         var tempBanned = false;
@@ -323,7 +320,7 @@ var unban = function(userId, yourId) {
             for(i = 0; i < bannedPlayersSize; ++i) {
                 if (userId == BANNED_PLAYERS[i][0]) {
                     permBanned = true;
-                    mppChatSend(error + " Permanently banned players can only be unbanned from editing the script constants", 0);
+                    mppChatSend(error + " Permanently banned players can only be unbanned from editing the script constants");
                 };
             }
         }
@@ -355,15 +352,15 @@ var unban = function(userId, yourId) {
             // add to ban list
             if (index != null) {
                 tempBannedPlayers.splice(index, 1);
-                mppChatSend(PRE_UNBAN + ' ' + quoteString(username) + " (" + userId + ") has been unbanned", 0);
-            } else mppChatSend(PRE_UNBAN + ' ' + quoteString(userId) + " isn't a valid user id", 0);
+                mppChatSend(PRE_UNBAN + ' ' + quoteString(username) + " (" + userId + ") has been unbanned");
+            } else mppChatSend(PRE_UNBAN + ' ' + quoteString(userId) + " isn't a valid user id");
         }
     }
 }
 var listban = function() {
-    mppChatSend(PRE_LISTBAN, 0);
-    mppChatSend("Permanent: " + getPlayers(BANNED_PLAYERS), 0);
-    mppChatSend("Temporary: " + getPlayers(tempBannedPlayers), 0);
+    mppChatSend(PRE_LISTBAN);
+    mppChatSend("Permanent: " + getPlayers(BANNED_PLAYERS));
+    mppChatSend("Temporary: " + getPlayers(tempBannedPlayers));
 }
 var clear = function() {
     // clear the chat of current messages (can be slow)
@@ -372,10 +369,6 @@ var clear = function() {
         mppChatSend(CLEAR_TEXT, chatDelay * i);
         if (i == CLEAR_LINES - 1) setTimeout(MPP.chat.clear, chatDelay * (i + 1));
     }
-}
-var feedback = function() {
-    // just sends feedback url to user
-    mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.", 0);
 }
 
 // =============================================== MAIN
@@ -403,13 +396,12 @@ MPP.client.on('a', function (msg) {
             case "help": case "h": if (active) help(argumentsString); break;
             case "about": case "ab": if (active) about(); break;
             case "link": case "li": if (active) link(); break;
+            case "feedback": case "fb": if (active) feedback(); break;
             case "ban": case "b": if (active) ban(argumentsString, yourId); break;
             case "unban": case "ub": if (active) unban(argumentsString, yourId); break;
             case "listban": case "lb": if (active) listban(); break;
             case "clear": case "cl": if (active) clear(); break;
-            case "feedback": case "fb": if (active) feedback(); break;
             case "active": case "a": setActive(arguments, userId, yourId); break;
-            default: if (active) cmdNotFound(command); break;
         }
     }
     if (active && BOT_LOG_PROFANITY) checkForFilthyWords(username, userId, yourId, input);
