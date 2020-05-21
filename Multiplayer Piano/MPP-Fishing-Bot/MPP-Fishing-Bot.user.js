@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.7
+// @version      1.6.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -114,7 +114,8 @@ var picked = false;
 var fruitFell = false;
 var gotFruit = false;
 var notYeeted = false;
-var checkingSack = false;
+var lookingSack = false;
+var checkingSack = true;
 var takeNonEdible = ""; // changes to item it can take when available
 
 // =============================================== FUNCTIONS
@@ -233,8 +234,10 @@ MPP.client.on('a', function (msg) {
                         n++;
                     }
                 }
-            } else if (command == CMD_SACK) checkingSack = true;
-            // other commands not by the `fishing` bot
+            } else if (command == CMD_SACK) {
+                checkingSack = false;
+                lookingSack = true;
+            } // other commands not by the `fishing` bot
             else if (command == CMD_BOT_AUDIO_TOGGLER) audioToggler();
             else if (command == CMD_BOT_FEEDBACK) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
         }
@@ -289,8 +292,8 @@ MPP.client.on('a', function (msg) {
                 takeNonEdible = "";
                 invNonEdibles.push(taken);
             }
-        } else if (checkingSack && input.indexOf(sackContents) == 0) {
-            checkingSack = false;
+        } else if (lookingSack && input.indexOf(sackContents) == 0) {
+            lookingSack = false;
             // put all nonedibles into sack
             var k;
             for(k = 0; k < NON_EDIBLES.length; k++) {
