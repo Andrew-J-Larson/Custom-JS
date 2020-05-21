@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.0
+// @version      2.2.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -73,10 +73,10 @@ const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
-    ["feedback", "shows link to send feedback about the bot to the developer"]
+    ["feedback", "shows link to send feedback about the bot to the developer"],
+    ["ping", "gets the milliseconds response time"]
 ];
 const BOT_COMMANDS = [
-    ["ping", "gets the milliseconds response time"],
     ["play [URL]", "plays a specific song (URL must be a direct link)"],
     ["stop", "stops all music from playing"],
     ["pause", "pauses the music at that moment in the song"],
@@ -625,6 +625,19 @@ var createButtons = function() {
     var repeatTxt = document.createTextNode("Repeat");
     repeatDiv.appendChild(repeatTxt);
     buttonContainer.appendChild(repeatDiv);
+    // SONG
+    nextLocationX += BTN_SPACER_X;
+    var songDiv = document.createElement("div");
+    songDiv.id = PRE_ELEMENT_ID + "-song";
+    songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+    songDiv.classList.add("ugly-button");
+    songDiv.onclick = function() {
+        preventsPlaying = MPP.client.preventsPlaying();
+        if (!preventsPlaying) song();
+    }
+    var songTxt = document.createTextNode("Song");
+    songDiv.appendChild(songTxt);
+    buttonContainer.appendChild(songDiv);
     // PAUSE
     nextLocationX = BTNS_END_X;
     var pauseDiv = document.createElement("div");
@@ -664,6 +677,16 @@ var createButtons = function() {
     var sustainTxt = document.createTextNode("Sustain");
     sustainDiv.appendChild(sustainTxt);
     buttonContainer.appendChild(sustainDiv);
+    // PUBLIC
+    nextLocationX += BTN_SPACER_X;
+    var publicDiv = document.createElement("div");
+    publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
+    publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    publicDiv.classList.add("ugly-button");
+    publicDiv.onclick = function() { setActive(true, true) }
+    var publicTxt = document.createTextNode("Public");
+    publicDiv.appendChild(publicTxt);
+    buttonContainer.appendChild(publicDiv);
 
     // one more button to toggle the visibility of the other buttons
     nextLocationX = BTNS_END_X - BTN_SPACER_X;
@@ -677,17 +700,21 @@ var createButtons = function() {
             playDiv.style.display =
             stopDiv.style.display =
             repeatDiv.style.display =
+            songDiv.style.display =
             pauseDiv.style.display =
             resumeDiv.style.display =
-            sustainDiv.style.display = "none";
+            sustainDiv.style.display =
+            publicDiv.style.display = "none";
             buttonsOn = false;
         } else {
             playDiv.style.display =
             stopDiv.style.display =
             repeatDiv.style.display =
+            songDiv.style.display =
             pauseDiv.style.display =
             resumeDiv.style.display =
-            sustainDiv.style.display = "block";
+            sustainDiv.style.display =
+            publicDiv.style.display = "block";
             buttonsOn = true;
         }
     }
