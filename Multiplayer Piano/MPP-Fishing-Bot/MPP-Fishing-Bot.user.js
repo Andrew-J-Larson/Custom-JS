@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.5
+// @version      1.7.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -105,7 +105,7 @@ const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
 
 // Audio
-const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/smb_audio/";
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/freesound.org/";
 const AUDIO_EXENSION = "mp3";
 
 // =============================================== OBJECT INITIALIZERS
@@ -117,16 +117,16 @@ var newAudio = function(name) {
 
 // =============================================== AUDIO
 
-var castedSound = newAudio("Jump");
-var reeledSound = newAudio("Skid");
-var pickedSound = newAudio("Big Jump");
-var caughtSound = newAudio("1up");
-var bittenSound = newAudio("Thwomp");
-var lostSound = newAudio("Die");
-var gotFruitSound = newAudio("Coin");
-var fruitFellSound = newAudio("Break");
-var boostSound = newAudio("Powerup");
-var coloredSound = newAudio("Item");
+var castedSound = newAudio("fishingreel-throw");
+var reeledSound = newAudio("fishing-reel");
+var pickedSound = newAudio("item-sound");
+var caughtSound = newAudio("water-splash");
+var bittenSound = newAudio("angel-fly-fish-reel-fast-wind-1");
+var lostSound = newAudio("wood-break");
+var gotFruitSound = newAudio("61-low-bongo");
+var fruitFellSound = newAudio("thud-dry");
+var boostSound = newAudio("video-game-sfx-positive-action-long-tail");
+var coloredSound = newAudio("powerup2");
 
 // =============================================== VARIABLES
 

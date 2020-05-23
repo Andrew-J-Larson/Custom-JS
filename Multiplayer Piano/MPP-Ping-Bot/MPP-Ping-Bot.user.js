@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.5
+// @version      0.1.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -51,7 +51,7 @@ const FEEDBACK_URL = "https://forms.gle/EMTXKvvR9xKjyHMZ7";
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 
 // Audio
-const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Ping-Bot/audio/";
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Ping-Bot/freesound.org/";
 const AUDIO_EXENSION = "mp3";
 
 // Bot custom constants
@@ -73,7 +73,7 @@ var newAudio = function(name) {
 
 // =============================================== AUDIO
 
-var pingSound = newAudio("discord-notification-high-pitch");
+var pingSound = newAudio("level-up-01");
 
 // =============================================== FUNCTIONS
 
