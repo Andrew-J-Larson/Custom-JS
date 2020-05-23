@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.5
+// @version      2.3.6
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -1323,8 +1323,10 @@ var repeatingTasks = setInterval(function() {
 var slowRepeatingTasks = setInterval(function() {
     // do background tab fix
     if (!pageVisible && (ended || paused)) {
-        MPP.press("a-1", 0.01);
-        MPP.release("a-1");
+        var note = MPP.piano.keys["a-1"].note;
+        var participantId = MPP.client.getOwnParticipant().id;
+        MPP.piano.audio.play(note, 0.01, 0, participantId);
+        MPP.piano.audio.stop(note, 0, participantId);
     }
 }, SECOND);
 
