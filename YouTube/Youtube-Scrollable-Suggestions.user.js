@@ -11,6 +11,22 @@
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // ==/UserScript==
 
+/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 // Greasemonkey doesn't allow some external scripts, including the one I've been using to detect an element existing.
 // Because of this, I've include a minified version of the code in this script.
 // jQuery library - waitForKeyElements --- Date code was added: March 8th, 2020 -- From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
