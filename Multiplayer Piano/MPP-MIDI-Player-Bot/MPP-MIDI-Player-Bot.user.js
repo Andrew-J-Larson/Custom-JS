@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.3
+// @version      2.2.4
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -44,6 +44,7 @@ const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
+const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/x4nqjynmRMEN2GSG7";
@@ -86,6 +87,7 @@ const BOT_COMMANDS = [
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
 ];
 const BOT_OWNER_COMMANDS = [
+    ["loadmusic", "toggles the MIDI loading music on or off"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -102,10 +104,11 @@ const PRE_SONG = PRE_MSG + "[Song]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
+const PRE_LOAD_MUSIC = PRE_MSG + "[Load Music]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
-const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload at https://bitmidi.com/ and https://midiworld.com/, or you can upload your own at a site like https://www.file.io/";
+const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via a site like https://www.file.io/";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
@@ -206,14 +209,18 @@ const MIDIPlayerToMPPNote = {
 
 // =============================================== VARIABLES
 
-var public = false; // turn off the public bot commands if needed
-var preventsPlaying = false // changes when it detects prevention
+var publicOption = false; // turn off the public bot commands if needed
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
+var loading = null; // this is to show progress when loading a MIDI file
+var loadingProgress = 0; // updates when loading files
+var loadingMusicOption = false; // controls if loading music should be on or not
+var loadingMusicLoop = null; // this is for when using the bot headless in a tab you aren't viewing
+var loadingMusicPrematureStop = false; // this is used when we need to stop the music after errors
 var ended = true;
 var stopped = false;
 var paused = false;
@@ -233,20 +240,20 @@ var sustainOption = true; // makes notes end according to the midi file
 
 // The MIDIPlayer
 var Player = new MidiPlayer.Player(function(event) {
-    preventsPlaying = MPP.client.preventsPlaying();
-    if (preventsPlaying) return;
+    if (MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent == "Set Tempo") { // fixes tempo on some songs
+        // see https://github.com/grimmdude/MidiPlayerJS/issues/54
         Player.pause();
         Player.setTempo(event.data);
         Player.play();
     } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
-        var currentNote = null;
+        var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
-            currentNote = MIDIPlayerToMPPNote[event.noteName];
             MPP.press(currentNote, (event.velocity/100));
-        } else if (sustainOption && (currentEvent == "Note off" || (currentEvent == "Note on" && event.velocity == 0))) MPP.release(currentNote); // end note
+            if (!sustainOption) MPP.release(currentNote);
+        } else if (sustainOption && (currentEvent == "Note off" || event.velocity == 0)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
         ended = true;
@@ -261,6 +268,8 @@ var Player = new MidiPlayer.Player(function(event) {
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
+// see https://github.com/grimmdude/MidiPlayerJS/issues/25
+Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
 
@@ -288,6 +297,47 @@ var getProgress = function(intProgress) {
         case 8: case 12: return " ░░░░░░░░█░░"; break;
         case 9: case 11: return " ░░░░░░░░░█░"; break;
         case 10: return " ░░░░░░░░░░█"; break;
+    }
+}
+
+// Checks if loading music should play
+var preventsLoadingMusic = function() {
+    return !loadingMusicPrematureStop && !Player.isPlaying() && !MPP.client.preventsPlaying();
+}
+
+// This is used when loading a song in the midi player, if it's been turned on
+var humanMusic = function() {
+    setTimeout(function() {
+        if (preventsLoadingMusic()) MPP.press("c5", 1);
+        if (preventsLoadingMusic()) MPP.release("c5");
+    }, 200);
+    setTimeout(function() {
+        if (preventsLoadingMusic()) MPP.press("d5", 1);
+        if (preventsLoadingMusic()) MPP.release("d5");
+    }, 700);
+    setTimeout(function() {
+        if (preventsLoadingMusic()) MPP.press("c5", 1);
+        if (preventsLoadingMusic()) MPP.release("c5");
+        loadingMusicPrematureStop = false;
+    }, 1200);
+}
+
+// Starts the loading music
+var startLoadingMusic = function() {
+    if (loadingMusicLoop == null) {
+        humanMusic();
+        loadingMusicLoop = setInterval(function() {
+            humanMusic();
+        }, 2200);
+    }
+}
+
+// Stops the loading music
+var stopLoadingMusic = function() {
+    if (loadingMusicLoop != null) {
+        loadingMusicPrematureStop = true;
+        clearInterval(loadingMusicLoop);
+        loadingMusicLoop = null;
     }
 }
 
@@ -357,12 +407,13 @@ var quoteString = function(string) {
 
 // Gets file as a blob (data URI)
 var urlToBlob = function(url, callback) {
+    if (loadingMusicOption) startLoadingMusic();
     // show file download progress
     var progress = 0;
+    mppChatSend(PRE_DOWNLOADING + ' ' + url);
     var downloading = setInterval(function() {
-        var showProgress = getProgress(progress);
+        mppChatSend(PRE_DOWNLOADING + getProgress(progress));
         progress++;
-        mppChatSend(PRE_DOWNLOADING + showProgress);
     }, chatDelay);
 
     fetch(url, {
@@ -370,33 +421,40 @@ var urlToBlob = function(url, callback) {
             "Content-Disposition": "attachment" // this might not be doing anything
         }
     }).then(response => {
+        stopLoadingMusic();
         clearInterval(downloading);
         if (!response.ok) {
             throw new Error("Network response was not ok");
         }
         return response.blob();
     }).then(blob => {
+        stopLoadingMusic();
         clearInterval(downloading);
         callback(blob);
     }).catch(error => {
         console.error("Normal fetch couldn't get the file:", error);
         var corsUrl = useCorsUrl(url);
         if (corsUrl != null) {
+            if (loadingMusicOption) startLoadingMusic();
+
             fetch(corsUrl, {
                 headers: {
                     "Content-Disposition": "attachment" // this might not be doing anything
                 }
             }).then(response => {
+                stopLoadingMusic();
                 clearInterval(downloading);
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
                 }
                 return response.blob();
             }).then(blob => {
+                stopLoadingMusic();
                 clearInterval(downloading);
                 callback(blob);
             }).catch(error => {
                 console.error("CORS Anywhere API fetch couldn't get the file:", error);
+                stopLoadingMusic();
                 clearInterval(downloading);
                 callback(null);
             });
@@ -407,7 +465,10 @@ var urlToBlob = function(url, callback) {
 
 // Converts files/blobs to base64 (data URI)
 var fileOrBlobToBase64 = function(raw, callback) {
-    if (raw == null) callback(null);
+    if (raw == null) {
+        stopLoadingMusic();
+        callback(null);
+    }
 
     // continue if we have a blob
     var reader = new FileReader();
@@ -441,13 +502,6 @@ var isMidi = function(raw) {
 var isOctetStream = function(raw) {
     if (exists(raw) && raw.type == "application/octet-stream") return true;
     else return false;
-}
-
-// Set the public bot commands on or off (only from bot)
-var setPublic = function(userId, yourId) {
-    if (userId != yourId) return;
-    public = !public;
-    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (public ? "on" : "off"));
 }
 
 // Makes all commands into one string
@@ -514,9 +568,18 @@ var playSong = function(songName, songData) {
         ended = false;
         stopped = false;
         Player.play();
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-        mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+        var timeoutRecorder = 0;
+        var showSongName = setInterval(function() {
+            if (Player.isPlaying()) {
+                clearInterval(showSongName);
+                currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+                mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+            } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
+                clearInterval(showSongName);
+            } else timeoutRecorder++;
+        }, 1);
     } catch(error) {
+        stopLoadingMusic();
         // reload the previous working file if there is one
         if (previousSongData != null) Player.loadDataUri(previousSongData);
         mppChatSend(PRE_ERROR + " (play) " + error);
@@ -546,8 +609,14 @@ var playFile = function(songFile) {
                     uploadButton.value = ""; // reset file input
                 } else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
             });
-        } else mppChatSend(error + " The file choosen, is either corrupted, or it's not really a MIDI file");
-    } else mppChatSend(error + " MIDI file not found");
+        } else {
+            stopLoadingMusic();
+            mppChatSend(error + " The file choosen, is either corrupted, or it's not really a MIDI file");
+        }
+    } else {
+        stopLoadingMusic();
+        mppChatSend(error + " MIDI file not found");
+    }
 }
 
 // Creates the play, pause, resume, and stop button for the bot
@@ -588,8 +657,7 @@ var createButtons = function() {
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
+        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
         else console.log("No MIDI file selected");
     }
     var uploadTxt = document.createTextNode("Play");
@@ -606,8 +674,7 @@ var createButtons = function() {
     stopDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
     stopDiv.classList.add("ugly-button");
     stopDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) stop();
+        if (!MPP.client.preventsPlaying()) stop();
     }
     var stopTxt = document.createTextNode("Stop");
     stopDiv.appendChild(stopTxt);
@@ -619,8 +686,7 @@ var createButtons = function() {
     repeatDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
     repeatDiv.classList.add("ugly-button");
     repeatDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) repeat();
+        if (!MPP.client.preventsPlaying()) repeat();
     }
     var repeatTxt = document.createTextNode("Repeat");
     repeatDiv.appendChild(repeatTxt);
@@ -632,8 +698,7 @@ var createButtons = function() {
     songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
     songDiv.classList.add("ugly-button");
     songDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) song();
+        if (!MPP.client.preventsPlaying()) song();
     }
     var songTxt = document.createTextNode("Song");
     songDiv.appendChild(songTxt);
@@ -645,8 +710,7 @@ var createButtons = function() {
     pauseDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
     pauseDiv.classList.add("ugly-button");
     pauseDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) pause();
+        if (!MPP.client.preventsPlaying()) pause();
     }
     var pauseTxt = document.createTextNode("Pause");
     pauseDiv.appendChild(pauseTxt);
@@ -658,8 +722,7 @@ var createButtons = function() {
     resumeDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
     resumeDiv.classList.add("ugly-button");
     resumeDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) resume();
+        if (!MPP.client.preventsPlaying()) resume();
     }
     var resumeTxt = document.createTextNode("Resume");
     resumeDiv.appendChild(resumeTxt);
@@ -671,8 +734,7 @@ var createButtons = function() {
     sustainDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
     sustainDiv.classList.add("ugly-button");
     sustainDiv.onclick = function() {
-        preventsPlaying = MPP.client.preventsPlaying();
-        if (!preventsPlaying) sustain();
+        if (!MPP.client.preventsPlaying()) sustain();
     }
     var sustainTxt = document.createTextNode("Sustain");
     sustainDiv.appendChild(sustainTxt);
@@ -683,7 +745,7 @@ var createButtons = function() {
     publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
     publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
     publicDiv.classList.add("ugly-button");
-    publicDiv.onclick = function() { setPublic(true, true) }
+    publicDiv.onclick = function() { public(true, true) }
     var publicTxt = document.createTextNode("Public");
     publicDiv.appendChild(publicTxt);
     buttonContainer.appendChild(publicDiv);
@@ -737,7 +799,7 @@ var playerLimited = function(username) {
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
-    if (public) mppChatSend(error);
+    if (publicOption) mppChatSend(error);
     else console.log(error);
 }
 
@@ -745,9 +807,10 @@ var cmdNotFound = function(cmd) {
 var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
+        var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (public ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+                             + (publicOption ? ' ' + publicCommands : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ') + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
@@ -805,8 +868,10 @@ var ping = function() {
 var play = function(url) {
     var error = PRE_ERROR + " (play)";
     // URL needs to be entered to play a song
-    if (!exists(url) || url == "") mppChatSend(error + " No MIDI url entered... " + WHERE_TO_FIND_MIDIS);
-    else {
+    if (!exists(url) || url == "") {
+        stopLoadingMusic();
+        mppChatSend(error + " No MIDI url entered... " + WHERE_TO_FIND_MIDIS);
+    } else {
         // downloads file if possible and then plays it if it's a MIDI
         urlToBlob(url, function(blob) {
             if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS);
@@ -818,7 +883,7 @@ var play = function(url) {
                             base64data = base64data.replace("application/octet-stream", "audio/midi");
                         }
                         playURL(url, base64data);
-                    } else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
+                    } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
                 });
             } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
         });
@@ -878,9 +943,29 @@ var sustain = function() {
 
     mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
 }
+var loadingMusic = function(userId, yourId) {
+    // only let the bot owner set if loading music should be on or not
+    if (userId != yourId) return;
+    loadingMusicOption = !loadingMusicOption;
+    mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading music was turned " + (loadingMusicOption ? "on" : "off"));
+}
+var public = function(userId, yourId) {
+    // set the public bot commands on or off (only from bot)
+    if (userId != yourId) return;
+    publicOption = !publicOption;
+    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+}
 
 // =============================================== MAIN
 
+Player.on('fileLoaded', function() {
+    // Do something when file is loaded
+    if (loading != null) {
+        clearInterval(loading);
+        loading = null;
+    }
+    stopLoadingMusic();
+});
 MPP.client.on('a', function (msg) {
     // if user switches to VPN, these need to update
     var yourParticipant = MPP.client.getOwnParticipant();
@@ -928,21 +1013,23 @@ MPP.client.on('a', function (msg) {
         var command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
         var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1).trim() : null;
         // look through commands
-        preventsPlaying = MPP.client.preventsPlaying();
+        var isBotOwner = userId == yourId;
+        var preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if (!preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if (!preventsPlaying) about(); break;
-            case "link": case "li": if (!preventsPlaying) link(); break;
-            case "feedback": case "fb": if (public) feedback(); break;
-            case "ping": case "pi": if (public) ping(); break;
-            case "play": case "p": if (public && !preventsPlaying) play(argumentsString); break;
-            case "stop": case "s": if (public && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if (public && !preventsPlaying) pause(); break;
-            case "resume": case "r": if (public && !preventsPlaying) resume(); break;
-            case "song": case "so": if (!preventsPlaying) song(); break;
-            case "repeat": case "re": if (public && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if (public && !preventsPlaying) sustain(); break;
-            case BOT_ACTIVATOR: setPublic(userId, yourId); break;
+            case "help": case "h": if ((isBotOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
+            case "about": case "ab": if ((isBotOwner || publicOption) && !preventsPlaying) about(); break;
+            case "link": case "li": if ((isBotOwner || publicOption) && !preventsPlaying) link(); break;
+            case "feedback": case "fb": if (isBotOwner || publicOption) feedback(); break;
+            case "ping": case "pi": if (isBotOwner || publicOption) ping(); break;
+            case "play": case "p": if ((isBotOwner || publicOption) && !preventsPlaying) play(argumentsString); break;
+            case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
+            case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
+            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
+            case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "loadmusic": case "lm": loadingMusic(userId, yourId); break;
+            case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
 });
@@ -975,8 +1062,7 @@ MPP.client.on('p', function(msg) {
 
 // Stuff that needs to be done by intervals (e.g. repeat)
 var repeatingTasks = setInterval(function() {
-    preventsPlaying = MPP.client.preventsPlaying();
-    if (preventsPlaying) return;
+    if (MPP.client.preventsPlaying()) return;
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
         ended = false;
@@ -997,7 +1083,9 @@ var clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
-                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) public = true;
+                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
+                    loadingMusicOption = publicOption = true;
+                }
                 createButtons();
                 console.log(PRE_MSG + " Online!");
             }

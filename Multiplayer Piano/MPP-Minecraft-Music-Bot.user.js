@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.2
+// @version      2.3.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -47,6 +47,7 @@ const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat/autoplay feel better
+const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
@@ -628,8 +629,7 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
-var public = false; // turn off the public bot commands if needed
-var preventsPlaying = false // changes when it detects prevention
+var publicOption = false; // turn off the public bot commands if needed
 var pinging = false; // helps aid in getting response time
 var pingTime = 0; // changes after each ping
 var currentRoom = null; // updates when it connects to room
@@ -655,20 +655,20 @@ var artDisplaying = false;
 
 // The MIDIPlayer
 var Player = new MidiPlayer.Player(function(event) {
-    preventsPlaying = MPP.client.preventsPlaying();
-    if (preventsPlaying) return;
+    if (MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent == "Set Tempo") { // fixes tempo on some songs
+        // see https://github.com/grimmdude/MidiPlayerJS/issues/54
         Player.pause();
         Player.setTempo(event.data);
         Player.play();
     } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
-        var currentNote = null;
+        var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
-            currentNote = MIDIPlayerToMPPNote[event.noteName];
             MPP.press(currentNote, (event.velocity/100));
-        } else if (sustainOption && (currentEvent == "Note off" /*|| (currentEvent == "Note on" && event.velocity == 0)*/)) MPP.release(currentNote); // end note
+            if (!sustainOption) MPP.release(currentNote);
+        } else if (sustainOption && (currentEvent == "Note off" || event.velocity == 0)) MPP.release(currentNote); // end note
     }
     if (!ended && !Player.isPlaying()) {
         ended = true;
@@ -681,6 +681,8 @@ var Player = new MidiPlayer.Player(function(event) {
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
+// see https://github.com/grimmdude/MidiPlayerJS/issues/25
+Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
 
@@ -779,10 +781,10 @@ var getContrast = function (hexcolor){
 }
 
 // Set the public bot commands on or off (only from bot)
-var setPublic = function(userId, yourId) {
+var public = function(userId, yourId) {
     if (userId != yourId) return;
-    public = !public;
-    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (public ? "on" : "off"));
+    publicOption = !publicOption;
+    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
 }
 
 // Makes all commands into one string
@@ -857,8 +859,16 @@ var playSong = function(songIndex) {
         // nice delay before next song
         setTimeout(function() {
             Player.play();
-            currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-            mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+            var timeoutRecorder = 0;
+            var showSongName = setInterval(function() {
+                if (Player.isPlaying()) {
+                    clearInterval(showSongName);
+                    currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+                    mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+                } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
+                    clearInterval(showSongName);
+                } else timeoutRecorder++;
+            }, 1);
         }, (autoplayOption != AUTOPLAY_OFF) ? REPEAT_DELAY : 0);
     } catch(error) {
         // reload the previous working file if there is one
@@ -941,7 +951,7 @@ var playerLimited = function(username) {
 // When there is an incorrect command, show this error
 var cmdNotFound = function(cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
-    if (public) mppChatSend(error);
+    if (publicOption) mppChatSend(error);
     else console.log(error);
 }
 
@@ -949,9 +959,10 @@ var cmdNotFound = function(cmd) {
 var help = function(command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
+        var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (public ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+                             + (publicOption ? ' ' + publicCommands : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ') + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
@@ -1220,25 +1231,26 @@ MPP.client.on('a', function (msg) {
         var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         var arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        preventsPlaying = MPP.client.preventsPlaying();
+        var isBotOwner = userId == yourId;
+        var preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if (!preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if (!preventsPlaying) about(); break;
-            case "link": case "li": if (!preventsPlaying) link(); break;
-            case "feedback": case "fb": if (public) feedback(); break;
-            case "ping": case "pi": if (public) ping(); break;
-            case "play": case "p": if (public && !preventsPlaying) play(arguments, argumentsString); break;
-            case "skip": case "sk": if (public && !preventsPlaying) skip(); break;
-            case "stop": case "s": if (public && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if (public && !preventsPlaying) pause(); break;
-            case "resume": case "r": if (public && !preventsPlaying) resume(); break;
-            case "song": case "so": if (!preventsPlaying) song(); break;
-            case "repeat": case "re": if (public && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if (public && !preventsPlaying) sustain(); break;
-            case "autoplay": case "ap": if (public && !preventsPlaying) autoplay(argumentsString); break;
-            case "album": case "al": case "list": if (public) album(); break;
-            case "art": if (public) art(argumentsString, yourParticipant); break;
-            case BOT_ACTIVATOR: setPublic(userId, yourId); break;
+            case "help": case "h": if ((isBotOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
+            case "about": case "ab": if ((isBotOwner || publicOption) && !preventsPlaying) about(); break;
+            case "link": case "li": if ((isBotOwner || publicOption) && !preventsPlaying) link(); break;
+            case "feedback": case "fb": if (isBotOwner || publicOption) feedback(); break;
+            case "ping": case "pi": if (isBotOwner || publicOption) ping(); break;
+            case "play": case "p": if ((isBotOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
+            case "skip": case "sk": if ((isBotOwner || publicOption) && !preventsPlaying) skip(); break;
+            case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
+            case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
+            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
+            case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
+            case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
+            case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
+            case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
 });
@@ -1271,8 +1283,7 @@ MPP.client.on('p', function(msg) {
 
 // Stuff that needs to be done by intervals (e.g. autoplay/repeat)
 var repeatingTasks = setInterval(function() {
-    preventsPlaying = MPP.client.preventsPlaying();
-    if (preventsPlaying) return;
+    if (MPP.client.preventsPlaying()) return;
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();
     // do repeat
@@ -1296,7 +1307,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    public = true;
+                    publicOption = true;
                     autoplayOption = AUTOPLAY_RANDOM;
                     if (BOT_SOLO_PLAY) setOwnerOnlyPlay(BOT_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");
