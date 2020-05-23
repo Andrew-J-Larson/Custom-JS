@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.3
+// @version      2.3.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -117,6 +117,7 @@ const BOT_COMMANDS = [
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
 const BOT_OWNER_COMMANDS = [
+    ["headless", "toggles headless (background tab fix) by playing a low quiet note every second when not playing a song"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -136,6 +137,7 @@ const PRE_AUTOPLAY = PRE_MSG + "[Autoplay]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ART = PRE_MSG + "[Art]";
+const PRE_HEADLESS = PRE_MSG + "[Headless]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -666,6 +668,7 @@ var autoplayOption = AUTOPLAY_OFF;
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
 var artDisplaying = false;
+var headlessOption = false; // allows files to not lag on play when in background tab
 
 // =============================================== OBJECTS
 
@@ -796,13 +799,6 @@ var getContrast = function (hexcolor){
 
 }
 
-// Set the public bot commands on or off (only from bot)
-var public = function(userId, yourId) {
-    if (userId != yourId) return;
-    publicOption = !publicOption;
-    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
-}
-
 // Makes all commands into one string
 var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
     if (!exists(prefix)) prefix = '';
@@ -854,6 +850,7 @@ var stopSong = function() {
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
     }
+    if (paused) paused = false;
 }
 
 // Gets song from array and plays it
@@ -870,11 +867,11 @@ var playSong = function(songIndex) {
         currentSongName = SONG_NAMES[songIndex];
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-        ended = false;
-        stopped = false;
         // nice delay before next song
         setTimeout(function() {
             Player.play();
+            ended = false;
+            stopped = false;
             var timeoutRecorder = 0;
             var showSongName = setInterval(function() {
                 if (Player.isPlaying()) {
@@ -1196,6 +1193,18 @@ var art = function(name, yourParticipant) {
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
+var headless = function(userId, yourId) {
+    // only let the bot owner set if headless interval notes should be on or not
+    if (userId != yourId) return;
+    headlessOption = !headlessOption;
+    mppChatSend(PRE_HEADLESS + " The headless option was turned " + (headlessOption ? "on" : "off"));
+}
+var public = function(userId, yourId) {
+    // only let the bot owner set if public bot commands should be on or not
+    if (userId != yourId) return;
+    publicOption = !publicOption;
+    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+}
 
 // =============================================== MAIN
 
@@ -1266,6 +1275,7 @@ MPP.client.on('a', function (msg) {
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
+            case "headless": case "hl": headless(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
@@ -1309,6 +1319,13 @@ var repeatingTasks = setInterval(function() {
         setTimeout(function() {Player.play()}, REPEAT_DELAY);
     }
 }, 1);
+var slowRepeatingTasks = setInterval(function() {
+    // do background tab fix
+    if (headlessOption && (ended || paused)) {
+        MPP.press("a-1", 0.01);
+        MPP.release("a-1");
+    }
+}, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {

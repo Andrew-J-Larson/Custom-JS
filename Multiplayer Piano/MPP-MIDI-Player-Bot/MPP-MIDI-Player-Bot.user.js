@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.4
+// @version      2.2.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -104,6 +104,7 @@ const BOT_COMMANDS = [
 ];
 const BOT_OWNER_COMMANDS = [
     ["loadmusic", "toggles the MIDI loading music on or off"],
+    ["headless", "toggles headless (background tab fix) by playing a low quiet note every second when not playing a song"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -121,6 +122,7 @@ const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
 const PRE_LOAD_MUSIC = PRE_MSG + "[Load Music]";
+const PRE_HEADLESS = PRE_MSG + "[Headless]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -251,6 +253,7 @@ var previousSongData = null; // grabs current when changing successfully
 var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
+var headlessOption = false; // allows files to not lag on play when in background tab
 
 // =============================================== OBJECTS
 
@@ -564,6 +567,7 @@ var stopSong = function() {
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
         ended = true;
     }
+    if (paused) paused = false;
 }
 
 // Gets song from data URI and plays it
@@ -581,9 +585,9 @@ var playSong = function(songName, songData) {
         currentSongName = songName;
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
+        Player.play();
         ended = false;
         stopped = false;
-        Player.play();
         var timeoutRecorder = 0;
         var showSongName = setInterval(function() {
             if (Player.isPlaying()) {
@@ -965,8 +969,14 @@ var loadingMusic = function(userId, yourId) {
     loadingMusicOption = !loadingMusicOption;
     mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading music was turned " + (loadingMusicOption ? "on" : "off"));
 }
+var headless = function(userId, yourId) {
+    // only let the bot owner set if headless interval notes should be on or not
+    if (userId != yourId) return;
+    headlessOption = !headlessOption;
+    mppChatSend(PRE_HEADLESS + " The headless option was turned " + (headlessOption ? "on" : "off"));
+}
 var public = function(userId, yourId) {
-    // set the public bot commands on or off (only from bot)
+    // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
@@ -1045,6 +1055,7 @@ MPP.client.on('a', function (msg) {
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "loadmusic": case "lm": loadingMusic(userId, yourId); break;
+            case "headless": case "hl": headless(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
@@ -1086,6 +1097,13 @@ var repeatingTasks = setInterval(function() {
         setTimeout(function() {Player.play()}, REPEAT_DELAY);
     }
 }, 1);
+var slowRepeatingTasks = setInterval(function() {
+    // do background tab fix
+    if (headlessOption && (ended || paused)) {
+        MPP.press("a-1", 0.01);
+        MPP.release("a-1");
+    }
+}, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
@@ -1100,7 +1118,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    loadingMusicOption = publicOption = true;
+                    loadingMusicOption = headlessOption = publicOption = true;
                 }
                 createButtons();
                 console.log(PRE_MSG + " Online!");
