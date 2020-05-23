@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.5
+// @version      2.2.6
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -104,7 +104,6 @@ const BOT_COMMANDS = [
 ];
 const BOT_OWNER_COMMANDS = [
     ["loadmusic", "toggles the MIDI loading music on or off"],
-    ["headless", "toggles headless (background tab fix) by playing a low quiet note every second when not playing a song"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -122,7 +121,6 @@ const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
 const PRE_LOAD_MUSIC = PRE_MSG + "[Load Music]";
-const PRE_HEADLESS = PRE_MSG + "[Headless]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -237,7 +235,7 @@ var endDelay; // used in multiline chats send commands
 var loading = null; // this is to show progress when loading a MIDI file
 var loadingProgress = 0; // updates when loading files
 var loadingMusicOption = false; // controls if loading music should be on or not
-var loadingMusicLoop = null; // this is for when using the bot headless in a tab you aren't viewing
+var loadingMusicLoop = null; // this is to play notes while a song is (down)loading
 var loadingMusicPrematureStop = false; // this is used when we need to stop the music after errors
 var ended = true;
 var stopped = false;
@@ -253,7 +251,17 @@ var previousSongData = null; // grabs current when changing successfully
 var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
-var headlessOption = false; // allows files to not lag on play when in background tab
+
+// =============================================== PAGE VISIBILITY
+
+var pageVisible = true;
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        pageVisible = false;
+    } else {
+        pageVisible = true;
+    }
+});
 
 // =============================================== OBJECTS
 
@@ -969,12 +977,6 @@ var loadingMusic = function(userId, yourId) {
     loadingMusicOption = !loadingMusicOption;
     mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading music was turned " + (loadingMusicOption ? "on" : "off"));
 }
-var headless = function(userId, yourId) {
-    // only let the bot owner set if headless interval notes should be on or not
-    if (userId != yourId) return;
-    headlessOption = !headlessOption;
-    mppChatSend(PRE_HEADLESS + " The headless option was turned " + (headlessOption ? "on" : "off"));
-}
 var public = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
@@ -1055,7 +1057,6 @@ MPP.client.on('a', function (msg) {
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "loadmusic": case "lm": loadingMusic(userId, yourId); break;
-            case "headless": case "hl": headless(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
@@ -1099,7 +1100,7 @@ var repeatingTasks = setInterval(function() {
 }, 1);
 var slowRepeatingTasks = setInterval(function() {
     // do background tab fix
-    if (headlessOption && (ended || paused)) {
+    if (!pageVisible && (ended || paused)) {
         MPP.press("a-1", 0.01);
         MPP.release("a-1");
     }
@@ -1118,7 +1119,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    loadingMusicOption = headlessOption = publicOption = true;
+                    loadingMusicOption = publicOption = true;
                 }
                 createButtons();
                 console.log(PRE_MSG + " Online!");

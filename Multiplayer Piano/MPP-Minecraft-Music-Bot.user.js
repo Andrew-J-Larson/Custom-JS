@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.4
+// @version      2.3.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -117,7 +117,6 @@ const BOT_COMMANDS = [
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
 const BOT_OWNER_COMMANDS = [
-    ["headless", "toggles headless (background tab fix) by playing a low quiet note every second when not playing a song"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -137,7 +136,6 @@ const PRE_AUTOPLAY = PRE_MSG + "[Autoplay]";
 const PRE_REPEAT = PRE_MSG + "[Repeat]";
 const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ART = PRE_MSG + "[Art]";
-const PRE_HEADLESS = PRE_MSG + "[Headless]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
@@ -668,7 +666,17 @@ var autoplayOption = AUTOPLAY_OFF;
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
 var artDisplaying = false;
-var headlessOption = false; // allows files to not lag on play when in background tab
+
+// =============================================== PAGE VISIBILITY
+
+var pageVisible = true;
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        pageVisible = false;
+    } else {
+        pageVisible = true;
+    }
+});
 
 // =============================================== OBJECTS
 
@@ -1193,12 +1201,6 @@ var art = function(name, yourParticipant) {
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
-var headless = function(userId, yourId) {
-    // only let the bot owner set if headless interval notes should be on or not
-    if (userId != yourId) return;
-    headlessOption = !headlessOption;
-    mppChatSend(PRE_HEADLESS + " The headless option was turned " + (headlessOption ? "on" : "off"));
-}
 var public = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
@@ -1275,7 +1277,6 @@ MPP.client.on('a', function (msg) {
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
-            case "headless": case "hl": headless(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
@@ -1321,7 +1322,7 @@ var repeatingTasks = setInterval(function() {
 }, 1);
 var slowRepeatingTasks = setInterval(function() {
     // do background tab fix
-    if (headlessOption && (ended || paused)) {
+    if (!pageVisible && (ended || paused)) {
         MPP.press("a-1", 0.01);
         MPP.release("a-1");
     }
