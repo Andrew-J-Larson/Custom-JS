@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.0
+// @version      1.8.1
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -408,6 +408,8 @@ MPP.client.on('a', function (msg) {
             fruitFell = true;
             audioPlay(fruitFellSound);
         } else if (!tooMuchCarried && input.indexOf(SAW_ITEMS) == 0) {
+            // pick up any fruit if any is on the ground
+            if (input.includes(FRUIT)) fruitFell = true;
             // pick up noneditables if we need them to throw at tree
             if (invNonEdibles.length < 1) {
                 var inputLC = input.toLowerCase();
