@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.8
+// @version      2.2.9
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -679,8 +679,9 @@ var createButtons = function() {
     buttonContainer.appendChild(playDiv);
     // since we need upload files, there also needs to be an input element inside the play div
     var uploadBtn = document.createElement("input");
-    uploadBtn.id = PRE_ELEMENT_ID + "-upload";
-    uploadBtn.style = "cursor: pointer;opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    var uploadBtnId = PRE_ELEMENT_ID + "-upload";
+    uploadBtn.id = uploadBtnId;
+    uploadBtn.style = "opacity:100;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
@@ -688,9 +689,17 @@ var createButtons = function() {
         if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
         else console.log("No MIDI file selected");
     }
-    var uploadTxt = document.createTextNode("Play");
+    // fix cursor on upload file button
+    var head = document.getElementsByTagName('HEAD')[0];
+    var uploadFileBtnFix = this.document.createElement('link');
+    uploadFileBtnFix.setAttribute('rel', 'stylesheet');
+    uploadFileBtnFix.setAttribute('type', 'text/css');
+    uploadFileBtnFix.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent('#' + uploadBtnId + ", #" + uploadBtnId + "::-webkit-file-upload-button {cursor:pointer}"));
+    head.appendChild(uploadFileBtnFix);
+    // continue with other html for play button
+    var playTxt = document.createTextNode("Play");
     playDiv.appendChild(uploadBtn);
-    playDiv.appendChild(uploadTxt);
+    playDiv.appendChild(playTxt);
     // then we need to let the rest of the script know it so it can reset it after loading files
     uploadButton = uploadBtn;
 
