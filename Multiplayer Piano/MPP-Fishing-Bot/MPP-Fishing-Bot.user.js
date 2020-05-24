@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.9
+// @version      1.8.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -330,17 +330,17 @@ var didLook = function() {
 var kekTake = function() {
     // toggles auto taking of kek on/off
     kekTakeOption = !kekTakeOption;
-    console.log(PRE_KEK_TAKE + "Kek auto taking is " + (kekTakeOption ? "on" : "off"));
+    mppChatSend(PRE_KEK_TAKE + "Kek auto taking is " + (kekTakeOption ? "on" : "off"));
 }
 var kekEat = function() {
     // toggles auto eating of kek on/off
     kekEatOption = !kekEatOption;
-    console.log(PRE_KEK_EAT + "Kek auto eating is " + (kekEatOption ? "on" : "off"));
+    mppChatSend(PRE_KEK_EAT + "Kek auto eating is " + (kekEatOption ? "on" : "off"));
 }
 var audioToggler = function() {
     // toggles audio on/off
     audioEnabled = !audioEnabled;
-    console.log(PRE_AUDIO + "Audio is " + (audioEnabled ? "on" : "off"));
+    mppChatSend(PRE_AUDIO + "Audio is " + (audioEnabled ? "on" : "off"));
 }
 
 // =============================================== MAIN
