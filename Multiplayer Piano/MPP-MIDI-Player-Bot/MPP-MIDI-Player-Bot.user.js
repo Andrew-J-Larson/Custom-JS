@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.9
+// @version      2.3.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -617,7 +617,10 @@ var playSong = function(songName, songData) {
 // Plays the song from a URL if it's a MIDI
 var playURL = function(songUrl, songData) {
     currentFileLocation = songUrl;
-    playSong(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1), songData);
+    var songFileName = decodeURIComponent(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1))
+    var hasExtension = songFileName.lastIndexOf('.');
+    var newSongName = (hasExtension != -1) ? songFileName.substring(0, hasExtension) : songFileName;
+    playSong(newSongName, songData);
 }
 
 // Plays the song from an uploaded file if it's a MIDI
