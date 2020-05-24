@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.8
+// @version      1.7.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -89,6 +89,8 @@ const BASE_COMMANDS = [
     ["feedback", "shows link to send feedback about the bot to the developer"]
 ];
 const BOT_OWNER_COMMANDS = [
+    ["kektake", "toggles the kek auto taking on or off"],
+    ["kekeat", "toggles the kek auto eating on or off"],
     ["audio", "toggles the audio on or off"]
 ];
 const FRUIT = "kek";
