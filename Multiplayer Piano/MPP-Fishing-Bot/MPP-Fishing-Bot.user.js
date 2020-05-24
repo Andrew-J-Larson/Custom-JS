@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.7
+// @version      1.7.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -59,6 +59,8 @@ const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
+const PRE_KEK_TAKE = PRE_MSG + "[Kek Take]";
+const PRE_KEK_EAT = PRE_MSG + "[Kek Eat]";
 const PRE_AUDIO = PRE_MSG + "[Audio]";
 const PRE_ERROR = PRE_MSG + "Error!";
 const LIST_BULLET = "• ";
@@ -147,6 +149,8 @@ var seen = false;
 var checkingSack = false;
 var invSack = true;
 var takeNonEdible = ""; // changes to item it can take when available
+var kekTakeOption = false; // this allows for auto taking the fruit when it drops
+var kekEatOption = false; // this allows for auto eating the fruit when you get it
 
 // =============================================== FUNCTIONS
 
@@ -321,10 +325,20 @@ var didEat = function() {
 var didLook = function() {
     seen = true;
 }
+var kekTake = function() {
+    // toggles auto taking of kek on/off
+    kekTakeOption = !kekTakeOption;
+    console.log(PRE_KEK_TAKE + "Kek auto taking is " + (kekTakeOption ? "on" : "off"));
+}
+var kekEat = function() {
+    // toggles auto eating of kek on/off
+    kekEatOption = !kekEatOption;
+    console.log(PRE_KEK_EAT + "Kek auto eating is " + (kekEatOption ? "on" : "off"));
+}
 var audioToggler = function() {
     // toggles audio on/off
     audioEnabled = !audioEnabled;
-    console.log(PRE_MSG + "Audio is " + (audioEnabled ? "on" : "off"));
+    console.log(PRE_AUDIO + "Audio is " + (audioEnabled ? "on" : "off"));
 }
 
 // =============================================== MAIN
@@ -350,6 +364,8 @@ MPP.client.on('a', function (msg) {
             case "about": case "ab": about(); break;
             case "link": case "li": link(); break;
             case "feedback": case "fb": feedback(); break;
+            case "kektake": case "kt": kekTake(); break;
+            case "kekeat": case "ke": kekEat(); break;
             case "audio": case "au": if (userId == yourId) audioToggler(); break;
             // check `fishing` commands
             case CMD_CAST[0]: case CMD_CAST[1]: if (userId == yourId) didCast(); break;
@@ -472,8 +488,8 @@ var checkMessages = function() {
         if (!casted) cast();
         if (!picked) pick();
         if (invSack) sack();
-        if (!tooMuchCarried && fruitFell) take(FRUIT);
-        if (gotFruit) eat(FRUIT);
+        if (kekTakeOption && !tooMuchCarried && fruitFell) take(FRUIT);
+        if (kekEatOption && gotFruit) eat(FRUIT);
         if (!tooMuchCarried && notYeeted && invNonEdibles.length > 0) {
             // yeet the nonEdible hopefully hitting the tree
             yeet(invNonEdibles[0]);
