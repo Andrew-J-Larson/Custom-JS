@@ -1,0 +1,35 @@
+// Time constants (in milliseconds)
+const SLOW_CHAT_DELAY = 2000;
+
+// Bot constants
+const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
+
+var fullString = "A string that may or may not go over the character limit.";
+var phrases = fullString.split(" "); // need to find a better way to split this including strings that have no spaces
+var phrasesLength = phrases.length;
+var messages = []; // will be an array of strings with a length of the character limit or lower
+var i;
+var currentMsg = "";
+for(i = 0; i < phrasesLength; i++) {
+    var currentPhrase = phrases[i];
+    // make it spaced
+    if (i != 0 && i != phrasesLength - 1) currentPhrase += " ";
+    if (currentMsg.length + currentPhrase.length < CHAT_MAX_CHARS) {
+        // add to the currentMsg
+        currentMsg += currentPhrase;
+    } else {
+        // add the old currentMsg to the messages array, and create a new currentMsg
+        messages.push(currentMsg);
+        currentMsg = currentPhrase;
+    }
+    // add the last currentMsg to the array when we've reached the end of phrases
+    if (i == phrasesLength - 1) messages.push(currentMsg);
+}
+
+// display all the messages in order
+var delay = SLOW_CHAT_DELAY;
+var j;
+for(j = 0; j < messages.length; j++) {
+    mppChatSend(messages[j], delay);
+    delay += SLOW_CHAT_DELAY;
+}

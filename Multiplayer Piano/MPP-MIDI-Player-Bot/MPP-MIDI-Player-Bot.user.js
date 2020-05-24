@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.2.7
+// @version      2.2.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -680,7 +680,7 @@ var createButtons = function() {
     // since we need upload files, there also needs to be an input element inside the play div
     var uploadBtn = document.createElement("input");
     uploadBtn.id = PRE_ELEMENT_ID + "-upload";
-    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.style = "cursor: pointer;opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
