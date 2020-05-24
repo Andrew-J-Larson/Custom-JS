@@ -681,7 +681,7 @@ var createButtons = function() {
     var uploadBtn = document.createElement("input");
     var uploadBtnId = PRE_ELEMENT_ID + "-upload";
     uploadBtn.id = uploadBtnId;
-    uploadBtn.style = "opacity:100;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
