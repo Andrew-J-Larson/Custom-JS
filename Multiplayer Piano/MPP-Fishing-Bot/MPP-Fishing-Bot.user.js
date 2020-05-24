@@ -330,17 +330,17 @@ var didLook = function() {
 var kekTake = function() {
     // toggles auto taking of kek on/off
     kekTakeOption = !kekTakeOption;
-    mppChatSend(PRE_KEK_TAKE + "Kek auto taking is " + (kekTakeOption ? "on" : "off"));
+    mppChatSend(PRE_KEK_TAKE + " Kek auto taking is " + (kekTakeOption ? "on" : "off"));
 }
 var kekEat = function() {
     // toggles auto eating of kek on/off
     kekEatOption = !kekEatOption;
-    mppChatSend(PRE_KEK_EAT + "Kek auto eating is " + (kekEatOption ? "on" : "off"));
+    mppChatSend(PRE_KEK_EAT + " Kek auto eating is " + (kekEatOption ? "on" : "off"));
 }
 var audioToggler = function() {
     // toggles audio on/off
     audioEnabled = !audioEnabled;
-    mppChatSend(PRE_AUDIO + "Audio is " + (audioEnabled ? "on" : "off"));
+    mppChatSend(PRE_AUDIO + " Audio is " + (audioEnabled ? "on" : "off"));
 }
 
 // =============================================== MAIN
