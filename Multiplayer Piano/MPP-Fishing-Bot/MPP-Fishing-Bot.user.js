@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.4
+// @version      1.8.5
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -60,6 +60,7 @@ const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
+const PRE_COLORS = PRE_MSG + "[Colors]";
 const PRE_KEK_TAKE = PRE_MSG + "[Kek Take]";
 const PRE_KEK_EAT = PRE_MSG + "[Kek Eat]";
 const PRE_AUDIO = PRE_MSG + "[Audio]";
@@ -330,7 +331,7 @@ var didLook = function() {
     seen = true;
 }
 var colors = function() {
-    mppChatSend("You can find all possible colors at: " + USER_COLORS_URL);
+    mppChatSend(PRE_COLORS + " You can find all possible colors at: " + USER_COLORS_URL);
 }
 var kekTake = function() {
     // toggles auto taking of kek on/off
