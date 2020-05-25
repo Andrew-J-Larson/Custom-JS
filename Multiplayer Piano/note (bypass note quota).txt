@@ -1,0 +1,2 @@
+// Run the following in the web console... but beware of possible ban by the owner of MPP
+MPP.noteQuota.setParams();
