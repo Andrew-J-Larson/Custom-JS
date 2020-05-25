@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.2
+// @version      1.8.3
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -108,6 +108,17 @@ const FRUIT_FALL = "A kekklefruit was knocked to the ground.";
 const SAW_ITEMS = "An island where there's water and fishing going on.  And that stuff on the ground. There's ";
 const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
+
+// HTML components
+const COLORS_BACKGROUND = "background: radial-gradient(at center center, rgb(115, 179, 204) 0%, rgb(39, 53, 70) 100%) fixed;";
+const COLORS_SPACING = "margin: 1vw;";
+const COLORS_P_OUTLINE_COLOR = "#000";
+const COLORS_P_OUTLINE = "text-shadow: -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;";
+const COLORS_P = "line-height: 26px; font-family: verdana, 'DejaVu Sans', sans-serif; font-size: 12px; color: white; " + COLORS_P_OUTLINE;
+const COLORS_SPAN = "white-space: nowrap; padding: 4px; margin: 2px; border-radius: 2px; -webkit-border-radius: 2px; -moz-border-radius: 2px; min-width: 50px; text-align: center; line-height: 15px; ";
+const COLORS_STYLE = "<style>body{" + COLORS_BACKGROUND + COLORS_SPACING + "}p{" + COLORS_P + "}span{" + COLORS_SPAN + "}</style>";
+const COLORS_HTML_START = "<html><head><title>Multiplayer Piano Name Colors</title>" + COLORS_STYLE + "</head><body><p>";
+const COLORS_HTML_END = "</p></body></html>";
 
 // Audio
 const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/freesound.org/";
@@ -329,18 +340,6 @@ var didLook = function() {
     seen = true;
 }
 var colors = function() {
-    const DEFAULT_ICON = "<link rel='icon' href='" + SCRIPT.icon + "'>";
-    console.log(SCRIPT.icon);
-    const DEFAULT_BACKGROUND = "background: radial-gradient(at center center, rgb(115, 179, 204) 0%, rgb(39, 53, 70) 100%) fixed;";
-    const DEFAULT_SPACING = "margin: 1vw;";
-    const DEFAULT_P_OUTLINE = "text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;";
-    const DEFAULT_P = "line-height: 26px; font-family: verdana, 'DejaVu Sans', sans-serif; font-size: 12px; color: white; " + DEFAULT_P_OUTLINE;
-    const DEFAULT_SPAN = "white-space: nowrap; padding: 4px; margin: 2px; border-radius: 2px; -webkit-border-radius: 2px; -moz-border-radius: 2px; min-width: 50px; text-align: center; line-height: 15px; ";
-    const DEFAULT_STYLE = "<style>body{" + DEFAULT_BACKGROUND + DEFAULT_SPACING + "}p{" + DEFAULT_P + "}span{" + DEFAULT_SPAN + "}</style>";
-
-    const HTML_START = "<html><head>" + DEFAULT_ICON + "<title>Multiplayer Piano Name Colors</title>" + DEFAULT_STYLE + "</head><body><p>";
-    const HTML_END = "</p></body></html>";
-
     var htmlContents = "";
     // shows all the possible colors you could want
     var allColors = Object.entries(Color.map); // [a][b]: a = name, b = color
@@ -412,7 +411,7 @@ var colors = function() {
 
     // show colors in a new tab
     var newWindow = window.open();
-    newWindow.document.write(HTML_START + htmlContents + HTML_END);
+    newWindow.document.write(COLORS_HTML_START + htmlContents + COLORS_HTML_END);
     newWindow.document.close();
 }
 var kekTake = function() {
