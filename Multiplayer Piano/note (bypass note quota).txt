@@ -1,2 +1,2 @@
-// Run the following in the web console... but beware of possible ban by the owner of MPP
+// Run the following in the web console ... this only affects your client, the server still follows normal note quota rules depending on what room it's in
 MPP.noteQuota.setParams();
