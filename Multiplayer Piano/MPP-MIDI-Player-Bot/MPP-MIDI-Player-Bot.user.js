@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.0
+// @version      2.3.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -579,7 +579,7 @@ var stopSong = function() {
 }
 
 // Gets song from data URI and plays it
-var playSong = function(songName, songData) {
+var playSong = function(songFileName, songData) {
     // stop any current songs from playing
     stopSong();
     // play song if it loaded correctly
@@ -590,7 +590,8 @@ var playSong = function(songName, songData) {
         previousSongData = currentSongData;
         previousSongName = currentSongName;
         currentSongData = songData;
-        currentSongName = songName;
+        var hasExtension = songFileName.lastIndexOf('.');
+        currentSongName = (hasExtension != -1) ? songFileName.substring(0, hasExtension) : songFileName;
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
         Player.play();
@@ -617,10 +618,8 @@ var playSong = function(songName, songData) {
 // Plays the song from a URL if it's a MIDI
 var playURL = function(songUrl, songData) {
     currentFileLocation = songUrl;
-    var songFileName = decodeURIComponent(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1))
-    var hasExtension = songFileName.lastIndexOf('.');
-    var newSongName = (hasExtension != -1) ? songFileName.substring(0, hasExtension) : songFileName;
-    playSong(newSongName, songData);
+    var songFileName = decodeURIComponent(currentFileLocation.substring(currentFileLocation.lastIndexOf('/') + 1));
+    playSong(songFileName, songData);
 }
 
 // Plays the song from an uploaded file if it's a MIDI
