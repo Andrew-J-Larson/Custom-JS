@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fishing Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.3
+// @version      1.8.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Fishing-Bot/MPP-Fishing-Bot.user.js
 // @description  Fishes for new colors!
 // @author       AlienDrew
@@ -49,6 +49,7 @@ const FIVE_MINUTES = 5 * MINUTE;
 
 // URLs
 const FEEDBACK_URL = "https://forms.gle/YJRWFTvh7sFZBuDCA";
+const USER_COLORS_URL = "https://thealiendrew.github.io/mpp/colors/";
 
 // Bot custom constants
 const BOT_NAMESPACE = '(' + NAMESPACE + ')';
@@ -86,10 +87,10 @@ const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
     ["link", "get the download link for this bot"],
-    ["feedback", "shows link to send feedback about the bot to the developer"]
+    ["feedback", "shows link to send feedback about the bot to the developer"],
+    ["colors", "shows link that has all the possible player colors, and their HEX codes"]
 ];
 const BOT_OWNER_COMMANDS = [
-    ["colors", "shows all the possible colors, and their HEX code, that a player could have"],
     ["kektake", "toggles the kek auto taking on or off"],
     ["kekeat", "toggles the kek auto eating on or off"],
     ["audio", "toggles the audio on or off"]
@@ -108,17 +109,6 @@ const FRUIT_FALL = "A kekklefruit was knocked to the ground.";
 const SAW_ITEMS = "An island where there's water and fishing going on.  And that stuff on the ground. There's ";
 const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
-
-// HTML components
-const COLORS_BACKGROUND = "background: radial-gradient(at center center, rgb(115, 179, 204) 0%, rgb(39, 53, 70) 100%) fixed;";
-const COLORS_SPACING = "margin: 1vw;";
-const COLORS_P_OUTLINE_COLOR = "#000";
-const COLORS_P_OUTLINE = "text-shadow: -1px 0 0 #000, 1px 0 0 #000, 0 1px 0 #000, 0 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;";
-const COLORS_P = "line-height: 26px; font-family: verdana, 'DejaVu Sans', sans-serif; font-size: 12px; color: white; " + COLORS_P_OUTLINE;
-const COLORS_SPAN = "white-space: nowrap; padding: 4px; margin: 2px; border-radius: 2px; -webkit-border-radius: 2px; -moz-border-radius: 2px; min-width: 50px; text-align: center; line-height: 15px; ";
-const COLORS_STYLE = "<style>body{" + COLORS_BACKGROUND + COLORS_SPACING + "}p{" + COLORS_P + "}span{" + COLORS_SPAN + "}</style>";
-const COLORS_HTML_START = "<html><head><title>Multiplayer Piano Name Colors</title>" + COLORS_STYLE + "</head><body><p>";
-const COLORS_HTML_END = "</p></body></html>";
 
 // Audio
 const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Fishing-Bot/freesound.org/";
@@ -340,79 +330,7 @@ var didLook = function() {
     seen = true;
 }
 var colors = function() {
-    var htmlContents = "";
-    // shows all the possible colors you could want
-    var allColors = Object.entries(Color.map); // [a][b]: a = name, b = color
-    // for all colors [a][b][c][d][e]: c = hue, d = saturation, e = lightness
-    var i;
-    for(i = 0; i < allColors.length; i++) {
-        var colorColor = allColors[i];
-        var colorRGBValues = colorColor[1];
-        var r = colorRGBValues.r, g = colorRGBValues.g, b = colorRGBValues.b;
-        var hue = 0;
-        var saturation = 0;
-        var lightness = 0;
-
-        var cMax = Math.max(r, g, b), cMin = Math.min(r, g, b);
-        var combination = cMax + cMin;
-        var delta = cMax - cMin;
-        if (cMax > 0) {
-            // get the saturation
-            saturation = delta / cMax;
-            // get the hue
-            if (saturation > 0) {
-                switch (cMax) {
-                    case r: hue = 60 * (((g - b) / delta) % 6) || 0; break;
-                    case g: hue = 60 * (((b - r) / delta) + 2) || 0; break;
-                    case b: hue = 60 * (((r - g) / delta) + 4) || 0; break;
-                }
-            }
-            // get the lightness by using max and min colors values
-            lightness = combination / 2;
-        }
-        colorColor.push(hue);
-        colorColor.push(saturation);
-        colorColor.push(lightness);
-    }
-    //checkpoint
-    //checkpoint 2
-    var colorsBySaturation = allColors.sort(function (a, b) {
-        return a[3] - b[3];
-    });
-    var colorsByLightness = colorsBySaturation.sort(function (a, b) {
-        return a[4] - b[4];
-    });
-    var colorsByHue = colorsByLightness.sort(function (a, b) {
-        return a[2] - b[2];
-    });
-    allColors = [];
-    var allShades = []; // these are the non-colors removed from colorsByHue
-    // sort the shades from colors
-    var j;
-    for (j = 0; j < colorsByHue.length; j++) {
-        var theColor = colorsByHue[j];
-        var RGBValues = theColor[1];
-        var red = RGBValues.r, green = RGBValues.g, blue = RGBValues.b;
-        // put color into allShades, and remove from allColors
-        if (red == green && red == blue && green == blue) allShades.push(theColor);
-        else allColors.push(theColor);
-    }
-    var allColorsSorted = allShades.concat(allColors);
-    var allColorsSortedLength = allColorsSorted.length;
-    // toHexa is an in-built function to the Color library
-    var k;
-    for(k = 0; k < allColorsSortedLength; k++) {
-        // add the name and it's hex
-        var currentColor = allColorsSorted[k];
-        var currentName = currentColor[0];
-        var currentHEX = currentColor[1].toHexa();
-        htmlContents += "<span style='background-color: " + currentHEX + "'>" + currentName + " (" + currentHEX + ")</span>" + (k != allColorsSortedLength - 1 ? " ": '');
-    }
-
-    // show colors in a new tab
-    var newWindow = window.open();
-    newWindow.document.write(COLORS_HTML_START + htmlContents + COLORS_HTML_END);
-    newWindow.document.close();
+    mppChatSend("You can find all possible colors at: " + USER_COLORS_URL);
 }
 var kekTake = function() {
     // toggles auto taking of kek on/off
@@ -453,7 +371,7 @@ MPP.client.on('a', function (msg) {
             case "about": case "ab": about(); break;
             case "link": case "li": link(); break;
             case "feedback": case "fb": feedback(); break;
-            case "colors": case "cs": if (userId == yourId) colors(); break;
+            case "colors": case "cs": colors(); break;
             case "kektake": case "kt": if (userId == yourId) kekTake(); break;
             case "kekeat": case "ke": if (userId == yourId) kekEat(); break;
             case "audio": case "au": if (userId == yourId) audioToggler(); break;
