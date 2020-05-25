@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.6
+// @version      2.3.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -685,12 +685,7 @@ var Player = new MidiPlayer.Player(function(event) {
     if (MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
-    if (currentEvent == "Set Tempo") { // fixes tempo on some songs
-        // see https://github.com/grimmdude/MidiPlayerJS/issues/54
-        Player.pause();
-        Player.setTempo(event.data);
-        Player.play();
-    } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
+    if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
         var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             MPP.press(currentNote, (event.velocity/100));

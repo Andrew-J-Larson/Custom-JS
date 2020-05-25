@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.1
+// @version      2.3.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -270,12 +270,7 @@ var Player = new MidiPlayer.Player(function(event) {
     if (MPP.client.preventsPlaying()) return;
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
-    if (currentEvent == "Set Tempo") { // fixes tempo on some songs
-        // see https://github.com/grimmdude/MidiPlayerJS/issues/54
-        Player.pause();
-        Player.setTempo(event.data);
-        Player.play();
-    } else if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
+    if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
         var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             MPP.press(currentNote, (event.velocity/100));
@@ -591,7 +586,7 @@ var playSong = function(songFileName, songData) {
         previousSongName = currentSongName;
         currentSongData = songData;
         var hasExtension = songFileName.lastIndexOf('.');
-        currentSongName = (hasExtension != -1) ? songFileName.substring(0, hasExtension) : songFileName;
+        currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
         Player.play();
@@ -624,18 +619,18 @@ var playURL = function(songUrl, songData) {
 
 // Plays the song from an uploaded file if it's a MIDI
 var playFile = function(songFile) {
-    var songName = null;
+    var songFileName = null;
 
     var error = PRE_ERROR + " (play)";
     // load in the file
     if (exists(songFile)) {
-        songName = songFile.name.split(/(\\|\/)/g).pop();
+        songFileName = songFile.name.split(/(\\|\/)/g).pop();
         if (isMidi(songFile)) {
             fileOrBlobToBase64(songFile, function(base64data) {
                 // play song only if we got data
                 if (exists(base64data)) {
                     currentFileLocation = songFile.name;
-                    playSong(songName, base64data);
+                    playSong(songFileName, base64data);
                     uploadButton.value = ""; // reset file input
                 } else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
             });
