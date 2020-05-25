@@ -1,7 +1,7 @@
 // Contents of a notification
 //
 // var defaultsAre = {
-//   id: "Notification-" + (par.id || Math.random()),
+//   id: "Notification-" + Math.random(),
 //   title: "",
 //   text: "",
 //   html: "",
@@ -14,6 +14,7 @@
 // * the text property takes precedence over html
 // * the "short" class value shows only the text/html
 // * using a value of "-1" on duration causes the notification to be sticky
+// * all notification ids are prefixed with "Notification-" even if you give it one
 // * it's better to use single quotes around entire html
 var notificationSetup = {
   m: "notification", // CONSTANT
