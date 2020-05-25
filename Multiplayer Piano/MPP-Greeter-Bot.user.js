@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.5
+// @version      0.2.6
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
@@ -386,7 +386,7 @@ MPP.client.on("ch", function(msg) {
                             // if removed _id matches in currentPlayers, then get name and show byeMessage
                             if (removed_ids[l] == currentPlayers[m][0]) {
                                 mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1])
-                                                                .replace(GREET_ID,updatedPlayers[k][0])
+                                                                .replace(GREET_ID,updatedPlayers[m][0])
                                                                 .replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])));
                             }
                         }
