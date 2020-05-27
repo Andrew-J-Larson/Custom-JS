@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.7
+// @version      2.3.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -682,7 +682,10 @@ document.addEventListener('visibilitychange', function () {
 
 // The MIDIPlayer
 var Player = new MidiPlayer.Player(function(event) {
-    if (MPP.client.preventsPlaying()) return;
+    if (MPP.client.preventsPlaying()) {
+        if (Player.isPlaying()) pause();
+        return;
+    }
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
