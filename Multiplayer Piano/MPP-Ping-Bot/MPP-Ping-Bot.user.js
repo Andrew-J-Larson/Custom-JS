@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.6
+// @version      0.1.7
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
@@ -97,6 +97,7 @@ MPP.client.on('a', function (msg) {
     var username = participant.name;
     var pinged = false;
     // check if input contains the prefix + argument
+    var helpActivated = false;
     var possibleArgs = [yourId, yourUsername, "help", "link", "feedback", "self", "all", "online", "everyone"];
     var i;
     for(i = 0; i < possibleArgs.length; i++) {
@@ -122,23 +123,23 @@ MPP.client.on('a', function (msg) {
 
         // only execute command if we found a match
         if (match != null) {
-            // any user can use these
-            switch(match) {
-                case yourId: case yourUsername:
-                case "all": case "online": case "everyone": pinged = true; break;
-            }
             // execute some commands for only the bot user
             if (userId == yourId) {
                 switch(match) {
-                    case "help": MPP.chat.send(PRE_HELP + ' ' + HELP_DESC); break;
-                    case "link": MPP.chat.send(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL); break;
-                    case "feedback": MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback."); break;
-                    case "self": pinged = true; break;
+                    case "help": MPP.chat.send(PRE_HELP + ' ' + HELP_DESC); helpActivated = true; break;
+                    case "link": if (!helpActivated) MPP.chat.send(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL); break;
+                    case "feedback": if (!helpActivated) MPP.chat.send(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback."); break;
+                    case "self": if (!helpActivated) pinged = true; break;
                 }
+            }
+            // any user can use these
+            switch(match) {
+                case yourId: case yourUsername:
+                case "all": case "online": case "everyone": if (!helpActivated) pinged = true; break;
             }
         }
     }
-    if (pinged && input.indexOf(PRE_HELP) != 0) pingSound.play();
+    if (pinged) pingSound.play();
 });
 // =============================================== INTERVALS
 
