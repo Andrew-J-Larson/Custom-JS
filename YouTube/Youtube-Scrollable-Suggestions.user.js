@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.8
+// @version      1.6.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -37,6 +37,7 @@ function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().
 // basic
 const scriptShortName = 'YTscrollSuggest';
 const fastDelay       = 100; // in milliseconds
+const INITIAL_DELAY   = 500;
 
 // selectors
 //const pageSelector        = 'ytd-app';
@@ -439,5 +440,5 @@ waitForKeyElements(videoItemSelector, function () {
                 clearInterval(waitForRightHaveChildren);
             }
         }, fastDelay);
-    }, 400);
+    }, INITIAL_DELAY);
 });
