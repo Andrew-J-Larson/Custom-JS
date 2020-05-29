@@ -39,7 +39,7 @@
 // =============================================== FILES
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
-// (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
+// (but I should maybe switch to https://github.com/Tonejs/Midi)
 var stringMIDIPlayerJS = GM_getResourceText("MIDIPlayerJS");
 var scriptMIDIPlayerJS = document.createElement("script");
 scriptMIDIPlayerJS.type = 'text/javascript';

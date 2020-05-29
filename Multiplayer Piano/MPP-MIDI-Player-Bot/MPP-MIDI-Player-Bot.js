@@ -38,7 +38,7 @@ if (!currentURL.match(INCLUDE)) {
 // =============================================== FILES
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
-// (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
+// (but I should maybe switch to https://github.com/Tonejs/Midi)
 var stringMIDIPlayerJS = "";
 var scriptMIDIPlayerJS = null;
 var requestMPJS = new XMLHttpRequest();
