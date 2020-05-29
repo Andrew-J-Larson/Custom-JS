@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.3.3";
+const VERSION = "2.3.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = /^https?:\/\/www\.multiplayerpiano\.com*/g;
@@ -64,7 +64,7 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
-const REPEAT_DELAY = TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
+const REPEAT_DELAY = 2 * TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
 const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
 
 // URLs
@@ -593,23 +593,26 @@ var PlayerSet = setInterval(function() {
 			try {
 				// load song
 				Player.loadDataUri(songData);
-				// changes song
-				previousSongData = currentSongData;
-				previousSongName = currentSongName;
-				currentSongData = songData;
-				var hasExtension = songFileName.lastIndexOf('.');
-				currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
-				currentSongDuration = Player.getSongTime();
-				currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
+				// play song
 				Player.play();
 				ended = false;
 				stopped = false;
 				var timeoutRecorder = 0;
 				var showSongName = setInterval(function() {
 					if (Player.isPlaying()) {
-						clearInterval(showSongName);
-						currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-						mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+                        clearInterval(showSongName);
+
+                        // changes song
+                        var hasExtension = songFileName.lastIndexOf('.');
+                        previousSongData = currentSongData;
+                        previousSongName = currentSongName;
+                        currentSongData = songData;
+                        currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
+                        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+                        currentSongDuration = Player.getSongTime();
+                        currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
+
+                        mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
 					} else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
 						clearInterval(showSongName);
 					} else timeoutRecorder++;
