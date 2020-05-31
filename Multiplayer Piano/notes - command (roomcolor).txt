@@ -9,6 +9,7 @@ const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
 const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 
 // Bot constant settings
+const PREFIX = "/";
 const BOT_ROOM_COLORS = ["#000000", "#046307"]; // these are the colors the bot will set the room to by default
 const ROOM_OWNER_COMMANDS = [
     ["roomcolor (command)", "displays info about room color command, but no command shows the room color commands and special color options"]
