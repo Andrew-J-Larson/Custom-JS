@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.5
+// @version      2.3.6
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -36,7 +36,7 @@
 // =============================================== FILES
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
-// (but I should maybe switch to https://github.com/Tonejs/Midi)
+// (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
 var stringMIDIPlayerJS = GM_getResourceText("MIDIPlayerJS");
 var scriptMIDIPlayerJS = document.createElement("script");
 scriptMIDIPlayerJS.type = 'text/javascript';
@@ -1116,7 +1116,7 @@ var repeatingTasks = setInterval(function() {
 }, 1);
 var slowRepeatingTasks = setInterval(function() {
     // do background tab fix
-    if (!pageVisible && (ended || paused)) {
+    if (!pageVisible) {
         var note = MPP.piano.keys["a-1"].note;
         var participantId = MPP.client.getOwnParticipant().id;
         MPP.piano.audio.play(note, 0.01, 0, participantId);

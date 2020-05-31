@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.3.5";
+const VERSION = "2.3.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = /^https?:\/\/www\.multiplayerpiano\.com*/g;
@@ -1121,7 +1121,7 @@ var PlayerSet = setInterval(function() {
 		}, 1);
 		var slowRepeatingTasks = setInterval(function() {
 			// do background tab fix
-			if (!pageVisible && (ended || paused)) {
+			if (!pageVisible) {
 				var note = MPP.piano.keys["a-1"].note;
 				var participantId = MPP.client.getOwnParticipant().id;
 				MPP.piano.audio.play(note, 0.01, 0, participantId);
