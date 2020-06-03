@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.1
+// @version      2.4.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -69,8 +69,8 @@ const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget ab
 const FEEDBACK_URL = "https://forms.gle/aPGtap31XaGuvYkc7";
 
 // Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = ["98a00e1626613fa4a683c14e","af8b9fe3e4b44c5f3c51210a"];
-const LIMITED_PLAYERS = ["1251d6256fc2264660957fb9"];
+const BANNED_PLAYERS = ["8c81505ab941e0760697d777"];
+const LIMITED_PLAYERS = ["98a00e1626613fa4a683c14e","af8b9fe3e4b44c5f3c51210a"];
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
