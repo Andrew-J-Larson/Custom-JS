@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.5
+// @version      0.1.6
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -37,7 +37,7 @@ const MC_ICON = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scr
 // VARIABLES
 
 var loadedYT = false;
-var isResizing = false;
+var isMoving = false;
 
 var minecraft = document.createElement("iframe");
 minecraft.setAttribute("frameborder", "0");
@@ -103,12 +103,12 @@ var convertToMinecraft = function(webIframe) {
 
     // watch for when resizing to fix issues with it being bugged
     setInterval(function() {
-        var resizeCheck = webWindow.classList.contains("resizing");
-        if (resizeCheck && !isResizing) {
-            isResizing = true;
+        var movingCheck = webWindow.classList.contains("resizing") || webWindow.classList.contains("dragging");
+        if (movingCheck && !isMoving) {
+            isMoving = true;
             minecraft.setAttribute("style", "pointer-events: none; " + STYLE_IFRAME);
-        } else if (!resizeCheck && isResizing) {
-            isResizing = false;
+        } else if (!movingCheck && isMoving) {
+            isMoving = false;
             minecraft.setAttribute("style", "pointer-events: all; " + STYLE_IFRAME);
         }
     }, LOOP_TIME);
