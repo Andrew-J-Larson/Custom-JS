@@ -63,7 +63,7 @@ minecraft.src = APP_WEBSITE;
 minecraft.sandbox = SANDBOX_IFRAME;
 minecraft.style = "pointer-events: all; " + STYLE_IFRAME;
 var minecraftOuterHTML = minecraft.outerHTML;
-var mcOuterHTML = minecraftOuterHTML.substring(0, 8) + 'id="' + APP_ID + '" ' + minecraftOuterHTML.substring(8);
+var appOuterHTML = minecraftOuterHTML.substring(0, 8) + 'id="' + APP_ID + '" ' + minecraftOuterHTML.substring(8);
 
 // FUNCTIONS
 
@@ -91,7 +91,7 @@ var fixGuiMC = function(webWindow, webIframe) {
 // Takes an app (iframe), and replaces the Poolside TV iframe
 var replaceIframe = function(webInnerContent, webWindow) {
     // 'reload' iframe by changing the outer HTML (avoids leave site prompt)
-    webIframe.outerHTML = mcOuterHTML;
+    webIframe.outerHTML = appOuterHTML;
     webIframe = document.getElementById(APP_ID);
 
     // fix gui after every iframe reload
