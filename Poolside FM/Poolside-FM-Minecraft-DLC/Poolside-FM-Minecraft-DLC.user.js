@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.4
+// @version      0.1.5
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -65,7 +65,7 @@ function isHidden(el) {
 }
 
 // Converts the Poolside TV into Minecraft
-var convertToMinecraft = function(webIframe, webShortcut) {
+var convertToMinecraft = function(webIframe) {
     // MORE VARIABLES
     var webInnerContent = webIframe.parentElement;
     var webInnerWrapper = webInnerContent.parentElement.children[0];
@@ -74,13 +74,6 @@ var convertToMinecraft = function(webIframe, webShortcut) {
     var webWindowTitle = webWindowDragHeader.children[2];
     var webVideoBar = webInnerContent.children[0];
     var webVideoOverlay = webInnerContent.children[2];
-    var webIconImageWrapper = webShortcut.children[0];
-    var webIconImage = webIconImageWrapper.children[0];
-    var webIconText = webShortcut.children[1];
-
-    // change the shortcut
-    webIconImage.src = MC_ICON;
-    webIconText.innerText = "Minecraft";
 
     // rename the window
     webWindow.id = "minecraft";
@@ -123,17 +116,30 @@ var convertToMinecraft = function(webIframe, webShortcut) {
 
 // MAIN
 
+var waitForShortcut = setInterval(function() {
+    var webShortcut = document.querySelector("#app > div > div.section-icons.is-absolute > ul:nth-child(1) > li:nth-child(2) > div");
+    if (exists(webShortcut)) {
+        clearInterval(waitForShortcut);
+
+        var webIconImageWrapper = webShortcut.children[0];
+        var webIconImage = webIconImageWrapper.children[0];
+        var webIconText = webShortcut.children[1];
+
+        // change the shortcut
+        webIconImage.src = MC_ICON;
+        webIconText.innerText = "Minecraft";
+    }
+}, LOOP_TIME);
 var waitForIframe = setInterval(function() {
     var youtubeLoader = document.querySelector('.youtube-loader');
     var theIframe = document.querySelector("#widget2");
-    var theShortcut = document.querySelector("#app > div > div.section-icons.is-absolute > ul:nth-child(1) > li:nth-child(2) > div");
     if (exists(youtubeLoader)) {
         loadedYT = true;
         return;
     }
-    if (exists(theIframe) && exists(theShortcut) && loadedYT && !exists(youtubeLoader) && !isHidden(theIframe)) {
+    if (exists(theIframe) && loadedYT && !exists(youtubeLoader) && !isHidden(theIframe)) {
         clearInterval(waitForIframe);
 
-        convertToMinecraft(theIframe, theShortcut);
+        convertToMinecraft(theIframe);
     }
 }, LOOP_TIME);
