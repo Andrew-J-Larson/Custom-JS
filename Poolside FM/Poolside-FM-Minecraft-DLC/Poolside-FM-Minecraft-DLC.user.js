@@ -6,7 +6,7 @@
 // @author       AlienDrew
 // @match        https://poolside.fm/*
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/Poolside-FM-Minecraft-DLC.user.js
-// @icon         https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/icons/retro_dithered_tampermonkey.png
+// @icon         https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/favicons/retro_dithered_tampermonkey.png
 // @grant        none
 // @run-at       document-end
 // @noframes
@@ -32,7 +32,7 @@
 const WAIT_TO_CHANGE = 2000;
 const LOOP_TIME = 100;
 const STYLE_IFRAME = "width: 100%; height: 100%; transform: none; left: auto; top: auto;";
-const MC_ICON = "https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/icons/retro_dithered.png";
+const MC_ICON = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/favicons/retro_dithered.png";
 
 // VARIABLES
 
