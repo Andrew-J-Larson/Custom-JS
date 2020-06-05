@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.3
+// @version      0.1.4
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -31,7 +31,7 @@
 
 const WAIT_TO_CHANGE = 2000;
 const LOOP_TIME = 100;
-const STYLE_IFRAME = "width: 100%; height: 100%; transform: none; left: auto; top: auto;";
+const STYLE_IFRAME = "width: 100%; height: 100%; transform: none; left: auto; top: auto; border: 1px solid #000; -webkit-box-shadow: inset 1px 1px 0 0 #fff, 5px 5px 0 rgba(0,0,0,.2); box-shadow: inset 1px 1px 0 0 #fff, 5px 5px 0 rgba(0,0,0,.2);";
 const MC_ICON = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/favicons/retro_dithered.png";
 
 // VARIABLES
