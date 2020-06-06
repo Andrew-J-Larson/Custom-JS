@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.9
+// @version      0.2.0
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -32,7 +32,7 @@
 const TENTH_OF_SECOND = 100;
 const SECOND = 10 * TENTH_OF_SECOND;
 const UPDATE_GUI_TIMEOUT1 = 5 * TENTH_OF_SECOND;
-const UPDATE_GUI_TIMEOUT2 = 2 * TENTH_OF_SECOND;
+const UPDATE_GUI_TIMEOUT2 = 2.5 * TENTH_OF_SECOND;
 const YT_LOADER_TIMEOUT = SECOND;
 
 // =============================================== APP CONSTANTS (NOT TO CHANGE)
@@ -54,6 +54,7 @@ const APP_SPLASH_ID = "app-splash";
 const RELOAD_ICON = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/icons/reload.png";
 const SANDBOX_IFRAME = "allow-same-origin allow-scripts allow-pointer-lock"; // disabled: allow-popups allow-forms
 const STYLE_APP_SPLASH = "image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;";
+const STYLE_LOAD_IFRAME = "visibility: hidden; width: 1px; height: 1px;";
 const STYLE_IFRAME = "width: 100%; height: 100%; transform: none; left: auto; top: auto; border: 1px solid #000; -appkit-box-shadow: inset 1px 1px 0 0 #fff, 5px 5px 0 rgba(0,0,0,.2); box-shadow: inset 1px 1px 0 0 #fff, 5px 5px 0 rgba(0,0,0,.2);";
 const STYLE_HIDE_GRAPHIC_INNER_WRAPPER = "padding: 0 5px 15px 5px !important;";
 const STYLE_HIDE_GRAPHIC_HANDLE_BR = "z-index: auto !important;";
@@ -76,11 +77,9 @@ minecraft.scrolling = "no";
 minecraft.allowfullscreen = "1";
 minecraft.allow = "encrypted-media";
 minecraft.title = APP_NAME + " app";
-minecraft.width = "100%";
-minecraft.height = "100%";
 minecraft.src = APP_WEBSITE;
 minecraft.sandbox = SANDBOX_IFRAME;
-minecraft.style = "pointer-events: all; " + STYLE_IFRAME;
+minecraft.style = "pointer-events: all; " + STYLE_LOAD_IFRAME;
 var minecraftOuterHTML = minecraft.outerHTML;
 var appOuterHTML = minecraftOuterHTML.substring(0, 8) + 'id="' + APP_ID + '" ' + minecraftOuterHTML.substring(8);
 
@@ -99,10 +98,16 @@ var isHidden = function(el) {
 
 // when the game loads, it needs a first time gui fix
 var fixGuiMC = function(appWindow, appIframe) {
-    var iStyle = appWindow.getAttribute("style");
-    var iPreStyle = iStyle.substring(0, iStyle.indexOf("width"));
-    appWindow.style = iPreStyle + "width: " + (appWindow.clientWidth - 1) + "px; height: " + (appWindow.clientHeight - 1) + "px;";
-    setTimeout(function() {appWindow.style = iStyle}, UPDATE_GUI_TIMEOUT2);
+    //var iStyle = appWindow.getAttribute("style");
+    //var iPreStyle = iStyle.substring(0, iStyle.indexOf("width"));
+    //appWindow.style = iPreStyle + "width: " + (appWindow.clientWidth - 1) + "px; height: " + (appWindow.clientHeight - 1) + "px;";
+    //setTimeout(function() {appWindow.style = iStyle}, UPDATE_GUI_TIMEOUT2);
+    setTimeout(function() {
+        var appIframeStyle = appIframe.style;
+        appIframeStyle.width = "100%";
+        appIframeStyle.height = "100%";
+        appIframeStyle.removeProperty("visibility");
+    }, UPDATE_GUI_TIMEOUT2);
 }
 
 // Takes an app (iframe), and replaces the Poolside TV iframe
