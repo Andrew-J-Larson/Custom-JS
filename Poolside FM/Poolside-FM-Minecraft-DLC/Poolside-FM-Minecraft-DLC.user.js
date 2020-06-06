@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.8
+// @version      0.1.9
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -31,7 +31,8 @@
 
 const TENTH_OF_SECOND = 100;
 const SECOND = 10 * TENTH_OF_SECOND;
-const UPDATE_GUI_TIMEOUT = 5 * TENTH_OF_SECOND;
+const UPDATE_GUI_TIMEOUT1 = 5 * TENTH_OF_SECOND;
+const UPDATE_GUI_TIMEOUT2 = 2 * TENTH_OF_SECOND;
 const YT_LOADER_TIMEOUT = SECOND;
 
 // =============================================== APP CONSTANTS (NOT TO CHANGE)
@@ -101,7 +102,7 @@ var fixGuiMC = function(appWindow, appIframe) {
     var iStyle = appWindow.getAttribute("style");
     var iPreStyle = iStyle.substring(0, iStyle.indexOf("width"));
     appWindow.style = iPreStyle + "width: " + (appWindow.clientWidth - 1) + "px; height: " + (appWindow.clientHeight - 1) + "px;";
-    setTimeout(function() {appWindow.style = iStyle}, 100);
+    setTimeout(function() {appWindow.style = iStyle}, UPDATE_GUI_TIMEOUT2);
 }
 
 // Takes an app (iframe), and replaces the Poolside TV iframe
@@ -113,7 +114,7 @@ var replaceIframe = function(appInnerContent, appWindow) {
 
     // fix Minecraft GUI after every iframe reload
     appIframe.onload = function() {
-        setTimeout(function() {fixGuiMC(appWindow, appIframe)}, UPDATE_GUI_TIMEOUT);
+        setTimeout(function() {fixGuiMC(appWindow, appIframe)}, UPDATE_GUI_TIMEOUT1);
     }
 }
 
