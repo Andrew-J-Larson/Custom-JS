@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.0
+// @version      0.3.1
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
