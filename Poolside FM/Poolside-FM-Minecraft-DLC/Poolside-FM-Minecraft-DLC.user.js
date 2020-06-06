@@ -273,10 +273,10 @@ var convertToMinecraft = function() {
     appInnerContent.removeChild(appVideoBar);
 
     // delete the overlay (if there is one) or make overlay click-through
-    if (!VIDEO_OVERLAY_ENABLED && !videoOverlaySet) {
+    if (!videoOverlaySet) {
         videoOverlaySet = true;
-        if (appVideoOverlay != null) appInnerContent.removeChild(appVideoOverlay);
-        else appVideoOverlay.setAttribute("style", "pointer-events: none;");
+        if (VIDEO_OVERLAY_ENABLED) appVideoOverlay.setAttribute("style", "pointer-events: none;");
+        else appInnerContent.removeChild(appVideoOverlay);
     }
 
     // watch for when resizing to fix issues with it being bugged
