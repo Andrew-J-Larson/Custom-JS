@@ -998,7 +998,7 @@ var PlayerSet = setInterval(function() {
             // only let the bot owner set if loading music should be on or not
             if (userId != yourId) return;
             loadingOption = !loadingOption;
-            mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading progress is now set to " + (loadingOption ? "music" : "text"));
+            mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading progress is now set to " + (loadingOption ? "audio" : "text"));
         }
 		var public = function(userId, yourId) {
 			// only let the bot owner set if public bot commands should be on or not
