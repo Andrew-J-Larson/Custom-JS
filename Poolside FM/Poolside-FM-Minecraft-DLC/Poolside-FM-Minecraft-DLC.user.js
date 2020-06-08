@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.1
+// @version      0.3.2
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -77,10 +77,11 @@ const VIDEO_OVERLAY_ENABLED = true;
 // =============================================== CSS CLASSES
 
 document.styleSheets[0].addRule('#' + SIZER_ID, "margin-left: " + APP_WINDOW_BTN_MARGIN + ';');
-document.styleSheets[0].addRule('#' + SIZER_ID + '.' + RESTORE_DOWN_CLASS + ":after", "title: 'Restore Down'; background: url('" + RESTORE_DOWN_ICON + "') " + STYLE_APP_WINDOW_BTN_PART);
-document.styleSheets[0].addRule('#' + SIZER_ID + '.' + MAXIMIZE_CLASS + ":after", "title: 'Maximize'; background: url('" + MAXIMIZE_ICON + "') " + STYLE_APP_WINDOW_BTN_PART);
-document.styleSheets[0].addRule('#' + RELOAD_ID, "margin-left: " + APP_WINDOW_BTN_MARGIN + ';');
-document.styleSheets[0].addRule('#' + RELOAD_ID + ":after", "title: 'Reload';");
+document.styleSheets[0].addRule('#' + SIZER_ID + '.' + RESTORE_DOWN_CLASS, "title: 'Restore Down';");
+document.styleSheets[0].addRule('#' + SIZER_ID + '.' + RESTORE_DOWN_CLASS + ":after", "background: url('" + RESTORE_DOWN_ICON + "') " + STYLE_APP_WINDOW_BTN_PART);
+document.styleSheets[0].addRule('#' + SIZER_ID + '.' + MAXIMIZE_CLASS, "title: 'Maximize';");
+document.styleSheets[0].addRule('#' + SIZER_ID + '.' + MAXIMIZE_CLASS + ":after", "background: url('" + MAXIMIZE_ICON + "') " + STYLE_APP_WINDOW_BTN_PART);
+document.styleSheets[0].addRule('#' + RELOAD_ID, "title: 'Reload'; margin-left: " + APP_WINDOW_BTN_MARGIN + ';');
 document.styleSheets[0].addRule('#' + DESKTOP_ID + '.' + HIDE_DESKTOP_CLASS + " > div > header", "display: none !important;");
 document.styleSheets[0].addRule('#' + DESKTOP_ID + ":not(." + HIDE_DESKTOP_CLASS + ") #" + APP_ID + HIDE_GRAPHIC_SELECTOR + ' ' + INNER_WRAPPER_SELECTOR, STYLE_SHOW_INNER_WRAPPER);
 document.styleSheets[0].addRule('#' + DESKTOP_ID + ":not(." + HIDE_DESKTOP_CLASS + ") #" + APP_ID + ":after", STYLE_SHOW_AFTER);
