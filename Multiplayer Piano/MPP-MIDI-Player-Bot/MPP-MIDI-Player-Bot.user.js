@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.7
+// @version      2.3.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -94,7 +94,7 @@ const BASE_COMMANDS = [
     ["ping", "gets the milliseconds response time"]
 ];
 const BOT_COMMANDS = [
-    ["play [URL]", "plays a specific song (URL must be a direct link)"],
+    ["play [MIDI URL]", "plays a specific song (URL must be a direct link to a MIDI file)"],
     ["stop", "stops all music from playing"],
     ["pause", "pauses the music at that moment in the song"],
     ["resume", "plays music right where pause left off"],
