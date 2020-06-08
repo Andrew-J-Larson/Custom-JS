@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.3.8
+// @version      2.3.9
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -103,7 +103,7 @@ const BOT_COMMANDS = [
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
 ];
 const BOT_OWNER_COMMANDS = [
-    ["loadmusic", "toggles the MIDI loading music on or off"],
+    ["loading", "toggles the MIDI loading music, or visuals, on or off"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
 const PRE_MSG = NAME + " (v" + VERSION + "): ";
@@ -232,9 +232,8 @@ var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
-var loading = null; // this is to show progress when loading a MIDI file
+var loadingOption = false; // controls if loading music should be on or not
 var loadingProgress = 0; // updates when loading files
-var loadingMusicOption = false; // controls if loading music should be on or not
 var loadingMusicLoop = null; // this is to play notes while a song is (down)loading
 var loadingMusicPrematureStop = false; // this is used when we need to stop the music after errors
 var ended = true;
@@ -436,14 +435,17 @@ var quoteString = function(string) {
 
 // Gets file as a blob (data URI)
 var urlToBlob = function(url, callback) {
-    if (loadingMusicOption) startLoadingMusic();
     // show file download progress
-    var progress = 0;
+    var downloading = null;
     mppChatSend(PRE_DOWNLOADING + ' ' + url);
-    var downloading = setInterval(function() {
-        mppChatSend(PRE_DOWNLOADING + getProgress(progress));
-        progress++;
-    }, chatDelay);
+    if (loadingOption) startLoadingMusic();
+    else {
+        var progress = 0;
+        downloading = setInterval(function() {
+            mppChatSend(PRE_DOWNLOADING + getProgress(progress));
+            progress++;
+        }, chatDelay);   
+    }
 
     fetch(url, {
         headers: {
@@ -464,7 +466,7 @@ var urlToBlob = function(url, callback) {
         console.error("Normal fetch couldn't get the file:", error);
         var corsUrl = useCorsUrl(url);
         if (corsUrl != null) {
-            if (loadingMusicOption) startLoadingMusic();
+            if (loadingOption) startLoadingMusic();
 
             fetch(corsUrl, {
                 headers: {
@@ -987,11 +989,11 @@ var sustain = function() {
 
     mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
 }
-var loadingMusic = function(userId, yourId) {
+var loading = function(userId, yourId) {
     // only let the bot owner set if loading music should be on or not
     if (userId != yourId) return;
-    loadingMusicOption = !loadingMusicOption;
-    mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading music was turned " + (loadingMusicOption ? "on" : "off"));
+    loadingOption = !loadingOption;
+    mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading progress is now set to " + (loadingOption ? "music" : "text"));
 }
 var public = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
@@ -1004,10 +1006,6 @@ var public = function(userId, yourId) {
 
 Player.on('fileLoaded', function() {
     // Do something when file is loaded
-    if (loading != null) {
-        clearInterval(loading);
-        loading = null;
-    }
     stopLoadingMusic();
 });
 MPP.client.on('a', function (msg) {
@@ -1072,7 +1070,7 @@ MPP.client.on('a', function (msg) {
             case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
-            case "loadmusic": case "lm": loadingMusic(userId, yourId); break;
+            case "loading": case "lo": loading(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
     }
@@ -1137,7 +1135,7 @@ var clearSoundWarning = setInterval(function() {
 
                 currentRoom = MPP.client.channel._id;
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
-                    loadingMusicOption = publicOption = true;
+                    loadingOption = publicOption = true;
                 }
                 createButtons();
                 console.log(PRE_MSG + " Online!");
