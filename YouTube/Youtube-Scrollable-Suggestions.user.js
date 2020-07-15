@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.6.9
+// @version      1.7.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
@@ -406,8 +406,10 @@ waitForKeyElements(videoItemSelector, function () {
             }
         });
 
-        // must know when miniplayer, size, and fullscreen buttons are pressed
+        // must know when miniplayer, size, and fullscreen buttons/keys are pressed
         $(function() {
+            // button presses
+
             $(miniplayerSelector).click(function() {
                 // must disable the size/position settings when going off of current page
                 extendedDisable = true;
@@ -430,6 +432,31 @@ waitForKeyElements(videoItemSelector, function () {
 
                     fixDynamicSizes(true);
                 }, fastDelay);
+            });
+
+            // key presses
+            D.on("keyup", function (e) {
+                var keyUpCode = e.which;
+
+                // miniplayer
+                if (keyUpCode == 73) {
+                    // must disable the size/position settings when going off of current page
+                    extendedDisable = true;
+                    fixDynamicSizes(true);
+                } else if (keyUpCode == 84 || keyUpCode == 70) {
+                    setTimeout(function() {
+                        // size
+                        if (keyUpCode == 84) {
+                            var tempTitle = $(fullscreenSelector).attr('title');
+
+                            if (tempTitle == fullscreenEnter) fullscreen = false;
+                            else if(tempTitle == fullscreenExit) fullscreen = true;
+                        }
+
+                        // size & fullscreen
+                        fixDynamicSizes(true);
+                    }, fastDelay);
+                }
             });
         });
 
