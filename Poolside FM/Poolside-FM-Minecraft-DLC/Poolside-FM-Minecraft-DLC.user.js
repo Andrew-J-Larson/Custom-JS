@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.6
+// @version      0.3.7
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -9,7 +9,7 @@
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/Poolside-FM-Minecraft-DLC/favicons/favicon_dithered_tampermonkey.png
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     splashBGColorTXT https://raw.githubusercontent.com/TheAlienDrew/minecraft-classic/master/RESOURCE_PACKS/PACKS/default/splash/mojang-bg.txt
+// @resource     splashBGColorTXT https://raw.githubusercontent.com/TheAlienDrew/minecraft-classic/master/splash/mojang-bg.txt
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -58,9 +58,9 @@ const HIDE_DESKTOP_CLASS = "hide-desktop";
 
 const APP_NAME = "Minecraft";
 const APP_ID = APP_NAME.toLowerCase();
-const APP_WEBSITE = "https://classic.minecraft.net/";
+const APP_WEBSITE = "https://thealiendrew.github.io/minecraft-classic/";
 const PS_FM_RESOURCES_LINK = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Poolside%20FM/";
-const APP_SPLASH = "https://raw.githubusercontent.com/TheAlienDrew/minecraft-classic/master/RESOURCE_PACKS/PACKS/default/splash/mojang.png";
+const APP_SPLASH = "https://raw.githubusercontent.com/TheAlienDrew/minecraft-classic/master/splash/mojang.png";
 const APP_RAW_LINK = PS_FM_RESOURCES_LINK + "Poolside-FM-Minecraft-DLC/";
 const APP_ICONS_LINK = PS_FM_RESOURCES_LINK + "window-button-icons/";
 const APP_FAVICON = APP_RAW_LINK + "favicons/favicon_dithered.png";
