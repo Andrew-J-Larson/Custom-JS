@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.0";
+const VERSION = "2.4.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = /^https?:\/\/www\.multiplayerpiano\.com*/g;
@@ -107,7 +107,7 @@ const BOT_COMMANDS = [
     ["repeat", "toggles repeating current song on or off"],
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
 ];
-const BOT_OWNER_COMMANDS = [[
+const BOT_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];

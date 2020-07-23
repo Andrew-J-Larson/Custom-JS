@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.0
+// @version      2.4.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @include      /^https?://www\.multiplayerpiano\.com*/
@@ -102,7 +102,7 @@ const BOT_COMMANDS = [
     ["repeat", "toggles repeating current song on or off"],
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
 ];
-const BOT_OWNER_COMMANDS = [[
+const BOT_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
