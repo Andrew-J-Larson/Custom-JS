@@ -10,6 +10,7 @@
 // ==/UserScript==
 
 var clockText = document.querySelector("#container > div.clock > h3");
+
 setInterval(function() {
   clockText.innerText = clockText.innerText.replace(':', ' ');
 }, 1000);
