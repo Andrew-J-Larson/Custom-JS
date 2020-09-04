@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolside FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.7
+// @version      0.3.8
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @match        https://poolside.fm/*
@@ -317,6 +317,7 @@ var waitForShortcut = setInterval(function() {
         // change the shortcut
         appIconImage.src = APP_FAVICON;
         appIconText.innerText = APP_NAME;
+        appIconText.style.width = "52px";
 
         // fixes issue of the youtube loader disappearing too fast
         setTimeout(function() {if (!loadedYT) loadedYT = true}, YT_LOADER_TIMEOUT);
