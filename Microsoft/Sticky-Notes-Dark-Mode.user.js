@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.3
+// @version      1.3.4
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
@@ -35,6 +35,7 @@
 
 // constants
 const fastDelay = 100;
+const fasterDelay = 10;
 const msa_signup_errorWebsite = 'https://www.onenote.com/common1pauth/exchangecode?error=msa_signup';
 const stickyNotesWebsite = 'https://www.onenote.com/stickynotes';
 const stickiesHelpBeginning = 'https://support.office.com/client/results?NS=stickynotes&Context=%7B%22ThemeId%22:4,';
@@ -107,18 +108,14 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
 
     // apply the dark mode class to the html element
     document.body.classList.add('n-darkMode');
-    var limiter = 0;
     var loadingGif = null;
     var fixLoadingGif = setInterval(function() {
         loadingGif = document.querySelector(loadingGifSelector);
         if (elementExists(loadingGif)) {
             clearInterval(fixLoadingGif);
             loadingGif.src = loadingGifDark;
-        } else {
-            if (limiter == 10) { clearInterval(fixLoadingGif); }
-            else { limiter++; }
         }
-    }, 10);
+    }, fasterDelay);
     checkForHelp();
 } else if (currentURL.startsWith(stickiesHelpBeginning)) { // code to run on the dark sticky notes help website
     const iframeID = 'ocSearchIFrame';
