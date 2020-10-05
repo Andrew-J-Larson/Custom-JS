@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.7
+// @version      1.3.8
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
@@ -74,7 +74,7 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
 } else if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky notes website
     const urlDoubleQuote = '%22';
     const darkModeThemeId = '4';
-    const darkModeLinkColor = urlDoubleQuote + 'B3D6FC' + urlDoubleQuote;
+    const darkModeLinkColor = urlDoubleQuote + 'BCD6E6' + urlDoubleQuote;
     const helpIFrameId = '#helpPaneFull iframe';
     // listener variables
     var helpIFrameLoaded = false;
