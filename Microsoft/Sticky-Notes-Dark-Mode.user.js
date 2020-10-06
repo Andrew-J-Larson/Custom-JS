@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.9
+// @version      1.4.0
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
@@ -43,7 +43,6 @@ const cssSupportModernDarkMS = 'https://support.office.com/SocContent/topicCssWi
 // loading gif constants
 const loadingGifDark = 'https://npwuscdn-onenote.azureedge.net/ondcnotesintegration/img/loading-dark.gif';
 const loadingGifSelector = '#n-side-pane > div.n-side-pane-content > div > div > div > img';
-const limitTimeout = 100; // 100 * 10 ms = 1 second
 // need to check url
 var currentURL = window.location.href;
 
@@ -145,5 +144,5 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
                 iDocument.head.appendChild(msSupportModernDarkStyle);
             }
         }
-    }, 100);
+    }, fastDelay);
 }
