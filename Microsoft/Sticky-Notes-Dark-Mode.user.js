@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.8
+// @version      1.3.9
 // @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
@@ -39,6 +39,7 @@ const fasterDelay = 10;
 const msa_signup_errorWebsite = 'https://www.onenote.com/common1pauth/exchangecode?error=msa_signup';
 const stickyNotesWebsite = 'https://www.onenote.com/stickynotes';
 const stickiesHelpBeginning = 'https://support.office.com/client/results?NS=stickynotes&Context=%7B%22ThemeId%22:4,';
+const cssSupportModernDarkMS = 'https://support.office.com/SocContent/topicCssWithNewLandingPage?v=yYde-FLJzPkbtVDYNNOP9c2-r95XGKYI_4IaC6qTcNU1';
 // loading gif constants
 const loadingGifDark = 'https://npwuscdn-onenote.azureedge.net/ondcnotesintegration/img/loading-dark.gif';
 const loadingGifSelector = '#n-side-pane > div.n-side-pane-content > div > div > div > img';
@@ -53,7 +54,7 @@ var elementExists = function(element) {
 // function for fixing css resources
 var getCssResource = function(nameOfResource) {
     var css_resource = GM_getResourceText(nameOfResource).split('\n');
-    var resource_parsed = "";
+    var resource_parsed = '';
     // starts at 1 and ends at the second to last line to remove the @-moz-document encasement
     var k;
     for (k = 1; k < css_resource.length - 1; k++) {
@@ -70,7 +71,7 @@ var injectCss = function(documentToInject, cssStyle) {
 };
 
 if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error signup website
-    document.documentElement.style = "filter: invert(100%) hue-rotate(180deg)";
+    document.documentElement.style = 'filter: invert(100%) hue-rotate(180deg)';
 } else if (currentURL.startsWith(stickyNotesWebsite)) {// code to run on the sticky notes website
     const urlDoubleQuote = '%22';
     const darkModeThemeId = '4';
@@ -119,7 +120,7 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
     checkForHelp();
 } else if (currentURL.startsWith(stickiesHelpBeginning)) { // code to run on the dark sticky notes help website
     const iframeID = 'ocSearchIFrame';
-    const iframeFixCss = '.ocpArticleContent .ocpAlert{background-color:#686868}' + getCssResource('cssDarkScrollbar');
+    const iframeAddDarkScroll = getCssResource('cssDarkScrollbar');
 
     // set the style fixes
     var checkForIFrame = setInterval(function() {
@@ -132,7 +133,16 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
             // must listen for page load to change style
             iframe.onload = function () {
                 var iDocument = frames[0].document;
-                injectCss(iDocument, iframeFixCss);
+
+                // add custom dark scrollbar
+                injectCss(iDocument, iframeAddDarkScroll);
+
+                // activate the MS Support Modern Dark Theme
+                var msSupportModernDarkStyle = document.createElement('link');
+                msSupportModernDarkStyle.type = 'text/css';
+                msSupportModernDarkStyle.rel = 'stylesheet';
+                msSupportModernDarkStyle.href = cssSupportModernDarkMS;
+                iDocument.head.appendChild(msSupportModernDarkStyle);
             }
         }
     }, 100);
