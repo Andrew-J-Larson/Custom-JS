@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Remove Leading Zeros
 // @namespace    https://thealiendrew.github.io/
-// @version      0.0.1
-// @downloadURL  https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/BitDay/BitDay%20(Legacy)%20-%20Remove%20Leading%20Zeros.user.js
+// @version      1.0.0
 // @description  Removes leading zeros (like normal clocks).
 // @author       AlienDrew
 // @include      /^https?://www\.bitday\.me/legacy*/
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/BitDay/BitDay%20(Legacy)%20-%20Remove%20Leading%20Zeros.user.js
 // @grant        none
 // ==/UserScript==
 
