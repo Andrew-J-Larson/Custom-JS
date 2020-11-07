@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Zoom Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Moves the chat history in real time against the recording's current time.
 // @author       AlienDrew
 // @match        https://*.zoom.us/rec/play/*
@@ -26,12 +26,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const PRE_EMPTY_TIME = "00:";
-const TIME_RANGE_CURRENT_CLASS = '.vjs-time-range-current';
-
 let waitForTimeRangeCurrent = setInterval(function() {
   // contains current time
-  let timeRangeCurrent = document.querySelector(TIME_RANGE_CURRENT_CLASS);
+  let timeRangeCurrent = document.querySelector('.vjs-time-range-current');
   if (timeRangeCurrent && timeRangeCurrent.innerText != "") {
     clearInterval(waitForTimeRangeCurrent);
 
@@ -56,7 +53,7 @@ let waitForTimeRangeCurrent = setInterval(function() {
         let currentTime = mutation.target.textContent;
 
         // remove all `00:` from beginnings
-        while(currentTime.indexOf(PRE_EMPTY_TIME) == 0) {
+        while(currentTime.indexOf("00:") == 0) {
           currentTime = currentTime.substring(3);
         }
 
@@ -68,6 +65,7 @@ let waitForTimeRangeCurrent = setInterval(function() {
           i--;
         }
 
+        // go to last chat matching the current time (shows up at bottom just like a live chat)
         if (foundIndex >= 0) chatListItems[foundIndex].scrollIntoViewIfNeeded(false);
       }
     });
