@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Zoom Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Moves the chat history in real time against the recording's current time.
 // @author       AlienDrew
 // @match        https://*.zoom.us/rec/play/*
@@ -28,15 +28,6 @@
 
 const PRE_EMPTY_TIME = "00:";
 const TIME_RANGE_CURRENT_CLASS = '.vjs-time-range-current';
-
-/**
-* Returns the index of the last element in the array where predicate is true, and -1
-* otherwise.
-* @param array The source array to search in
-* @param predicate find calls predicate once for each element of the array, in descending
-* order, until it finds one where predicate returns true. If such an element is found,
-* findLastIndex immediately returns that element index. Otherwise, findLastIndex returns -1.
-*/
 
 let waitForTimeRangeCurrent = setInterval(function() {
   // contains current time
