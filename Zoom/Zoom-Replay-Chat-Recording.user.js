@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Zoom Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Moves the chat history in real time against the recording's current time.
 // @author       AlienDrew
 // @match        https://*.zoom.us/rec/play/*
@@ -26,12 +26,50 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// converts string time of format HH:MM:SS to only seconds
+function timeToSeconds(timeString) {
+  // times in seconds, where a second is 1
+  const MINUTE = 60;
+  const HOUR = 60 * MINUTE;
+
+  let hours, minutes, seconds;
+  let stringLength = timeString.length;
+
+  if (stringLength == 8) {
+    // get hours, minutes, seconds
+    hours = parseInt(timeString.substring(0, 2));
+    minutes = parseInt(timeString.substring(3, 5));
+    seconds = parseInt(timeString.substring(6));
+  } else if (stringLength == 5) {
+    // get minutes, seconds
+    hours = 0;
+    minutes = parseInt(timeString.substring(0, 2));
+    seconds = parseInt(timeString.substring(3));
+  } else if (stringLength == 2) {
+    // get seconds
+    hours = minutes = 0;
+    seconds = parseInt(timeString);
+  } else {
+    // no seconds at all
+    hours = minutes = seconds = 0;
+  }
+
+  return (hours*HOUR)+(minutes*MINUTE)+seconds;
+}
+
+// returns the new time in seconds accounting for time difference (given the original time and difference in seconds)
+function getTimeByDiff(time, difference) {
+  return time - difference;
+}
+
 let waitForTimeRangeCurrent = setInterval(function() {
   // contains current time
   let timeRangeCurrent = document.querySelector('.vjs-time-range-current');
   if (timeRangeCurrent && timeRangeCurrent.innerText != "") {
     clearInterval(waitForTimeRangeCurrent);
 
+    // contains end video time
+    let timeRangeDuration = document.querySelector('.vjs-time-range-duration');
     // where the scroll box is controlled
     let zmScrollbarWrap = document.querySelector('.zm-scrollbar__wrap');
     // the chat that contains all chat items
@@ -40,22 +78,23 @@ let waitForTimeRangeCurrent = setInterval(function() {
     let chatListItems = document.querySelectorAll('.chat-list-item');
     let chatListItemCount = chatListItems.length;
 
-    // need an array of the chat times
+    // need times in seconds
+    let endTimeInChat = timeToSeconds(chatListItems[chatListItemCount-1].querySelector('.chat-time').innerText);
+    let endTimeInVideo = timeToSeconds(timeRangeDuration.innerText);
+    let chatTimeDiff = endTimeInChat - endTimeInVideo;
+
+    // need an array of the chat times in seconds
     let chatListItemTimes = new Array(chatListItemCount);
     for (let i = 0; i < chatListItemCount; i++) {
-      chatListItemTimes[i] = chatListItems[i].querySelector('.chat-time').innerText;
+      let timeInSeconds = timeToSeconds(chatListItems[i].querySelector('.chat-time').innerText);
+      chatListItemTimes[i] = getTimeByDiff(timeInSeconds, chatTimeDiff);
     }
 
     // need mutation observer to watch for timeRangeCurrent
     let observer = new MutationObserver(mutations => {
       // watch the current time and scroll to chat
       for(let mutation of mutations) {
-        let currentTime = mutation.target.textContent;
-
-        // remove all `00:` from beginnings
-        while(currentTime.indexOf("00:") == 0) {
-          currentTime = currentTime.substring(3);
-        }
+        let currentTime = timeToSeconds(mutation.target.textContent);
 
         // check chat time array for matching time
         let foundIndex = -1;
