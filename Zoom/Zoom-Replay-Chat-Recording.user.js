@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Zoom Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Moves the chat history in real time against the recording's current time.
 // @author       AlienDrew
 // @match        https://*.zoom.us/rec/play/*
@@ -57,11 +57,6 @@ function timeToSeconds(timeString) {
   return (hours*HOUR)+(minutes*MINUTE)+seconds;
 }
 
-// returns the new time in seconds accounting for time difference (given the original time and difference in seconds)
-function getTimeByDiff(time, difference) {
-  return time - difference;
-}
-
 let waitForTimeRangeCurrent = setInterval(function() {
   // contains current time
   let timeRangeCurrent = document.querySelector('.vjs-time-range-current');
@@ -79,15 +74,26 @@ let waitForTimeRangeCurrent = setInterval(function() {
     let chatListItemCount = chatListItems.length;
 
     // need times in seconds
-    let endTimeInChat = timeToSeconds(chatListItems[chatListItemCount-1].querySelector('.chat-time').innerText);
+    let endListTime = chatListItems[chatListItemCount-1].querySelector('.chat-time').innerText;
+    let endTimeInChat = timeToSeconds(endListTime);
     let endTimeInVideo = timeToSeconds(timeRangeDuration.innerText);
-    let chatTimeDiff = endTimeInChat - endTimeInVideo;
+    let chatTimeDiff = endTimeInChat - endTimeInVideo; // positive or negative values acceptable and possible
+
+    // needed for roughly estimating chatTimeDiff better (almost magic numbers)
+    // * we're getting leftover seconds in chatTimeDiff (no minutes),
+    //   then subtracting the last chatItem's leftover seconds (no minutes),
+    //   and finally the most magic number part is multiplying that value by 23/60.
+    // * 23/60 was found by taking a few videos and finding a good multiplier between
+    //   them all that made all videos sync up to the chat the most.
+    let lastChatRemainderSeconds = parseInt(endListTime.substring(endListTime.length-2));
+    let appoxSecondsFix = Math.round(23*((((chatTimeDiff/60)%1)*60)-lastChatRemainderSeconds)/60);
+    chatTimeDiff -= appoxSecondsFix;
 
     // need an array of the chat times in seconds
     let chatListItemTimes = new Array(chatListItemCount);
     for (let i = 0; i < chatListItemCount; i++) {
       let timeInSeconds = timeToSeconds(chatListItems[i].querySelector('.chat-time').innerText);
-      chatListItemTimes[i] = getTimeByDiff(timeInSeconds, chatTimeDiff);
+      chatListItemTimes[i] = timeInSeconds - chatTimeDiff;
     }
 
     // need mutation observer to watch for timeRangeCurrent
