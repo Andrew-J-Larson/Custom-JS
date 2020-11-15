@@ -538,7 +538,6 @@ function yt_navigate_start() {
 }
 
 // needed when changing pages due to dynamic page loading
-//window.addEventListener("yt-navigate-start", turnOff);
 window.addEventListener("yt-navigate-start", yt_navigate_start);
 window.addEventListener("yt-navigate-finish", yt_navigate_finish);
 
