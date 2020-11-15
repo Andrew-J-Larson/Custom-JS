@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.4
+// @version      1.7.5
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      /^https?:\/\/www\.youtube\.com\/watch\?v=.*
@@ -37,7 +37,6 @@ function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().
 // basic
 const scriptShortName = 'YTscrollSuggest';
 const fastDelay       = 100; // in milliseconds
-const INITIAL_DELAY   = 500;
 
 // selectors
 //const pageSelector        = 'ytd-app';
@@ -187,6 +186,17 @@ function checkAttribute(element, attribute) {
     } else return false;
 }
 
+// checks if an element is in viewport
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
 // check if element has a height
 function hasHeight(element) {
     let height = element.height();
@@ -210,189 +220,210 @@ function addStyleString(str) {
     d.body.appendChild(node);
 }
 
-// need to wait until the page is in view so thumbnails load
-var waitUntilPageInView = setInterval(function() {
-    if (visibility == "visible") {
-        clearInterval(waitUntilPageInView);
+// begin script when page is ready
+waitForKeyElements(videoItemSelector, function () {
+    let header      = $(headerSelector),
+        leftCoIn    = $(leftInSelector),
+        rightContn  = $(rightSelector),
+        rightCoIn   = $(rightInSelector),
+        player      = $(playerSelector).first(),
+        theater     = $(theaterSelector).first(),
+        panels      = $(panelsSelector),
+        donations   = $(donationsSelector),
+        chat        = $(chatSelector).first(),
+        playlist    = $(playlistSelector),
+        ads         = $(adsSelector),
+        offerModule = $(offerModuleSelector),
+        suggestions = $(suggestionsSelector).first(),
+        autoPlay    = $(autoPlaySelector).first(),
+        videoItem   = $(videoItemSelector),
+        videoThumb  = $(videoThumbSelector),
+        radioItem   = $(radioItemSelector),
+        movieItem   = $(movieItemSelector),
+        movieItemA  = $(movieItemASelector),
+        spinner     = $(spinnerSelector).first(),
+        autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
+        vItemHeight = videoItem.height(),
+        vItemHPad   = vItemHeight + videoItemPadding,
+        vThumbWidth = videoThumb.outerWidth(true),
+        headHeight  = header.height(),
+        contentTop  = headHeight + standardPadding,
+        autoPlayBot = contentTop + autoPHeight,
+        minHeight   = vItemHeight,
+        previousScr = 0,
+        sliding     = false,
+        atSugEnd    = false,
+        fullscreen  = false;
 
-        // begin script when page is ready
-        waitForKeyElements(videoItemSelector, function () {
-            let looped = 0;
-            let nonBlockingDelay = setInterval(function() {
-                if (looped) {
-                    clearInterval(nonBlockingDelay);
+    // contains classes used to style everything
+    addStyleString(cssConstantStyle);
 
-                    let header      = $(headerSelector),
-                        leftCoIn    = $(leftInSelector),
-                        rightContn  = $(rightSelector),
-                        rightCoIn   = $(rightInSelector),
-                        player      = $(playerSelector).first(),
-                        theater     = $(theaterSelector).first(),
-                        panels      = $(panelsSelector),
-                        donations   = $(donationsSelector),
-                        chat        = $(chatSelector).first(),
-                        playlist    = $(playlistSelector),
-                        ads         = $(adsSelector),
-                        offerModule = $(offerModuleSelector),
-                        suggestions = $(suggestionsSelector).first(),
-                        autoPlay    = $(autoPlaySelector).first(),
-                        videoItem   = $(videoItemSelector),
-                        videoThumb  = $(videoThumbSelector),
-                        radioItem   = $(radioItemSelector),
-                        movieItem   = $(movieItemSelector),
-                        movieItemA  = $(movieItemASelector),
-                        spinner     = $(spinnerSelector).first(),
-                        autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
-                        vItemHeight = videoItem.height(),
-                        vItemHPad   = vItemHeight + videoItemPadding,
-                        vThumbWidth = videoThumb.outerWidth(true),
-                        headHeight  = header.height(),
-                        contentTop  = headHeight + standardPadding,
-                        autoPlayBot = contentTop + autoPHeight,
-                        minHeight   = vItemHeight,
-                        previousScr = 0,
-                        sliding     = false,
-                        atSugEnd    = false,
-                        fullscreen  = false;
+    // disable page scrolling when scrollbar is active
+    disablePageScrolling(suggestions);
+    if (autoPlay.length) disablePageScrolling(autoPlay);
+    disablePageScrolling(spinner);
 
-                    // contains classes used to style everything
-                    addStyleString(cssConstantStyle);
+    // enable/disable scrollbar function
+    function enableSuggestionsScroll(trueFalse) {
+        // readdress where elements are first
+        suggestions = $(suggestionsSelector).first();
+        if (autoPlay.length) autoPlay = $(autoPlaySelector).first();
+        spinner     = $(spinnerSelector).first();
+        videoItem   = $(videoItemSelector);
+        radioItem   = $(radioItemSelector);
+        movieItem   = $(movieItemSelector);
+        movieItemA  = $(movieItemASelector);
 
-                    // disable page scrolling when scrollbar is active
-                    disablePageScrolling(suggestions);
-                    if (autoPlay.length) disablePageScrolling(autoPlay);
-                    disablePageScrolling(spinner);
+        // toggle styling
+        if (trueFalse) {
+            suggestions.addClass(cssSuggestionsClass);
+            spinner.addClass(cssSpinnerClass);
+        } else {
+            if (suggestions.classList && suggestions.classList.contains(cssSuggestionsClass)) suggestions.removeClass(cssSuggestionsClass);
+            if (spinner.classList && spinner.classList.contains(cssSpinnerClass)) spinner.removeClass(cssSpinnerClass);
+            suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
+            if (autoPlay.length) autoPlay.css({'width': '', 'position': '', 'top': ''});
+            spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
+            videoItem.css({'opacity': '', 'width': ''});
+            radioItem.css({'opacity': '', 'width': ''});
+            movieItem.css({'opacity': '', 'width': ''});
+            movieItemA.css({'width': ''});
+        }
+    }
 
-                    // enable/disable scrollbar function
-                    function enableSuggestionsScroll(trueFalse) {
-                        // readdress where elements are first
-                        suggestions = $(suggestionsSelector).first();
-                        if (autoPlay.length) autoPlay = $(autoPlaySelector).first();
-                        spinner     = $(spinnerSelector).first();
-                        videoItem   = $(videoItemSelector);
-                        radioItem   = $(radioItemSelector);
-                        movieItem   = $(movieItemSelector);
-                        movieItemA  = $(movieItemASelector);
+    // detect position changes to change size accordingly
+    function fixDynamicSizes(forceRun) {
+        if (visibility == 'visible') {
+            let viewHeight     = W.height(),
+                viewWidth      = W.width(),
+                playerWidth    = hasWidth(player) ? player.width() : 0,
+                theaterEnabled = theater.children().length > 0,
+                secondaryGone  = rightCoIn.children().length <= 1;
 
-                        // toggle styling
-                        if (trueFalse) {
-                            suggestions.addClass(cssSuggestionsClass);
-                            spinner.addClass(cssSpinnerClass);
-                        } else {
-                            if (suggestions.classList && suggestions.classList.contains(cssSuggestionsClass)) suggestions.removeClass(cssSuggestionsClass);
-                            if (spinner.classList && spinner.classList.contains(cssSpinnerClass)) spinner.removeClass(cssSpinnerClass);
-                            suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
-                            if (autoPlay.length) autoPlay.css({'width': '', 'position': '', 'top': ''});
-                            spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
-                            videoItem.css({'opacity': '', 'width': ''});
-                            radioItem.css({'opacity': '', 'width': ''});
-                            movieItem.css({'opacity': '', 'width': ''});
-                            movieItemA.css({'width': ''});
-                        }
+            disabledYT = secondaryGone || extendedDisable;
+
+            if (enabledYT && disabledYT) {
+                // not disabled yet, disabling
+                console.log(scriptShortName + ': disabling suggestions scrollbar...');
+                enableSuggestionsScroll(false);
+                enabledYT = false;
+                fixDynamicSizes(false);
+            } else if (enabledYT && !disabledYT) {
+                let scrTop          = W.scrollTop(),
+                    outsidePadding  = leftCoIn.position().left,
+                    resizeWidth     = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding*2)),
+                    theatherHeight  = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
+                    panelsHeight    = hasHeight(panels) ? panels.outerHeight(true) : 0,
+                    donationsHeight = hasHeight(donations) ? donations.outerHeight(true) : 0,
+                    chatHeight      = hasHeight(chat) ? chat.outerHeight(true) : 0,
+                    playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
+                    adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
+                    offerModHeight  = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
+                    fillerHeight    = (fullscreen ? 0 : theatherHeight) + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
+                    oriPosTop       = (fullscreen ? (viewHeight + standardPadding) : contentTop) + fillerHeight,
+                    oriScrTop       = oriPosTop - scrTop,
+                    belowTopPos     = viewHeight - oriScrTop,
+                    allInView       = (belowTopPos - minHeight) >= 0;
+
+                // if suggestions is or not moving
+                if (!sliding && previousScr != scrTop) {
+                    previousScr = scrTop;
+                    if (scrTop && allInView) {
+                        sliding = true;
                     }
+                } else {
+                    if ((!scrTop || !allInView)) {
+                        sliding = false;
+                    }
+                }
 
-                    // detect position changes to change size accordingly
-                    function fixDynamicSizes(forceRun) {
-                        if (visibility == 'visible') {
-                            let viewHeight     = W.height(),
-                                viewWidth      = W.width(),
-                                playerWidth    = hasWidth(player) ? player.width() : 0,
-                                theaterEnabled = theater.children().length > 0,
-                                secondaryGone  = rightCoIn.children().length <= 1;
+                // determine if position/size needs updating
+                if (sliding || forceRun) {
+                    let maxHeight            = vItemHPad * Math.floor((viewHeight - (autoPlayBot + standardPadding)) / vItemHPad),
+                        itemsNewWidth        = resizeWidth - scrollbarWidth,
+                        movieItemANewWidth   = itemsNewWidth - vThumbWidth,
+                        atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
+                        opacityItems         = atSugEnd ? 0.33 : 1,
+                        marginTopSuggestions = autoPHeight,
+                        posSuggestions       = 'static',
+                        topSuggestions       = 0,
+                        posAutoPlay          = 'absolute',
+                        topAutoPlay          = oriPosTop,
+                        marginTopSpinner     = 0,
+                        topSpinner           = 'auto',
+                        botSpinner           = atSugEnd ? 'auto' : (viewHeight + 'px');
 
-                            disabledYT = secondaryGone || extendedDisable;
+                    if (atContent) {
+                        marginTopSuggestions = 0;
+                        posSuggestions = 'fixed';
+                        topSuggestions = autoPlayBot;
+                        posAutoPlay = 'fixed';
+                        topAutoPlay = contentTop;
+                        if (atSugEnd) topSpinner = contentTop + 'px';
+                    } else if (atSugEnd) topSpinner = ((contentTop + fillerHeight) - scrTop) + 'px';
 
-                            if (enabledYT && disabledYT) {
-                                // not disabled yet, disabling
-                                console.log(scriptShortName + ': disabling suggestions scrollbar...');
-                                enableSuggestionsScroll(false);
-                                enabledYT = false;
-                                fixDynamicSizes(false);
-                            } else if (enabledYT && !disabledYT) {
-                                let scrTop          = W.scrollTop(),
-                                    outsidePadding  = leftCoIn.position().left,
-                                    resizeWidth     = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding*2)),
-                                    theatherHeight  = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
-                                    panelsHeight    = hasHeight(panels) ? panels.outerHeight(true) : 0,
-                                    donationsHeight = hasHeight(donations) ? donations.outerHeight(true) : 0,
-                                    chatHeight      = hasHeight(chat) ? chat.outerHeight(true) : 0,
-                                    playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
-                                    adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
-                                    offerModHeight  = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
-                                    fillerHeight    = (fullscreen ? 0 : theatherHeight) + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
-                                    oriPosTop       = (fullscreen ? (viewHeight + standardPadding) : contentTop) + fillerHeight,
-                                    oriScrTop       = oriPosTop - scrTop,
-                                    belowTopPos     = viewHeight - oriScrTop,
-                                    allInView       = (belowTopPos - minHeight) >= 0;
-
-                                // if suggestions is or not moving
-                                if (!sliding && previousScr != scrTop) {
-                                    previousScr = scrTop;
-                                    if (scrTop && allInView) {
-                                        sliding = true;
-                                    }
-                                } else {
-                                    if ((!scrTop || !allInView)) {
-                                        sliding = false;
-                                    }
-                                }
-
-                                // determine if position/size needs updating
-                                if (sliding || forceRun) {
-                                    let maxHeight            = vItemHPad * Math.floor((viewHeight - (autoPlayBot + standardPadding)) / vItemHPad),
-                                        itemsNewWidth        = resizeWidth - scrollbarWidth,
-                                        movieItemANewWidth   = itemsNewWidth - vThumbWidth,
-                                        atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
-                                        opacityItems         = atSugEnd ? 0.33 : 1,
-                                        marginTopSuggestions = autoPHeight,
-                                        posSuggestions       = 'static',
-                                        topSuggestions       = 0,
-                                        posAutoPlay          = 'absolute',
-                                        topAutoPlay          = oriPosTop,
-                                        marginTopSpinner     = 0,
-                                        topSpinner           = 'auto',
-                                        botSpinner           = atSugEnd ? 'auto' : (viewHeight + 'px');
-
-                                    if (atContent) {
-                                        marginTopSuggestions = 0;
-                                        posSuggestions = 'fixed';
-                                        topSuggestions = autoPlayBot;
-                                        posAutoPlay = 'fixed';
-                                        topAutoPlay = contentTop;
-                                        if (atSugEnd) topSpinner = contentTop + 'px';
-                                    } else if (atSugEnd) topSpinner = ((contentTop + fillerHeight) - scrTop) + 'px';
-
-                                    // just for reference, this is how to always used fixed positions, but it yields jagged movement when the video suggestions are not at the top of the screen
-                                    /*if (!atContent) {
+                    // just for reference, this is how to always used fixed positions, but it yields jagged movement when the video suggestions are not at the top of the screen
+                    /*
+                    if (!atContent) {
                         marginTopSuggestions = 0;
                         posSuggestions = 'fixed';
                         topSuggestions = ((contentTop + fillerHeight + autoPHeight) - scrTop);
                         posAutoPlay = 'fixed';
                         topAutoPlay = ((contentTop + fillerHeight) - scrTop);
-                    }*/
+                    }
+                    */
 
+                    // updates style for each that changes
+                    suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
+                    if (autoPlay.length) autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
+                    spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
+                    // widths of items and inside of movie items must change
+                    videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    radioItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    movieItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                    movieItemA.css({'width': movieItemANewWidth + 'px'});
+                }
+            } else if (!enabledYT && !disabledYT) {
+                // not enabled yet, enabling
+                console.log(scriptShortName + ': enabling suggestions scrollbar...');
+                enableSuggestionsScroll(true);
+                enabledYT = true;
+                fixDynamicSizes(true);
+            }
+        }
+    }
 
-                                    // updates style for each that changes
-                                    suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
-                                    if (autoPlay.length) autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
-                                    spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
-                                    // widths of items and inside of movie items must change
-                                    videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                    radioItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                    movieItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                    movieItemA.css({'width': movieItemANewWidth + 'px'});
-                                }
-                            } else if (!enabledYT && !disabledYT) {
-                                // not enabled yet, enabling
-                                console.log(scriptShortName + ': enabling suggestions scrollbar...');
-                                enableSuggestionsScroll(true);
-                                enabledYT = true;
-                                fixDynamicSizes(true);
+    // must run at least once (after the page is in view)
+    var waitUntilPageInView = setInterval(function() {
+        if (visibility == "visible") {
+            clearInterval(waitUntilPageInView);
+
+            // must check to make sure the first PRELOAD suggested videos have thumbnails
+            const startIndex = videoItem.index();
+            let i = startIndex;
+            var insideViewPort = true;
+            let loopingItems = setInterval(function() {
+                if (insideViewPort) {
+                    // make sure item exists
+                    let currentItem = suggestions.children()[i];
+                    if (currentItem) {
+                        // make sure thumbnail exists
+                        let thumbnailImg = currentItem.querySelector("#img");
+                        if (thumbnailImg) {
+                            // make sure thumbnail has an `src` that isn't left blank
+                            if (thumbnailImg.hasAttribute("src") && thumbnailImg.src != "") i++;
+                            else {
+                                // and make sure that we are in the viewPort
+                                insideViewPort = isInViewport(thumbnailImg);
                             }
                         }
                     }
 
-                    // must run at least once
+                    // all else, keep testing at the index
+                } else {
+                    clearInterval(loopingItems);
+
+                    // run once for the first time
                     fixDynamicSizes(true);
 
                     // when the screen is resized also update the sidebar width
@@ -478,8 +509,8 @@ var waitUntilPageInView = setInterval(function() {
                             clearInterval(waitForRightHaveChildren);
                         }
                     }, fastDelay);
-                } else looped++;
-            }, INITIAL_DELAY);
-        }, fastDelay);
-    }
+                }
+            }, fastDelay);
+        }
+    }, fastDelay);
 }, fastDelay);
