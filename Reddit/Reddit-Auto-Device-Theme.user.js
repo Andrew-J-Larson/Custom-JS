@@ -17,8 +17,6 @@ const pageDivSelector = 'body > div > div';
 const userMenuSelector = '#USER_DROPDOWN_ID';
 const darkModeSwitchSelector = 'button[role="switch"]';
 
-let $ = window.jQuery;
-
 function updateTheme(changeToScheme) {
     let pageDiv = document.querySelector(pageDivSelector);
     let background = getComputedStyle(pageDiv).getPropertyValue(BG_VAR);
