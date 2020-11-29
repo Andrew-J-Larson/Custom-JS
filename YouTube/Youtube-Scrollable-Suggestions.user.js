@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.6
+// @version      1.7.7
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @match        https://*.youtube.com/*
@@ -361,7 +361,7 @@ function yt_navigate_finish() {
                                         resizeWidth     = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding*2)),
                                         theatherHeight  = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
                                         panelsHeight    = hasHeight(panels) ? panels.outerHeight(true) : 0,
-                                        donationsHeight = hasHeight(donations) ? donations.outerHeight(true) : 0,
+                                        donationsHeight = hasHeight(donations) ? (donations.outerHeight(true) + standardPadding): 0,
                                         chatHeight      = hasHeight(chat) ? chat.outerHeight(true) : 0,
                                         playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
                                         adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
@@ -538,6 +538,7 @@ function yt_navigate_start() {
 }
 
 // needed when changing pages due to dynamic page loading
+//window.addEventListener("yt-navigate-start", turnOff);
 window.addEventListener("yt-navigate-start", yt_navigate_start);
 window.addEventListener("yt-navigate-finish", yt_navigate_finish);
 
