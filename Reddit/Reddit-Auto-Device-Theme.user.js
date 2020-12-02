@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes reddit match the device theme at all times.
 // @author       AlienDrew
 // @match        https://www.reddit.com/*
@@ -17,6 +17,9 @@ const pageDivSelector = 'body > div > div';
 const userMenuSelector = '#USER_DROPDOWN_ID';
 const darkModeSwitchSelector = 'button[role="switch"]';
 
+var watchEventTriggered = false;
+var activeElement = null;
+
 function updateTheme(changeToScheme) {
     let pageDiv = document.querySelector(pageDivSelector);
     let background = getComputedStyle(pageDiv).getPropertyValue(BG_VAR);
@@ -30,7 +33,11 @@ function updateTheme(changeToScheme) {
 
         let darkModeSwitch = document.querySelector(darkModeSwitchSelector);
         darkModeSwitch.click();
+
+        if (watchEventTriggered) activeElement.focus();
     }
+
+    watchEventTriggered = false;
 }
 
 // wait for the page to be fully loaded
@@ -38,6 +45,8 @@ window.addEventListener('load', function () {
     // now we can start
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         const newColorScheme = e.matches ? 'dark' : 'light';
+        watchEventTriggered = true;
+        activeElement = document.activeElement;
         updateTheme(newColorScheme);
     });
 
