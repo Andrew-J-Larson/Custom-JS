@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.7
+// @version      1.7.8
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @match        https://*.youtube.com/*
@@ -30,10 +30,8 @@
 
 var $ = window.jQuery;
 
-// Greasemonkey doesn't allow some external scripts, including the one I've been using to detect an element existing.
+// Greasemonkey doesn't allow some external scripts.
 // Because of this, I've include a minified version of the code in this script.
-// jQuery library - waitForKeyElements --- Date code was added: March 8th, 2020 -- From: https://gist.githubusercontent.com/BrockA/2625891/raw/9c97aa67ff9c5d56be34a55ad6c18a314e5eb548/waitForKeyElements.js
-//function waitForKeyElements(e,t,a,n){var o,r;(o=void 0===n?$(e):$(n).contents().find(e))&&o.length>0?(r=!0,o.each(function(){var e=$(this);e.data("alreadyFound")||!1||(t(e)?r=!1:e.data("alreadyFound",!0))})):r=!1;var l=waitForKeyElements.controlObj||{},i=e.replace(/[^\w]/g,"_"),c=l[i];r&&a&&c?(clearInterval(c),delete l[i]):c||(c=setInterval(function(){waitForKeyElements(e,t,a,n)},300),l[i]=c),waitForKeyElements.controlObj=l}
 // jQuery library - attrchange ----------- Date code was added: March 16th, 2020 - From: https://raw.githubusercontent.com/meetselva/attrchange/master/js/attrchange.js
 !function(t){var a=window.MutationObserver||window.WebKitMutationObserver;t.fn.attrchange=function(e,n){if("object"==typeof e){var r={trackValues:!1,callback:t.noop};if("function"==typeof e?r.callback=e:t.extend(r,e),r.trackValues&&this.each(function(a,e){for(var n,r={},i=(a=0,e.attributes),c=i.length;a<c;a++)r[(n=i.item(a)).nodeName]=n.value;t(this).data("attr-old-value",r)}),a){var i={subtree:!1,attributes:!0,attributeOldValue:r.trackValues},c=new a(function(a){a.forEach(function(a){var e=a.target;r.trackValues&&(a.newValue=t(e).attr(a.attributeName)),"connected"===t(e).data("attrchange-status")&&r.callback.call(e,a)})});return this.data("attrchange-method","Mutation Observer").data("attrchange-status","connected").data("attrchange-obs",c).each(function(){c.observe(this,i)})}return function(){var t=document.createElement("p"),a=!1;if(t.addEventListener)t.addEventListener("DOMAttrModified",function(){a=!0},!1);else{if(!t.attachEvent)return!1;t.attachEvent("onDOMAttrModified",function(){a=!0})}return t.setAttribute("id","target"),a}()?this.data("attrchange-method","DOMAttrModified").data("attrchange-status","connected").on("DOMAttrModified",function(a){a.originalEvent&&(a=a.originalEvent),a.attributeName=a.attrName,a.oldValue=a.prevValue,"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):"onpropertychange"in document.body?this.data("attrchange-method","propertychange").data("attrchange-status","connected").on("propertychange",function(a){a.attributeName=window.event.propertyName,function(a,e){if(a){var n=this.data("attr-old-value");if(e.attributeName.indexOf("style")>=0){n.style||(n.style={});var r=e.attributeName.split(".");e.attributeName=r[0],e.oldValue=n.style[r[1]],e.newValue=r[1]+":"+this.prop("style")[t.camelCase(r[1])],n.style[r[1]]=e.newValue}else e.oldValue=n[e.attributeName],e.newValue=this.attr(e.attributeName),n[e.attributeName]=e.newValue;this.data("attr-old-value",n)}}.call(t(this),r.trackValues,a),"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):this}if("string"==typeof e&&t.fn.attrchange.hasOwnProperty("extensions")&&t.fn.attrchange.extensions.hasOwnProperty(e))return t.fn.attrchange.extensions[e].call(this,n)}}(jQuery);
 
@@ -189,6 +187,7 @@ let checkAttribute = function(element, attribute) {
 };
 
 // checks if an element is in viewport
+/*
 let isInViewport = function(element) {
     const rect = element.getBoundingClientRect();
     return (
@@ -198,6 +197,7 @@ let isInViewport = function(element) {
         rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
 };
+*/
 
 // check if element has a height
 let hasHeight = function(element) {
@@ -270,14 +270,15 @@ function yt_navigate_finish() {
                 // must check to make sure the first PRELOAD suggested videos have thumbnails
                 enableSuggestionsScroll(false); // needed first when dynamic loading happens
                 let imagesLoaded = 0;
-                let totalImages = 0;
                 let i = 0, j = 0;
-                let insideViewPort = true;
+                let loadThumbnails = true;
                 let loopingItems = setInterval(function() {
-                    if (insideViewPort) {
+                    if (loadThumbnails) {
+                        let suggestionItems = $(suggestionsSelector).first().children();
                         // make sure item exists and is in view
-                        let currentItem = $(suggestionsSelector).first().children()[i];
-                        if (currentItem) {
+                        let currentItem = suggestionItems[i];
+                        // the magic number 20 is the first chunk of thumbnails that load in on the page
+                        if (suggestionItems.length > 20 && currentItem) {
                             // current item must be video suggestion
                             if (currentItem.tagName.toLowerCase() == videoPlaySelector) {
                                 // make sure thumbnail exists
@@ -286,9 +287,12 @@ function yt_navigate_finish() {
                                     // make sure thumbnail adds to total needed to load
                                     if (thumbnailImg.hasAttribute("src") && thumbnailImg.src != "") {
                                         i++;
+
                                         // and make sure that we are in the viewPort
-                                        insideViewPort = isInViewport(currentItem);
+                                        //loadThumbnails = isInViewport(currentItem);
                                     }
+                                    // make sure that we are at the last index
+                                    loadThumbnails = i == suggestionItems.length;
                                 }
                             } else i++;
                         }
