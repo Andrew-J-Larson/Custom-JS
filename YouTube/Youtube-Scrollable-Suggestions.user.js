@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.2
+// @version      1.8.3
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      https://*.youtube.com/*
@@ -39,6 +39,10 @@ var $ = window.jQuery;
 const scriptShortName = 'YTscrollSuggest';
 const fastDelay       = 100; // in milliseconds
 
+// initial load
+const thumbnailsLoadInitial = 20;
+const thumbnailsLoadMust    = 10;
+
 // selectors
 //const pageSelector        = 'ytd-app';
 const headerSelector      = '#masthead-container';
@@ -67,10 +71,15 @@ const videoPlaySelector   = 'ytd-compact-video-renderer';
 const videoItemSelector   = videoPlaySelector + notAutoPlaySelector;
 const plPlaySelector      = 'ytd-compact-playlist-renderer';
 const plItemSelector      = plPlaySelector + notAutoPlaySelector;
-const radioItemSelector   = 'ytd-compact-radio-renderer';
-const movieItemSelector   = 'ytd-compact-movie-renderer';
+const radioPlaySelector   = 'ytd-compact-radio-renderer';
+const radioItemSelector   = radioPlaySelector + notAutoPlaySelector;
+const moviePlaySelector   = 'ytd-compact-movie-renderer';
+const movieItemSelector   = moviePlaySelector + notAutoPlaySelector;
 const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
 const spinnerSelector     = 'ytd-watch-next-secondary-results-renderer #continuations';
+
+// misc selectors
+const continuationsItemRendererSelector = 'ytd-continuation-item-renderer';
 
 // constant strings
 const miniplayerExit  = 'Expand (i)';
@@ -269,7 +278,7 @@ addStyleString(cssConstantStyle);
 
 // enables for the first time (from video page)
 function yt_navigate_finish() {
-    if (window.location.href.indexOf('youtube.com/watch?v=') > -1) {
+    if (window.location.href.indexOf('youtube.com/watch?') > -1) {
         enabledYT       = false;
         disabledYT      = true;
         extendedDisable = false;
@@ -289,27 +298,28 @@ function yt_navigate_finish() {
                         let suggestionItems = $(suggestionsSelector).first().children();
                         // make sure item exists and is in view
                         let currentItem = suggestionItems[i];
-                        // the magic number 20 is the first chunk of thumbnails that load in on the page
-                        if (suggestionItems.length >= 20 && currentItem) {
+                        // go through all thumbnails that load in on the page
+                        if (suggestionItems.length >= thumbnailsLoadInitial && currentItem) {
                             // current item must be video suggestion
                             if (currentItem.tagName.toLowerCase() == videoPlaySelector ||
                                 currentItem.tagName.toLowerCase() == plPlaySelector ||
-                                currentItem.tagName.toLowerCase() == radioItemSelector ||
-                                currentItem.tagName.toLowerCase() == movieItemSelector) {
+                                currentItem.tagName.toLowerCase() == radioPlaySelector ||
+                                currentItem.tagName.toLowerCase() == moviePlaySelector) {
                                 // make sure thumbnail exists
-                                let thumbnailImg = currentItem.querySelector("#img");
+                                let thumbnailImg = currentItem.querySelector('#img');
                                 if (thumbnailImg) {
                                     // make sure thumbnail adds to total needed to load
-                                    if (thumbnailImg.hasAttribute("src") && thumbnailImg.src != "") {
+                                    if (thumbnailImg.hasAttribute('src') && thumbnailImg.src != '') {
                                         i++;
 
                                         // and make sure that we are in the viewPort
                                         //loadThumbnails = isInViewport(currentItem);
                                     }
-                                    // make sure that we are at the last index
-                                    loadThumbnails = i == suggestionItems.length;
+
+                                    // make sure that we are at the second to last index, since the last element isn't a video
+                                    loadThumbnails = i != (thumbnailsLoadMust - 1);
                                 }
-                            } else i++;
+                            }
                         }
                     } else {
                         // now we can go on with the script
@@ -342,7 +352,7 @@ function yt_navigate_finish() {
                             autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
                             autoRHeight = autoRelated.length ? autoRelated.outerHeight(true) : 0,
                             autoHeights = autoPHeight + autoRHeight,
-                            vItemHeight = videoItem.height(),
+                            vItemHeight = videoItem.height() || plItem.height() || radioItem.height() || movieItem.height(),
                             vItemHPad   = vItemHeight + videoItemPadding,
                             vThumbWidth = videoThumb.outerWidth(true),
                             headHeight  = header.height(),
@@ -567,7 +577,7 @@ function yt_navigate_finish() {
 }
 // needed for first time run when coming from homepage
 function yt_navigate_start() {
-    if (firstRun && window.location.href.indexOf('youtube.com/watch?v=') > -1) yt_navigate_finish();
+    if (firstRun && window.location.href.indexOf('youtube.com/watch?') > -1) yt_navigate_finish();
 }
 
 // needed when changing pages due to dynamic page loading
