@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.7.8
+// @version      1.8.0
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
-// @match        https://*.youtube.com/*
+// @include      https://*.youtube.com/*
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/YouTube/Youtube-Scrollable-Suggestions.user.js
 // @icon         https://s.ytimg.com/yts/img/favicon_32-vflOogEID.png
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
@@ -57,11 +57,16 @@ const chatSelector        = 'ytd-live-chat-frame#chat';
 const playlistSelector    = '#playlist';
 const adsSelector         = '#player-ads';
 const offerModuleSelector = '#offer-module';
-const suggestionsSelector = '#related > ytd-watch-next-secondary-results-renderer > div:nth-child(2)';
+const sugContainSelector  = '#related > ytd-watch-next-secondary-results-renderer > #items';
+const suggestionsSelector = sugContainSelector + ' > ytd-item-section-renderer > #contents';
 const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
+const autoRelatedSelector = 'yt-related-chip-cloud-renderer';     // THIS IS VERY NEW!
+const notAutoPlaySelector = ':not(.ytd-compact-autoplay-renderer)';
+const itemThumbSelector  = 'ytd-thumbnail:not(.ytd-rich-metadata-renderer)';
 const videoPlaySelector   = 'ytd-compact-video-renderer';
-const videoItemSelector   = videoPlaySelector + ':not(.ytd-compact-autoplay-renderer)';
-const videoThumbSelector  = 'ytd-thumbnail';
+const videoItemSelector   = videoPlaySelector + notAutoPlaySelector;
+const plPlaySelector      = 'ytd-compact-playlist-renderer';      // THIS IS VERY NEW!
+const plItemSelector      = plPlaySelector + notAutoPlaySelector; // THIS IS VERT NEW!
 const radioItemSelector   = 'ytd-compact-radio-renderer';
 const movieItemSelector   = 'ytd-compact-movie-renderer';
 const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
@@ -102,7 +107,7 @@ const cssConstantStyle     = cssSuggestionsStyle + ' ' + cssMovieItemStyle + ' '
 
 let firstRun = true;
 // need to always be changed
-let suggestions, autoPlay, videoItem, radioItem, movieItem, movieItemA, spinner;
+let suggestions, autoPlay, autoRelated, videoItem, radioItem, movieItem, movieItemA, spinner;
 // these variables get set each time the video page is brought up, and when there is window changes
 let visibility = document.visibilityState;
 let enabledYT, disabledYT, extendedDisable;
@@ -227,6 +232,7 @@ let enableSuggestionsScroll = function(trueFalse) {
     // readdress where elements are first
     suggestions = $(suggestionsSelector).first();
     autoPlay    = $(autoPlaySelector).first();
+    autoRelated = $(autoRelatedSelector).first();
     videoItem   = $(videoItemSelector);
     radioItem   = $(radioItemSelector);
     movieItem   = $(movieItemSelector);
@@ -244,6 +250,7 @@ let enableSuggestionsScroll = function(trueFalse) {
         // these get dynamically changed in script
         if (suggestions) suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
         if (autoPlay) autoPlay.css({'width': '', 'position': '', 'top': ''});
+        if (autoRelated) autoRelated.css({'width': '', 'position': '', 'top': ''});
         if (spinner) spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
         if (videoItem) videoItem.css({'opacity': '', 'width': ''});
         if (radioItem) radioItem.css({'opacity': '', 'width': ''});
@@ -278,9 +285,12 @@ function yt_navigate_finish() {
                         // make sure item exists and is in view
                         let currentItem = suggestionItems[i];
                         // the magic number 20 is the first chunk of thumbnails that load in on the page
-                        if (suggestionItems.length > 20 && currentItem) {
+                        if (suggestionItems.length >= 20 && currentItem) {
                             // current item must be video suggestion
-                            if (currentItem.tagName.toLowerCase() == videoPlaySelector) {
+                            if (currentItem.tagName.toLowerCase() == videoPlaySelector ||
+                                currentItem.tagName.toLowerCase() == plPlaySelector ||
+                                currentItem.tagName.toLowerCase() == radioItemSelector ||
+                                currentItem.tagName.toLowerCase() == movieItemSelector) {
                                 // make sure thumbnail exists
                                 let thumbnailImg = currentItem.querySelector("#img");
                                 if (thumbnailImg) {
@@ -303,6 +313,7 @@ function yt_navigate_finish() {
                         // set globals
                         suggestions = $(suggestionsSelector).first();
                         autoPlay    = $(autoPlaySelector).first();
+                        autoRelated = $(autoRelatedSelector).first();
                         videoItem   = $(videoItemSelector);
                         radioItem   = $(radioItemSelector);
                         movieItem   = $(movieItemSelector);
@@ -321,14 +332,16 @@ function yt_navigate_finish() {
                             playlist    = $(playlistSelector),
                             ads         = $(adsSelector),
                             offerModule = $(offerModuleSelector),
-                            videoThumb  = $(videoThumbSelector),
+                            videoThumb  = $(itemThumbSelector),
                             autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
+                            autoRHeight = autoRelated.length ? autoRelated.outerHeight(true) : 0,
+                            autoHeights = autoPHeight + autoRHeight,
                             vItemHeight = videoItem.height(),
                             vItemHPad   = vItemHeight + videoItemPadding,
                             vThumbWidth = videoThumb.outerWidth(true),
                             headHeight  = header.height(),
                             contentTop  = headHeight + standardPadding,
-                            autoPlayBot = contentTop + autoPHeight,
+                            autosBottom = contentTop + autoHeights,
                             minHeight   = vItemHeight,
                             previousScr = 0,
                             sliding     = false,
@@ -338,6 +351,7 @@ function yt_navigate_finish() {
                         // disable page scrolling when scrollbar is active
                         disablePageScrolling(suggestions);
                         if (autoPlay.length) disablePageScrolling(autoPlay);
+                        if (autoRelated.length) disablePageScrolling(autoRelated);
                         disablePageScrolling(spinner);
 
                         if (firstRun) firstRun = false;
@@ -390,16 +404,18 @@ function yt_navigate_finish() {
 
                                     // determine if position/size needs updating
                                     if (sliding || forceRun) {
-                                        let maxHeight            = vItemHPad * Math.floor((viewHeight - (autoPlayBot + standardPadding)) / vItemHPad),
+                                        let maxHeight            = vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad),
                                             itemsNewWidth        = resizeWidth - scrollbarWidth,
                                             movieItemANewWidth   = itemsNewWidth - vThumbWidth,
                                             atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
                                             opacityItems         = atSugEnd ? 0.33 : 1,
-                                            marginTopSuggestions = autoPHeight,
+                                            marginTopSuggestions = autoHeights,
                                             posSuggestions       = 'static',
                                             topSuggestions       = 0,
                                             posAutoPlay          = 'absolute',
                                             topAutoPlay          = oriPosTop,
+                                            posAutoRelated       = 'absolute',
+                                            topAutoRelated       = oriPosTop + autoPHeight,
                                             marginTopSpinner     = 0,
                                             topSpinner           = 'auto',
                                             botSpinner           = atSugEnd ? 'auto' : (viewHeight + 'px');
@@ -407,9 +423,11 @@ function yt_navigate_finish() {
                                         if (atContent) {
                                             marginTopSuggestions = 0;
                                             posSuggestions = 'fixed';
-                                            topSuggestions = autoPlayBot;
+                                            topSuggestions = autosBottom;
                                             posAutoPlay = 'fixed';
                                             topAutoPlay = contentTop;
+                                            posAutoRelated = 'fixed';
+                                            topAutoRelated = contentTop + autoPHeight;
                                             if (atSugEnd) topSpinner = contentTop + 'px';
                                         } else if (atSugEnd) topSpinner = ((contentTop + fillerHeight) - scrTop) + 'px';
 
@@ -418,15 +436,18 @@ function yt_navigate_finish() {
                                         if (!atContent) {
                                             marginTopSuggestions = 0;
                                             posSuggestions = 'fixed';
-                                            topSuggestions = ((contentTop + fillerHeight + autoPHeight) - scrTop);
+                                            topSuggestions = ((contentTop + fillerHeight + autoHeights) - scrTop);
                                             posAutoPlay = 'fixed';
                                             topAutoPlay = ((contentTop + fillerHeight) - scrTop);
+                                            posAutoRelated = 'fixed';
+                                            topAutoRelated = ((contentTop + fillerHeight + autoPHeight) - scrTop);
                                         }
                                         */
 
                                         // updates style for each that changes
                                         suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
                                         autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
+                                        autoRelated.css({'width': resizeWidth + 'px', 'position': posAutoRelated, 'top': topAutoRelated + 'px'});
                                         spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
                                         // widths of items and inside of movie items must change
                                         videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
