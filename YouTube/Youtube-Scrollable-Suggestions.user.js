@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.0
+// @version      1.8.1
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      https://*.youtube.com/*
@@ -31,7 +31,7 @@
 var $ = window.jQuery;
 
 // Greasemonkey doesn't allow some external scripts.
-// Because of this, I've include a minified version of the code in this script.
+// Because of this, I've include a minified version of the code(s) in this script.
 // jQuery library - attrchange ----------- Date code was added: March 16th, 2020 - From: https://raw.githubusercontent.com/meetselva/attrchange/master/js/attrchange.js
 !function(t){var a=window.MutationObserver||window.WebKitMutationObserver;t.fn.attrchange=function(e,n){if("object"==typeof e){var r={trackValues:!1,callback:t.noop};if("function"==typeof e?r.callback=e:t.extend(r,e),r.trackValues&&this.each(function(a,e){for(var n,r={},i=(a=0,e.attributes),c=i.length;a<c;a++)r[(n=i.item(a)).nodeName]=n.value;t(this).data("attr-old-value",r)}),a){var i={subtree:!1,attributes:!0,attributeOldValue:r.trackValues},c=new a(function(a){a.forEach(function(a){var e=a.target;r.trackValues&&(a.newValue=t(e).attr(a.attributeName)),"connected"===t(e).data("attrchange-status")&&r.callback.call(e,a)})});return this.data("attrchange-method","Mutation Observer").data("attrchange-status","connected").data("attrchange-obs",c).each(function(){c.observe(this,i)})}return function(){var t=document.createElement("p"),a=!1;if(t.addEventListener)t.addEventListener("DOMAttrModified",function(){a=!0},!1);else{if(!t.attachEvent)return!1;t.attachEvent("onDOMAttrModified",function(){a=!0})}return t.setAttribute("id","target"),a}()?this.data("attrchange-method","DOMAttrModified").data("attrchange-status","connected").on("DOMAttrModified",function(a){a.originalEvent&&(a=a.originalEvent),a.attributeName=a.attrName,a.oldValue=a.prevValue,"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):"onpropertychange"in document.body?this.data("attrchange-method","propertychange").data("attrchange-status","connected").on("propertychange",function(a){a.attributeName=window.event.propertyName,function(a,e){if(a){var n=this.data("attr-old-value");if(e.attributeName.indexOf("style")>=0){n.style||(n.style={});var r=e.attributeName.split(".");e.attributeName=r[0],e.oldValue=n.style[r[1]],e.newValue=r[1]+":"+this.prop("style")[t.camelCase(r[1])],n.style[r[1]]=e.newValue}else e.oldValue=n[e.attributeName],e.newValue=this.attr(e.attributeName),n[e.attributeName]=e.newValue;this.data("attr-old-value",n)}}.call(t(this),r.trackValues,a),"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):this}if("string"==typeof e&&t.fn.attrchange.hasOwnProperty("extensions")&&t.fn.attrchange.extensions.hasOwnProperty(e))return t.fn.attrchange.extensions[e].call(this,n)}}(jQuery);
 
@@ -60,13 +60,13 @@ const offerModuleSelector = '#offer-module';
 const sugContainSelector  = '#related > ytd-watch-next-secondary-results-renderer > #items';
 const suggestionsSelector = sugContainSelector + ' > ytd-item-section-renderer > #contents';
 const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
-const autoRelatedSelector = 'yt-related-chip-cloud-renderer';     // THIS IS VERY NEW!
+const autoRelatedSelector = 'yt-related-chip-cloud-renderer';
 const notAutoPlaySelector = ':not(.ytd-compact-autoplay-renderer)';
 const itemThumbSelector  = 'ytd-thumbnail:not(.ytd-rich-metadata-renderer)';
 const videoPlaySelector   = 'ytd-compact-video-renderer';
 const videoItemSelector   = videoPlaySelector + notAutoPlaySelector;
-const plPlaySelector      = 'ytd-compact-playlist-renderer';      // THIS IS VERY NEW!
-const plItemSelector      = plPlaySelector + notAutoPlaySelector; // THIS IS VERT NEW!
+const plPlaySelector      = 'ytd-compact-playlist-renderer';
+const plItemSelector      = plPlaySelector + notAutoPlaySelector;
 const radioItemSelector   = 'ytd-compact-radio-renderer';
 const movieItemSelector   = 'ytd-compact-movie-renderer';
 const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
@@ -81,29 +81,33 @@ const fullscreenExit  = 'Exit full screen (f)';
 const fullscreenEnter = 'Full screen (f)';
 
 // styling
-const cssClassPrefix       = GM_info.script.author + scriptShortName;
-const standardPadding      = 24; // in px
-const videoItemPadding     = 8; // in px
-const spinnerPadding       = 16; // in px
-const scrollbarWidth       = 17; // in px
-//const videoMinWidth        = 'var(--ytd-watch-flexy-min-player-width)';
-//const videoMaxWidth        = 'var(--ytd-watch-flexy-max-player-width)';
-//const sidebarWidth         = 'var(--ytd-watch-flexy-sidebar-width)';
-//const sidebarMinWidth      = 'var(--ytd-watch-flexy-sidebar-min-width)';
-const pageColorA           = 'var(--yt-spec-general-background-a)';
-const pageColorB           = 'var(--yt-spec-general-background-b)';
-const pageColorC           = 'var(--yt-spec-general-background-c)';
-const cssSuggestionsClass  = cssClassPrefix + 'Suggestions';
-const cssSpinnerClass      = cssClassPrefix + 'Spinner';
-const cssSugClassSelector  = '.' + cssSuggestionsClass;
-const cssScrollbarSelector = '.' + cssSuggestionsClass + '::-webkit-scrollbar';
-const cssSpinClassSelector = '.' + cssSpinnerClass;
-const cssSuggestionsStyle  = cssSugClassSelector + ' { overflow-y: auto }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid '+ pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
+const cssClassPrefix          = GM_info.script.author + scriptShortName;
+const standardPadding         = 24; // in px
+const videoItemPadding        = 8; // in px
+const spinnerPadding          = 16; // in px
+const scrollbarWidth          = 17; // in px
+//const videoMinWidth           = 'var(--ytd-watch-flexy-min-player-width)';
+//const videoMaxWidth           = 'var(--ytd-watch-flexy-max-player-width)';
+//const sidebarWidth            = 'var(--ytd-watch-flexy-sidebar-width)';
+//const sidebarMinWidth         = 'var(--ytd-watch-flexy-sidebar-min-width)';
+const itemMargin              = 'var(--ytd-item-section-item-margin, 16px)';
+const pageColorA              = 'var(--yt-spec-general-background-a)';
+const pageColorB              = 'var(--yt-spec-general-background-b)';
+const pageColorC              = 'var(--yt-spec-general-background-c)';
+const cssSuggestionsClass     = cssClassPrefix + 'Suggestions';
+const cssSpinnerClass         = cssClassPrefix + 'Spinner';
+const cssSugClassSelector     = '.' + cssSuggestionsClass;
+const cssScrollbarSelector    = '.' + cssSuggestionsClass + '::-webkit-scrollbar';
+const cssSugItemClassSelector = '.' + cssSuggestionsClass + ' > *';
+const cssSpinClassSelector    = '.' + cssSpinnerClass;
+// scroll-padding is the margin between each item
+const cssSuggestionsStyle     = cssSugClassSelector + ' { overflow-y: auto; scroll-snap-type: y proximity }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid '+ pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
+const cssSugItemStyle         = cssSugItemClassSelector + ' { margin-top: 0px !important; margin-bottom: ' + itemMargin + '; scroll-snap-align: start }';
 // padding screws up the scrollbar effect, so must remove it
-const cssMovieItemStyle    = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
+const cssMovieItemStyle       = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
 // must be above everything, but not be showing so it's not awkward, and must follow scrollbar in view to activate
-const cssSpinnerStyle      = cssSpinClassSelector + ' { z-index: 999; position: fixed; opacity: 0 }';
-const cssConstantStyle     = cssSuggestionsStyle + ' ' + cssMovieItemStyle + ' ' + cssSpinnerStyle;
+const cssSpinnerStyle         = cssSpinClassSelector + ' { z-index: 999; position: fixed; opacity: 0 }';
+const cssConstantStyle        = cssSuggestionsStyle + ' ' + cssSugItemStyle + ' ' + cssMovieItemStyle + ' ' + cssSpinnerStyle;
 
 let firstRun = true;
 // need to always be changed
@@ -350,6 +354,7 @@ function yt_navigate_finish() {
 
                         // disable page scrolling when scrollbar is active
                         disablePageScrolling(suggestions);
+                        suggestions.scrollTop(0); // glitches to a different position if this isn't here
                         if (autoPlay.length) disablePageScrolling(autoPlay);
                         if (autoRelated.length) disablePageScrolling(autoRelated);
                         disablePageScrolling(spinner);
@@ -404,7 +409,7 @@ function yt_navigate_finish() {
 
                                     // determine if position/size needs updating
                                     if (sliding || forceRun) {
-                                        let maxHeight            = vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad),
+                                        let maxHeight            = (vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad)) - videoItemPadding,
                                             itemsNewWidth        = resizeWidth - scrollbarWidth,
                                             movieItemANewWidth   = itemsNewWidth - vThumbWidth,
                                             atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
