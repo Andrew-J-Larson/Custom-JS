@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.1
+// @version      1.8.2
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      https://*.youtube.com/*
@@ -90,7 +90,6 @@ const scrollbarWidth          = 17; // in px
 //const videoMaxWidth           = 'var(--ytd-watch-flexy-max-player-width)';
 //const sidebarWidth            = 'var(--ytd-watch-flexy-sidebar-width)';
 //const sidebarMinWidth         = 'var(--ytd-watch-flexy-sidebar-min-width)';
-const itemMargin              = 'var(--ytd-item-section-item-margin, 16px)';
 const pageColorA              = 'var(--yt-spec-general-background-a)';
 const pageColorB              = 'var(--yt-spec-general-background-b)';
 const pageColorC              = 'var(--yt-spec-general-background-c)';
@@ -102,7 +101,7 @@ const cssSugItemClassSelector = '.' + cssSuggestionsClass + ' > *';
 const cssSpinClassSelector    = '.' + cssSpinnerClass;
 // scroll-padding is the margin between each item
 const cssSuggestionsStyle     = cssSugClassSelector + ' { overflow-y: auto; scroll-snap-type: y proximity }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid '+ pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
-const cssSugItemStyle         = cssSugItemClassSelector + ' { margin-top: 0px !important; margin-bottom: ' + itemMargin + '; scroll-snap-align: start }';
+const cssSugItemStyle         = cssSugItemClassSelector + ' { scroll-snap-align: end }';
 // padding screws up the scrollbar effect, so must remove it
 const cssMovieItemStyle       = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
 // must be above everything, but not be showing so it's not awkward, and must follow scrollbar in view to activate
@@ -111,7 +110,7 @@ const cssConstantStyle        = cssSuggestionsStyle + ' ' + cssSugItemStyle + ' 
 
 let firstRun = true;
 // need to always be changed
-let suggestions, autoPlay, autoRelated, videoItem, radioItem, movieItem, movieItemA, spinner;
+let suggestions, autoPlay, autoRelated, videoItem, plItem, radioItem, movieItem, movieItemA, spinner;
 // these variables get set each time the video page is brought up, and when there is window changes
 let visibility = document.visibilityState;
 let enabledYT, disabledYT, extendedDisable;
@@ -238,6 +237,7 @@ let enableSuggestionsScroll = function(trueFalse) {
     autoPlay    = $(autoPlaySelector).first();
     autoRelated = $(autoRelatedSelector).first();
     videoItem   = $(videoItemSelector);
+    plItem      = $(plItemSelector);
     radioItem   = $(radioItemSelector);
     movieItem   = $(movieItemSelector);
     movieItemA  = $(movieItemASelector);
@@ -257,6 +257,7 @@ let enableSuggestionsScroll = function(trueFalse) {
         if (autoRelated) autoRelated.css({'width': '', 'position': '', 'top': ''});
         if (spinner) spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
         if (videoItem) videoItem.css({'opacity': '', 'width': ''});
+        if (plItem) plItem.css({'opacity': '', 'width': ''});
         if (radioItem) radioItem.css({'opacity': '', 'width': ''});
         if (movieItem) movieItem.css({'opacity': '', 'width': ''});
         if (movieItemA) movieItemA.css({'width': ''});
@@ -319,6 +320,7 @@ function yt_navigate_finish() {
                         autoPlay    = $(autoPlaySelector).first();
                         autoRelated = $(autoRelatedSelector).first();
                         videoItem   = $(videoItemSelector);
+                        plItem      = $(plItemSelector);
                         radioItem   = $(radioItemSelector);
                         movieItem   = $(movieItemSelector);
                         movieItemA  = $(movieItemASelector);
@@ -409,7 +411,7 @@ function yt_navigate_finish() {
 
                                     // determine if position/size needs updating
                                     if (sliding || forceRun) {
-                                        let maxHeight            = (vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad)) - videoItemPadding,
+                                        let maxHeight            = (vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad)),
                                             itemsNewWidth        = resizeWidth - scrollbarWidth,
                                             movieItemANewWidth   = itemsNewWidth - vThumbWidth,
                                             atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
@@ -456,6 +458,7 @@ function yt_navigate_finish() {
                                         spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
                                         // widths of items and inside of movie items must change
                                         videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
+                                        plItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
                                         radioItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
                                         movieItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
                                         movieItemA.css({'width': movieItemANewWidth + 'px'});
