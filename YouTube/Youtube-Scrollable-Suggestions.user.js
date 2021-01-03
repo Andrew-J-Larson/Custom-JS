@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.3
+// @version      1.8.4
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @include      https://*.youtube.com/*
@@ -151,7 +151,6 @@ let detectHeightChange = function(element, aFunction) {
         }
     }).resizable();
 };
-
 
 // don't try to do anything until page is visible
 $(document).on('visibilitychange', function() {
@@ -564,9 +563,12 @@ function yt_navigate_finish() {
 
                         // this must start only after the two panel view is on
                         var waitForRightHaveChildren = setInterval(function() {
-                            if (rightCoIn.length > 1) {
-                                detectHeightChange(rightContn, window.fixDynamicSizes);
+                            if (rightCoIn && rightCoIn.children().length > 1) {
                                 clearInterval(waitForRightHaveChildren);
+
+                                detectHeightChange(rightContn, window.fixDynamicSizes);
+                                // the chat sizing doesn't get detected for some reason, so it needs to be checked on its own
+                                detectHeightChange(chat, window.fixDynamicSizes);
                             }
                         }, fastDelay);
                     }
