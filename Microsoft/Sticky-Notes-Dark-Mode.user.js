@@ -122,7 +122,7 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
     const iframeID = 'ocSearchIFrame';
     const iframeAddDarkScroll = getCssResource('cssDarkScrollbar');
 
-    var resetHelpView = function(internalIframe, secondIframeDoc) {
+    var resetHelpView = function(internalIframe) {
         internalIframe.style.display = 'none';
         // bring page to back to display after we know the background color is changed
         setTimeout(function() {
@@ -143,7 +143,7 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
             var allNav = document.querySelectorAll('#f1NavBack, #f1NavHome');
             for (let i = 0; i < allNav.length; i++) {
                 allNav[i].onmouseup = function() {
-                    resetHelpView(iframe, iframeDoc);
+                    resetHelpView(iframe);
                 };
             }
             var searchButton = document.querySelector('#ocSearchButton');
@@ -151,13 +151,13 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
             searchButton.onmouseup = function() {
                 if (!searchBox.value) return;
 
-                resetHelpView(iframe, iframeDoc);
+                resetHelpView(iframe);
             };
             searchBox.addEventListener("keypress", function(e) {
                 if (e.keyCode == 13) {
                     if (!searchBox.value) return;
 
-                    resetHelpView(iframe, iframeDoc);
+                    resetHelpView(iframe);
                 }
             });
 
@@ -178,12 +178,12 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
                 var allLinks = iDocument.querySelectorAll('a');
                 for (let j = 0; j < allLinks.length; j++) {
                     allLinks[j].onmouseup = function() {
-                        resetHelpView(iframe, iframeDoc);
+                        resetHelpView(iframe);
                     };
                 }
 
                 // bring page to back to display
-                resetHelpView(iframe, iframeDoc);
+                resetHelpView(iframe);
             };
         }
     }, fastDelay);
