@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.5
+// @version      1.4.6
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
 // @include      /^https?://www\.onenote\.com/stickynotes*/
@@ -34,6 +34,7 @@
 // dark scrollbar via https://userstyles.org/styles/179150
 
 // constants
+const slowDelay = 1000;
 const fastDelay = 100;
 const fasterDelay = 10;
 const msa_signup_errorWebsite = 'https://www.onenote.com/common1pauth/exchangecode?error=msa_signup';
@@ -121,6 +122,14 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
     const iframeID = 'ocSearchIFrame';
     const iframeAddDarkScroll = getCssResource('cssDarkScrollbar');
 
+    var resetHelpView = function(internalIframe, secondIframeDoc) {
+        internalIframe.style.display = 'none';
+        // bring page to back to display after we know the background color is changed
+        setTimeout(function() {
+            internalIframe.style.display = '';
+        }, slowDelay);
+    };
+
     // set the style fixes
     var checkForIFrame = setInterval(function() {
         var iframe = document.getElementById(iframeID);
@@ -128,6 +137,29 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
 
         if (elementExists(iframe) && iframeDoc != null) {
             clearInterval(checkForIFrame);
+            iframe.style.display = 'none';
+
+            // reset display from nav buttons/input
+            var allNav = document.querySelectorAll('#f1NavBack, #f1NavHome');
+            for (let i = 0; i < allNav.length; i++) {
+                allNav[i].onmouseup = function() {
+                    resetHelpView(iframe, iframeDoc);
+                };
+            }
+            var searchButton = document.querySelector('#ocSearchButton');
+            var searchBox = document.querySelector('#ocSearchBox');
+            searchButton.onmouseup = function() {
+                if (!searchBox.value) return;
+
+                resetHelpView(iframe, iframeDoc);
+            };
+            searchBox.addEventListener("keypress", function(e) {
+                if (e.keyCode == 13) {
+                    if (!searchBox.value) return;
+
+                    resetHelpView(iframe, iframeDoc);
+                }
+            });
 
             // must listen for page load to change style
             iframe.onload = function () {
@@ -142,7 +174,17 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
                 msSupportModernStyle.rel = 'stylesheet';
                 msSupportModernStyle.href = cssSupportModernMS;
                 iDocument.head.appendChild(msSupportModernStyle);
-            }
+                // make help page lose display
+                var allLinks = iDocument.querySelectorAll('a');
+                for (let j = 0; j < allLinks.length; j++) {
+                    allLinks[j].onmouseup = function() {
+                        resetHelpView(iframe, iframeDoc);
+                    };
+                }
+
+                // bring page to back to display
+                resetHelpView(iframe, iframeDoc);
+            };
         }
     }, fastDelay);
 }
