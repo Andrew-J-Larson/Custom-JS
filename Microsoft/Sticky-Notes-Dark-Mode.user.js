@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.6
+// @version      1.4.7
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
 // @include      /^https?://www\.onenote\.com/stickynotes*/
@@ -41,6 +41,8 @@ const msa_signup_errorWebsite = 'https://www.onenote.com/common1pauth/exchangeco
 const stickyNotesWebsite = 'https://www.onenote.com/stickynotes';
 const stickiesHelpBeginning = 'https://support.office.com/client/results?NS=stickynotes&Context=%7B%22ThemeId%22:4,';
 const cssSupportModernMS = 'https://support.office.com/SocContent/topicCssWithNewLandingPage';
+const darkModeClassName = 'n-darkMode';
+const uiContainerSelector = '#n-ui-container';
 // loading gif constants
 const loadingGifDark = 'https://npwuscdn-onenote.azureedge.net/ondcnotesintegration/img/loading-dark.gif';
 const loadingGifSelector = '#n-side-pane > div.n-side-pane-content > div > div > div > img';
@@ -108,7 +110,7 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
     }
 
     // apply the dark mode class to the html element
-    document.body.classList.add('n-darkMode');
+    document.body.classList.add(darkModeClassName);
     var loadingGif = null;
     var fixLoadingGif = setInterval(function() {
         loadingGif = document.querySelector(loadingGifSelector);
@@ -117,6 +119,13 @@ if (currentURL.startsWith(msa_signup_errorWebsite)) {// code to run on the error
             loadingGif.src = loadingGifDark;
         }
     }, fasterDelay);
+
+    // fix issues with Phone note view not being darkened like it should
+    setInterval(function() {
+        var uiContainer = document.querySelector(uiContainerSelector);
+        if (elementExists(uiContainer) && !uiContainer.classList.contains(darkModeClassName)) uiContainer.classList.add(darkModeClassName);
+    }, fastDelay);
+
     checkForHelp();
 } else if (currentURL.startsWith(stickiesHelpBeginning)) { // code to run on the dark sticky notes help website
     const iframeID = 'ocSearchIFrame';
