@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.8
+// @version      1.5.0
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
 // @include      /^https?://www\.onenote\.com/stickynotes*/
@@ -54,10 +54,12 @@ var elementExists = function(element) {
 var getCssResource = function(nameOfResource) {
     var css_resource = GM_getResourceText(nameOfResource).split('\n');
     var resource_parsed = '';
-    // starts at 1 and ends at the second to last line to remove the @-moz-document encasement
+    // finds the first @-moz-document, then captures between it and last line encasement
     var k;
-    for (k = 1; k < css_resource.length - 1; k++) {
-        resource_parsed = resource_parsed.concat(css_resource[k]);
+    var encasementStarted = false;
+    for (k = 0; k < css_resource.length - 1; k++) {
+        if (encasementStarted) resource_parsed = resource_parsed.concat(css_resource[k]);
+        else encasementStarted = (css_resource[k].startsWith('@-moz-document'))
     }
     return resource_parsed;
 };

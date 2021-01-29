@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.9
+// @version      1.4.0
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @match        http*://*/*
@@ -10,7 +10,7 @@
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
-// @resource     css https://userstyles.org/styles/179150.css
+// @resource     css https://raw.githubusercontent.com/TheAlienDrew/User-Styles/main/Any/Global-Dark-Scrollbar.user.css
 // @resource     config https://github.com/darkreader/darkreader/raw/master/src/config/dark-sites.config
 // ==/UserScript==
 
@@ -89,10 +89,12 @@ for (let i = 0; i < dark_sites_lines; i++) {
 if (is_dark) {
     var dark_scrollbar_fixed = "";
 
-    // starts at 1 and ends at the second to last line to remove the @-moz-document encasement
+    // finds the first @-moz-document, then captures between it and last line encasement
     var k;
-    for (k = 1; k < dark_scrollbar.length - 1; k++) {
-        dark_scrollbar_fixed = dark_scrollbar_fixed.concat(dark_scrollbar[k]);
+    var encasementStarted = false;
+    for (k = 0; k < dark_scrollbar.length - 1; k++) {
+        if (encasementStarted) dark_scrollbar_fixed = dark_scrollbar_fixed.concat(dark_scrollbar[k]);
+        else encasementStarted = (dark_scrollbar[k].startsWith('@-moz-document'))
     }
 
     addStyleString(dark_scrollbar_fixed);
