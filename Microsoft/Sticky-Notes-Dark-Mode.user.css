@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
 @namespace      https://thealiendrew.github.io/
-@version        1.5.3
+@version        1.5.4
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
@@ -98,7 +98,7 @@ html {
 #appLauncherMainView a, #appsModule button.o365sx-neutral-accent-font, button#allViewBackButton.o365sx-neutral-accent-font, #flexPaneScrollRegion a, #FlexPane_MeControl a {
     color: #93CFF7;
 }
-.n-warningDialog > .ms-Overlay {
+div.n-warningDialog > div.ms-Overlay {
     background-color: rgba(0, 0, 0, 0.4);
 }
 .ms-Dialog-title {
