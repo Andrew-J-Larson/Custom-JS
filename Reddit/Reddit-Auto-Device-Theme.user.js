@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name         Reddit - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes reddit match the device theme at all times.
 // @author       AlienDrew
+// @license      GPL-3.0-or-later
 // @match        https://www.reddit.com/*
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Reddit/Reddit-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Reddit/Reddit-Auto-Device-Theme.user.js
 // @icon         https://www.redditinc.com/assets/images/site/reddit-logo.png
 // @grant        none

@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.0
+// @version      1.4.1
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
+// @license      GPL-3.0-or-later
 // @match        http*://*/*
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @icon         https://darkreader.org/images/darkreader-icon-256x256.png
 // @grant        GM_getResourceText
@@ -30,7 +32,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// dark scrollbar via https://userstyles.org/styles/179150
 // dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
 
 // required variables

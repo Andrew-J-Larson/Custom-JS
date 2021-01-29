@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name         Greeter Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.7
+// @version      0.2.8
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
+// @license      GPL-3.0-or-later
 // @include      /^https?://www\.multiplayerpiano\.com*/
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Greeter-Bot.user.js
 // @icon         https://cdn.pixabay.com/photo/2016/11/30/18/14/chat-1873543_960_720.png
 // @grant        GM_info

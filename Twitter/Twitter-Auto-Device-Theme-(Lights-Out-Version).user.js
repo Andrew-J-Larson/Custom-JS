@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name         Twitter - Auto Device Theme (Lights Out Version)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes twitter match the device theme at all times.
 // @author       AlienDrew
+// @license      GPL-3.0-or-later
 // @match        https://twitter.com/*
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Twitter/Twitter-Auto-Device-Theme-(Lights-Out-Version).user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Twitter/Twitter-Auto-Device-Theme-(Lights-Out-Version).user.js
 // @icon         https://help.twitter.com/content/dam/help-twitter/brand/logo.png
 // @grant        none
