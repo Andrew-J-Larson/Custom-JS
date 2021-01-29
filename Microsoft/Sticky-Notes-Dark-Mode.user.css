@@ -98,7 +98,7 @@ html {
 #appLauncherMainView a, #appsModule button.o365sx-neutral-accent-font, button#allViewBackButton.o365sx-neutral-accent-font, #flexPaneScrollRegion a, #FlexPane_MeControl a {
     color: #93CFF7;
 }
-div.n-warningDialog > div.ms-Overlay {
+.n-warningDialog > div.ms-Overlay {
     background-color: rgba(0, 0, 0, 0.4);
 }
 .ms-Dialog-title {
