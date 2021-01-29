@@ -105,7 +105,7 @@ html {
 .ms-Dialog-title {
         color: rgb(204, 204, 204);
 }
-.ms-Dialog-content [class^=innerContent-] {
+.ms-Dialog-content [class^="innerContent-"] ] {
     color: white;
 }
 :not(.n-lightboxModal) .ms-Dialog-main {
