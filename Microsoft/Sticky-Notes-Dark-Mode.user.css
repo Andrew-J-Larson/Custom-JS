@@ -1,11 +1,12 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
 @namespace      https://thealiendrew.github.io/
-@version        1.5.2
+@version        1.5.3
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
 @updateURL      https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Sticky-Notes-Dark-Mode.user.css
+@downloadURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Sticky-Notes-Dark-Mode.user.css
 ==/UserStyle== */
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
@@ -104,7 +105,7 @@ html {
 .ms-Dialog-title {
         color: rgb(204, 204, 204);
 }
-.ms-Dialog-content.innerContent-* {
+.ms-Dialog-content [class^=innerContent-] {
     color: white;
 }
 :not(.n-lightboxModal) .ms-Dialog-main {
