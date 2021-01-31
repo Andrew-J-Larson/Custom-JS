@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
 @namespace      https://thealiendrew.github.io/
-@version        1.5.6
+@version        1.5.7
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
@@ -104,15 +104,6 @@ html {
 }
 .ms-Dialog > .ms-Overlay--dark {
     background-color: rgba(255, 255, 255, 0.4);
-}
-.n-lightbox-imagePrev button, .n-lightbox-imageNext button {
-    background-color: rgba(255, 255, 255, .1);
-}
-.n-lightbox-imagePrev button:hover, .n-lightbox-imageNext button:hover {
-    background-color: rgba(255, 255, 255, .2);
-}
-.n-lightbox-imagePrev i, .n-lightbox-imageNext i {
-    color: #000;
 }
 .ms-Dialog-title {
         color: rgb(204, 204, 204);

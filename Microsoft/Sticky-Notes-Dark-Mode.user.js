@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Sticky Notes - Dark Mode
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.6
+// @version      1.5.7
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
