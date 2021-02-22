@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.5";
+const VERSION = "2.4.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -33,10 +33,14 @@ var MPP = window.MPP;
 
 var currentURL = window.location.href;
 var checkingURL;
+var validWebsite = false;
 for (checkingURL = 0; checkingURL < INCLUDE.length; checkingURL++) {
-    if (!currentURL.match(INCLUDE[checkingURL])) {
-        throw "Not on the Multiplayer Piano website, or compatible clone.";
+    if (currentURL.match(INCLUDE[checkingURL])) {
+        validWebsite = true;
     }
+}
+if (!validWebsite) {
+    throw "Not on the Multiplayer Piano website, or compatible clone.";
 }
 
 // =============================================== FILES
@@ -810,7 +814,7 @@ var PlayerSet = setInterval(function() {
 			var buttonsOn = false;
 			var togglerDiv = document.createElement("div");
 			togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
-			togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+			togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
 			togglerDiv.classList.add("ugly-button");
 			togglerDiv.onclick = function() {
 				if (buttonsOn) { // if on, then turn off, else turn on

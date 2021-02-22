@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.5
+// @version      2.4.6
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -803,7 +803,7 @@ var createButtons = function() {
     var buttonsOn = false;
     var togglerDiv = document.createElement("div");
     togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
-    togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+    togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function() {
         if (buttonsOn) { // if on, then turn off, else turn on
