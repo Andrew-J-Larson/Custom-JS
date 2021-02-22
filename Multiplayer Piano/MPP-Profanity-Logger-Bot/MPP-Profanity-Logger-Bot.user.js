@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.2
+// @version      1.1.3
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @include      /^https?://www\.multiplayerpiano\.com*/
+// @include      /^https?://multiplayerpiano\.net*/
 // @include      /^https?://mppclone\.com*/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Profanity-Logger-Bot/MPP-Profanity-Logger-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Profanity-Logger-Bot/MPP-Profanity-Logger-Bot.user.js

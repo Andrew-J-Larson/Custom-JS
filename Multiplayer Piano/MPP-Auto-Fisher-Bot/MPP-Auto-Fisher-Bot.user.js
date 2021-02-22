@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Auto Fisher Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.2
+// @version      1.9.3
 // @description  Fishes for new colors!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @include      /^https?://www\.multiplayerpiano\.com*/
+// @include      /^https?://multiplayerpiano\.net*/
 // @include      /^https?://mppclone\.com*/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js

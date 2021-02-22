@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Roomcolor Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.4
+// @version      0.1.5
 // @description  Advanced roomcolor changing!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @include      /^https?://www\.multiplayerpiano\.com*/
+// @include      /^https?://multiplayerpiano\.net*/
 // @include      /^https?://mppclone\.com*/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Roomcolor-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Roomcolor-Bot.user.js
