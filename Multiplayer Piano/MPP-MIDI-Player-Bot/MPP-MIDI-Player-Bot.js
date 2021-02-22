@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.4";
+const VERSION = "2.4.5";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.2
+// @version      0.2.3
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -12,7 +12,6 @@
 // @icon         https://cdn.iconscout.com/icon/free/png-256/notification-1765818-1505607.png
 // @grant        GM_info
 // @run-at       document-end
-// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)

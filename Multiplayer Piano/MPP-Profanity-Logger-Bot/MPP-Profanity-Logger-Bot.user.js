@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Profanity Logger Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,6 @@
 // @grant        GM_getResourceURL
 // @resource     FilthyWords https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/en
 // @run-at       document-end
-// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)

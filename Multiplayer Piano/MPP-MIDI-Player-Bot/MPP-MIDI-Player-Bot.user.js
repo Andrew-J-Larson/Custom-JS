@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.4
+// @version      2.4.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,6 @@
 // @grant        GM_getResourceURL
 // @resource     MIDIPlayerJS https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/master/browser/midiplayer.js
 // @run-at       document-end
-// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)

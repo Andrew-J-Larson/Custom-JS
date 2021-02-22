@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.7
+// @version      2.4.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,6 @@
 // @grant        GM_getResourceURL
 // @resource     MIDIPlayerJS http://grimmdude.com/MidiPlayerJS/browser/midiplayer.js
 // @run-at       document-end
-// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
