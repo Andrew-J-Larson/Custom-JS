@@ -1,10 +1,11 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.3";
+const VERSION = "2.4.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
-const INCLUDE = /^https?:\/\/multiplayerpiano\.com*/g;
+const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
+                 /^https?:\/\/mppclone\.com*/g];
 const DOWNLOAD_URL = "https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/MPP-MIDI-Player-Bot.js";
 const MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/master/browser/midiplayer.js";
 // ==/JavaScript==
@@ -31,8 +32,11 @@ var MPP = window.MPP;
 // =============================================== CHECK WEBSITE MATCH REGEX
 
 var currentURL = window.location.href;
-if (!currentURL.match(INCLUDE)) {
-    throw "Not on the Multiplayer Piano website.";
+var checkingURL;
+for (checkingURL = 0; checkingURL < INCLUDE.length; checkingURL++) {
+    if (!currentURL.match(INCLUDE[checkingURL])) {
+        throw "Not on the Multiplayer Piano website, or compatible clone.";
+    }
 }
 
 // =============================================== FILES

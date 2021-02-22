@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Minecraft Music Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.4.6
+// @version      2.4.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?://multiplayerpiano\.com*/
+// @include      /^https?://www\.multiplayerpiano\.com*/
+// @include      /^https?://mppclone\.com*/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Minecraft-Music-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Minecraft-Music-Bot.user.js
 // @icon         https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-32x32.png
