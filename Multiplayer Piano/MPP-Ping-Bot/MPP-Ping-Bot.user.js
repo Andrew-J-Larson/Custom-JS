@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Ping Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.4
+// @version      0.2.5
 // @description  Sounds off a notification when the user of bot gets a ping!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @include      /^https?://www\.multiplayerpiano\.com*/
-// @include      /^https?://multiplayerpiano\.net*/
+// @include      /^https?://multiplayerpiano\.(com|net)*/
 // @include      /^https?://mppclone\.com*/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-Ping-Bot/MPP-Ping-Bot.user.js
