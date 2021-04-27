@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
 @namespace      https://thealiendrew.github.io/
-@version        1.5.9
+@version        1.6.0
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
@@ -114,7 +114,7 @@ html {
     background-color: #333333;
     color: white;
 }
-#appLauncher, .o365cs-base .o365sx-neutral-foreground-background, #FlexPane_MeControl .o365sx-neutral-foreground-background, #NewDocumentsMenu {
+#appLauncher, .o365cs-base .o365sx-neutral-foreground-background, #FlexPane_MeControl .o365sx-neutral-foreground-background {
     background: #494949 !important;
 }
 #appLauncherSearch, #appLauncher button > div > .ms-Icon--Search, #appLauncher button > div > .ms-Icon--ChromeClose {
@@ -135,6 +135,12 @@ html {
 }
 #appLauncherMainView a, #appsModule button.o365sx-neutral-accent-font, button#allViewBackButton.o365sx-neutral-accent-font, #flexPaneScrollRegion a, #FlexPane_MeControl a, #flexPaneScrollRegion span.ms-Icon--Forward, #appDetailsPaneBackButton, #appDetailsPane a, #appLauncher > div > div:not(#appLauncherTop) > a {
     color: #93CFF7;
+}
+#NewDocumentsMenu {
+    background-color: #494949;
+}
+#NewDocumentsMenu label {
+    color: white;
 }
 .ms-Dialog > :not(.ms-Overlay--dark) .ms-Overlay {
     background-color: rgba(0, 0, 0, 0.4);
