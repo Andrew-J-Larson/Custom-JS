@@ -114,7 +114,7 @@ html {
     background-color: #333333;
     color: white;
 }
-#appLauncher, .o365cs-base .o365sx-neutral-foreground-background, #FlexPane_MeControl .o365sx-neutral-foreground-background {
+#appLauncher, .o365cs-base .o365sx-neutral-foreground-background, #FlexPane_MeControl .o365sx-neutral-foreground-background, #NewDocumentsMenu {
     background: #494949 !important;
 }
 #appLauncherSearch, #appLauncher button > div > .ms-Icon--Search, #appLauncher button > div > .ms-Icon--ChromeClose {
