@@ -1,7 +1,7 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
 @namespace      https://thealiendrew.github.io/
-@version        1.5.7
+@version        1.5.8
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
@@ -31,8 +31,9 @@
    This 'theme' just decorates the part the dark theme doesn't.
 
    * If you are wondering why the theme is not entirely on, please
-     go to ... and install the Tampermonkey script that automatically
-     turns dark mode on for sticky notes */
+     go to https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/master/Microsoft/Sticky-Notes-Dark-Mode.user.js
+     and install the Tampermonkey script that automatically turn
+     dark mode on for sticky notes */
 
 /* My only edits */
 
@@ -66,14 +67,21 @@ html {
 .n-imageAltTextCancel {
     border: 1px solid #fff!important;
     padding: 0;
-	background-color: transparent;
+    background-color: transparent;
 }
 .n-imageAltButtonWrapper button:hover {
     background-color: white;
     color: black;
-	opacity: 1!important
+    opacity: 1!important
 }
 /* Additional menus not really related to Sticky Notes directly (generic attached css style banner for most Microsoft apps) */
+#O365_AppTile_db7950f7-bbdc-4c48-8b56-f8faefdbc5fa {
+    filter: initial !important;
+}
+#O365_AppTile_db7950f7-bbdc-4c48-8b56-f8faefdbc5fa img {
+    filter: invert(100%) hue-rotate(180deg);
+}
+/* above is likely to change; LinkedIn button */
 #O365_MainLink_NavMenu:focus, .o365cs-base .o365sx-activeButton, .o365cs-base .o365sx-activeButton:hover, .o365cs-base .o365sx-activeButton:focus {
     background-color: #202020!important;
     color: white!important;
@@ -81,22 +89,51 @@ html {
 .o365sx-neutral-lighter-hover-background:hover, .o365cs-base .o365sx-neutral-lighterAlt-background, .ms-Dialog-button--close:hover {
     background: #333333!important;
 }
-#appLauncherTop .o365sx-neutral-dark-font, #appsModule h2.o365sx-neutral-dark-font, #flexPaneScrollRegion .o365sx-neutral-dark-font, .ms-Dialog {
+#appLauncherTop .o365sx-neutral-dark-font, #appsModule h2.o365sx-neutral-dark-font, #appLauncherMainView > div > h2.o365sx-neutral-dark-font, #appLauncherMainView > div:not(#appsModule) label.o365sx-neutral-dark-font, #appDetailsPane div.o365sx-neutral-dark-font, #flexPaneScrollRegion .o365sx-neutral-dark-font, .ms-Dialog {
     color: white;
+}
+#appLauncherMainView > div:not(#appsModule) label.o365sx-neutral-tertiary-font {
+    color: #9fa1a3;
+}
+#appDetailsPane div.o365sx-neutral-secondary-font {
+    color: #b7b9bb;
 }
 #appsModule div.o365sx-neutral-dark-font, #allView .o365sx-neutral-dark-font {
     filter: hue-rotate(180deg) invert(100%); /* There is a lot of fonts I would of had to change the color of, if I didn't do this */
 }
+#appsModule div[title="Open context menu"], #allView div[title="Open context menu"] {
+    filter: initial;
+}
+#appsModule div[title="Open context menu"]:not(:hover):not([aria-expanded="true"]), #allView div[title="Open context menu"]:not(:hover):not([aria-expanded="true"]) {
+    color: #dadbdc;
+}
+#appLauncherMainView > div:not(#appsModule) > div > div#mruItem1 > div > a {
+    background-color: #090909;
+}
+#appLauncher div.o365sx-neutral-foregroundAlt-background, #appLauncher div.o365sx-neutral-foregroundAlt-hover-background:hover {
+    background-color: #333333;
+    color: white;
+}
 #appLauncher, .o365cs-base .o365sx-neutral-foreground-background, #FlexPane_MeControl .o365sx-neutral-foreground-background {
     background: #494949 !important;
 }
+#appLauncherSearch, #appLauncher button > div > .ms-Icon--Search, #appLauncher button > div > .ms-Icon--ChromeClose {
+    color: #dadbdc !important;
+}
+#appLauncher div.o365sx-neutral-foregroundAlt-background, #appLauncher div.o365sx-neutral-foregroundAlt-hover-background:hover {
+    background-color: #333333;
+    color: white;
+}
+#appLauncherSearch, button > div > .ms-Icon--Search {
+    color: #dadbdc !important;
+}
 .ms-Icon--People, .ms-Icon--BingLogo, .ms-Icon--MSNLogo, .ms-Icon--PrivacyLogo, .ms-Icon--RewardsLogo, i[data-icon-name="Cancel"], #flexPaneCloseButton {
-	filter: hue-rotate(180deg) invert(100%); /* Icons can't exactly change color unless you do this */
+    filter: hue-rotate(180deg) invert(100%); /* Icons can't exactly change color unless you do this */
 }
 #O365fpcontainerid {
     border-color: black;
 }
-#appLauncherMainView a, #appsModule button.o365sx-neutral-accent-font, button#allViewBackButton.o365sx-neutral-accent-font, #flexPaneScrollRegion a, #FlexPane_MeControl a {
+#appLauncherMainView a, #appsModule button.o365sx-neutral-accent-font, button#allViewBackButton.o365sx-neutral-accent-font, #flexPaneScrollRegion a, #FlexPane_MeControl a, #flexPaneScrollRegion span.ms-Icon--Forward, #appDetailsPaneBackButton, #appDetailsPane a, #appLauncher > div > div:not(#appLauncherTop) > a {
     color: #93CFF7;
 }
 .ms-Dialog > :not(.ms-Overlay--dark) .ms-Overlay {
@@ -106,7 +143,7 @@ html {
     background-color: rgba(255, 255, 255, 0.4);
 }
 .ms-Dialog-title {
-        color: rgb(204, 204, 204);
+    color: rgb(204, 204, 204);
 }
 .ms-Dialog-content [class^="innerContent-"] {
     color: white;
