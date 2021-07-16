@@ -33,7 +33,7 @@ const DARK_BG = '#1A1A1B';
 const LIGHT_BG = '#FFFFFF';
 const pageDivSelector = 'body > div > div';
 const userMenuSelector = '#USER_DROPDOWN_ID';
-const darkModeSwitchSelector = 'button[role="switch"]';
+const darkModeSwitchSelector = 'button[class="_2KotRmn9DgdA58Ikji2mnV _1zZ3VDhRC38fXLLvVCHOwK"]';
 
 var watchEventTriggered = false;
 var activeElement = null;
