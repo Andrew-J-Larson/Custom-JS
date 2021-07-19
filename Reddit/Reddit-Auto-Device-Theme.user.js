@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes reddit match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -33,7 +33,7 @@ const DARK_BG = '#1A1A1B';
 const LIGHT_BG = '#FFFFFF';
 const pageDivSelector = 'body > div > div';
 const userMenuSelector = '#USER_DROPDOWN_ID';
-const darkModeSwitchSelector = 'button[role="switch"]';
+const darkModeSwitchTitleSelector = '//span[text()="Dark Mode"]';
 
 var watchEventTriggered = false;
 var activeElement = null;
@@ -49,10 +49,16 @@ function updateTheme(changeToScheme) {
         let userMenu = document.querySelector(userMenuSelector);
         userMenu.click();
 
-        let darkModeSwitch = document.querySelector(darkModeSwitchSelector);
+        // new method to click the dark mode button without the need to update it every new reddit update
+        let darkModeSwitchHeadings = document.evaluate(darkModeSwitchTitleSelector, document, null, XPathResult.ANY_TYPE, null);
+        let darkModeSwitchTitle = darkModeSwitchHeadings.iterateNext();
+        let darkModeSwitch = darkModeSwitchTitle.parentElement.querySelector('button'); // this should grab the Dark Mode button
         darkModeSwitch.click();
 
         if (watchEventTriggered) activeElement.focus();
+        
+        // needed to close the user menu after being switched
+        userMenu.click();
     }
 
     watchEventTriggered = false;
