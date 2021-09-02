@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolsuite FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -308,7 +308,7 @@ var convertToMinecraft = function() {
 // =============================================== INTERVALS
 
 var waitForShortcut = setInterval(function() {
-    var appShortcut = document.querySelector("#app > div > div.section-icons.is-absolute > ul:nth-child(1) > li:nth-child(2) > div");
+    var appShortcut = document.querySelector("#app > div > div.section-icons.is-absolute > ul:nth-child(1) > li:nth-child(3) > div");
     if (exists(appShortcut)) {
         clearInterval(waitForShortcut);
 
