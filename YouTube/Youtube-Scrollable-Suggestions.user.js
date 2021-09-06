@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.6
+// @version      1.8.7
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -11,7 +11,7 @@
 // @icon         https://s.ytimg.com/yts/img/favicon_32-vflOogEID.png
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
-// @require      https://cdn.jsdelivr.net/gh/meetselva/attrchange/js/attrchange.js
+// @require      https://cdn.jsdelivr.net/gh/meetselva/attrchange@66f69103f3a5842b7f1deaaccf2894f8ee8b5774/js/attrchange.js
 // @noframes
 // ==/UserScript==
 
