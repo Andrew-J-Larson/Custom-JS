@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youtube Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.8.5
+// @version      1.8.6
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -11,6 +11,7 @@
 // @icon         https://s.ytimg.com/yts/img/favicon_32-vflOogEID.png
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
+// @require      https://cdn.jsdelivr.net/gh/meetselva/attrchange/js/attrchange.js
 // @noframes
 // ==/UserScript==
 
@@ -31,11 +32,6 @@
  */
 
 var $ = window.jQuery;
-
-// Greasemonkey doesn't allow some external scripts.
-// Because of this, I've include a minified version of the code(s) in this script.
-// jQuery library - attrchange ----------- Date code was added: March 16th, 2020 - From: https://raw.githubusercontent.com/meetselva/attrchange/master/js/attrchange.js
-!function(t){var a=window.MutationObserver||window.WebKitMutationObserver;t.fn.attrchange=function(e,n){if("object"==typeof e){var r={trackValues:!1,callback:t.noop};if("function"==typeof e?r.callback=e:t.extend(r,e),r.trackValues&&this.each(function(a,e){for(var n,r={},i=(a=0,e.attributes),c=i.length;a<c;a++)r[(n=i.item(a)).nodeName]=n.value;t(this).data("attr-old-value",r)}),a){var i={subtree:!1,attributes:!0,attributeOldValue:r.trackValues},c=new a(function(a){a.forEach(function(a){var e=a.target;r.trackValues&&(a.newValue=t(e).attr(a.attributeName)),"connected"===t(e).data("attrchange-status")&&r.callback.call(e,a)})});return this.data("attrchange-method","Mutation Observer").data("attrchange-status","connected").data("attrchange-obs",c).each(function(){c.observe(this,i)})}return function(){var t=document.createElement("p"),a=!1;if(t.addEventListener)t.addEventListener("DOMAttrModified",function(){a=!0},!1);else{if(!t.attachEvent)return!1;t.attachEvent("onDOMAttrModified",function(){a=!0})}return t.setAttribute("id","target"),a}()?this.data("attrchange-method","DOMAttrModified").data("attrchange-status","connected").on("DOMAttrModified",function(a){a.originalEvent&&(a=a.originalEvent),a.attributeName=a.attrName,a.oldValue=a.prevValue,"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):"onpropertychange"in document.body?this.data("attrchange-method","propertychange").data("attrchange-status","connected").on("propertychange",function(a){a.attributeName=window.event.propertyName,function(a,e){if(a){var n=this.data("attr-old-value");if(e.attributeName.indexOf("style")>=0){n.style||(n.style={});var r=e.attributeName.split(".");e.attributeName=r[0],e.oldValue=n.style[r[1]],e.newValue=r[1]+":"+this.prop("style")[t.camelCase(r[1])],n.style[r[1]]=e.newValue}else e.oldValue=n[e.attributeName],e.newValue=this.attr(e.attributeName),n[e.attributeName]=e.newValue;this.data("attr-old-value",n)}}.call(t(this),r.trackValues,a),"connected"===t(this).data("attrchange-status")&&r.callback.call(this,a)}):this}if("string"==typeof e&&t.fn.attrchange.hasOwnProperty("extensions")&&t.fn.attrchange.extensions.hasOwnProperty(e))return t.fn.attrchange.extensions[e].call(this,n)}}(jQuery);
 
 // basic
 const scriptShortName = 'YTscrollSuggest';
