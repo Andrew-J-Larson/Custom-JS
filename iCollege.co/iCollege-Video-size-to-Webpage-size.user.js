@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iCollege - Video size to Webpage size
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -39,28 +39,31 @@ const VIDEO_STYLE = "body."+VIDEO_STYLE_CLASS+" { overflow: hidden }" +
                     "."+SIZE_BUTTON_CLASS+" { position: absolute; z-index: 1; top: 30px; right: 21px }" +
                     "."+SIZE_BUTTON_CLASS+" button { border: solid 2px black; border-radius: 5px; padding: 2px; background: rgb(255,255,255) }" +
                     "."+SIZE_BUTTON_CLASS+"."+VIDEO_STYLE_CLASS+" { top: 15px; right: 30px }";
+const intervalLoop = 200; // ms
 
 // main
 
 GM_addStyle(VIDEO_STYLE);
+let mainContainer, videoContainer, sizeButtonContainer, sizeButton;
 
-window.addEventListener('load', function() {
-    let mainContainer = document.querySelector('div#block-system-main > div.content > div > div.container')
-    let videoContainer = document.getElementById('replace-new-video');
+let loopCheckAddButton = setInterval(function() {
+    if (!document.getElementById(SIZE_BUTTON_CLASS)) {
+        mainContainer = document.querySelector('div#block-system-main > div.content > div > div.container')
+        videoContainer = document.getElementById('replace-new-video');
 
-    // need a background cover behind video
-    let shadeCover = document.createElement('div'); // jhsdkfahsjkdghasjkdhgasjkdgaksjdhaskjd
-    // need a button to toggle the video size
-    let sizeButtonContainer = document.createElement('div');
-    sizeButtonContainer.classList.add(SIZE_BUTTON_CLASS);
-    let sizeButton = document.createElement('button');
-    sizeButton.innerHTML = "Size2Webpage";
-    sizeButton.onclick = function() {
-        document.body.classList.toggle(VIDEO_STYLE_CLASS);
-        mainContainer.classList.toggle(VIDEO_STYLE_CLASS);
-        videoContainer.classList.toggle(VIDEO_STYLE_CLASS);
-        sizeButtonContainer.classList.toggle(VIDEO_STYLE_CLASS);
-    };
-    sizeButtonContainer.appendChild(sizeButton);
-    videoContainer.appendChild(sizeButtonContainer);
-}, false);
+        // need a button to toggle the video size
+        sizeButtonContainer = document.createElement('div');
+        sizeButtonContainer.classList.add(SIZE_BUTTON_CLASS);
+        sizeButton = document.createElement('button');
+        sizeButton.innerHTML = "Size2Webpage";
+        sizeButton.id = SIZE_BUTTON_CLASS;
+        sizeButton.onclick = function() {
+            document.body.classList.toggle(VIDEO_STYLE_CLASS);
+            mainContainer.classList.toggle(VIDEO_STYLE_CLASS);
+            videoContainer.classList.toggle(VIDEO_STYLE_CLASS);
+            sizeButtonContainer.classList.toggle(VIDEO_STYLE_CLASS);
+        };
+        sizeButtonContainer.appendChild(sizeButton);
+        videoContainer.appendChild(sizeButtonContainer);
+    }
+}, intervalLoop);
