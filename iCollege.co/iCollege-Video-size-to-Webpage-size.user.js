@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iCollege - Video size to Webpage size
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -37,7 +37,7 @@ const VIDEO_STYLE = "body."+VIDEO_STYLE_CLASS+" { overflow: hidden }" +
                     "div#replace-new-video."+VIDEO_STYLE_CLASS+" { position: absolute; width: 100%; max-width: 100%; height: 100%; max-height: 100%; padding: 0; margin: 0; "+BACKGROUND_COLOR+" } " +
                     "div#replace-new-video."+VIDEO_STYLE_CLASS+" video { position: fixed; top: 50%; transform: translateY(-50%); margin-left: 15px }" +
                     "."+SIZE_BUTTON_CLASS+" { position: absolute; z-index: 1; top: 30px; right: 21px }" +
-                    "."+SIZE_BUTTON_CLASS+" button { border: solid 2px white; border-radius: 5px; padding: 2px; background: black; color: white
+                    "."+SIZE_BUTTON_CLASS+" button { border: solid 2px white; border-radius: 5px; padding: 2px; background: black; color: white" +
                     "."+SIZE_BUTTON_CLASS+"."+VIDEO_STYLE_CLASS+" { top: 15px; right: 30px }";
 const intervalLoop = 200; // ms
 
