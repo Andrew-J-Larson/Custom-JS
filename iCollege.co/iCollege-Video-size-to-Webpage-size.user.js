@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         iCollege - Video size to Webpage size
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.4
+// @version      1.1.5
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -68,7 +68,8 @@ let loopCheckAddButton = setInterval(function() {
         videoContainer.appendChild(sizeButtonContainer);
         // need to detect when video ends to reset view back to normal (to avoid positioning bugs)
         videoElement.addEventListener('ended', function() {
-            sizeButton.click();
+            // only reset if we are in page view mode
+            if (videoContainer.classList.contains(VIDEO_STYLE_CLASS)) sizeButton.click();
         },false);
     }
 }, intervalLoop);
