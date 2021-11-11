@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Office Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes any Microsoft Office web app match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -11,8 +11,6 @@
 // @icon         https://res-1.cdn.office.net/officehub/images/content/images/favicon-8f211ea639.ico
 // @grant        none
 // ==/UserScript==
-
-/* globals __themeState__ */
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 
@@ -31,16 +29,15 @@
  */
 
 const INTERVAL_SPEED = 5; // ms
-const OLD_PAGE_DELAY = 1000; // ms
+const OLD_PAGE_DELAY = 1500; // ms
 
 // needed when screen is small
 const maybeMoreButtonSelector = '#O365_MainLink_Affordance';
 
 // the following if found don't need page to be refreshed
 const settingsButtonSelector = '#O365_MainLink_Settings';
-const firstThemeCardSelector = '#themecardpanel > div > div'
-const themeToggleSwitchId = 'DarkModeSwitch';
-const themeToggleSwitchSelector = '#' + themeToggleSwitchId;
+const firstThemeCardSelector = '#themecardpanel > div > div';
+const themeToggleSwitchSelector = '#DarkModeSwitch';
 
 // the following if found will need the page to be refreshed
 const owaSettingsButtonSelector = '#owaSettingsButton';
@@ -54,7 +51,7 @@ var maybeMoreButton, firstThemeCard, settingsButton; // gets set later
 function updateTheme(changeToScheme) {
     let html = document.querySelector('html');
 
-    let theme = __themeState__.theme.black;
+    let theme = window.__themeState__.theme.black;
     theme = (theme == "#ffffff" || (theme == "var(--black)" && getComputedStyle(document.documentElement).getPropertyValue('--black') == "#ffffff")) ? 'dark' : 'light';
 
     if (theme != changeToScheme) {
@@ -81,13 +78,14 @@ function updateTheme(changeToScheme) {
 
                         firstThemeCard.click();
                         themeToggleSwitch.click();
+                        firstClicked.click();
 
                         // need to wait a short bit for change to go through, only on old pages that need reloading
-                        if (themeToggleSwitch.id != themeToggleSwitchId) {
+                        if (window.userNormalizedTheme) {
                             setTimeout(function() {
                                 window.location.reload();
                             }, OLD_PAGE_DELAY);
-                        } else firstClicked.click();
+                        }
 
                         if (watchEventTriggered) activeElement.focus();
                     }
@@ -103,7 +101,7 @@ function updateTheme(changeToScheme) {
 window.addEventListener('load', function () {
     let waitForThemeAndSettingsAvailable = setInterval(function() {
         // need to wait for one of the required buttons
-        if (__themeState__ && __themeState__.theme && __themeState__.theme.black && (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector))) {
+        if (window.__themeState__ && window.__themeState__.theme && window.__themeState__.theme.black && (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector))) {
             clearInterval(waitForThemeAndSettingsAvailable);
 
             // now we can start
