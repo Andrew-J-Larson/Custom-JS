@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         Microsoft Office Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes any Microsoft Office web app match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?:\/\/[A-Za-z0-9\-]*\.office(365)?\.com\/.*$/
+// @include      /^https?:\/\/[A-Za-z0-9\-\.]*\.office(365)?\.com\/.*$/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Office-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Office-Auto-Device-Theme.user.js
 // @icon         https://res-1.cdn.office.net/officehub/images/content/images/favicon-8f211ea639.ico
 // @grant        none
+// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
@@ -43,6 +44,9 @@ const themeToggleSwitchSelector = '#DarkModeSwitch';
 const owaSettingsButtonSelector = '#owaSettingsButton';
 const owaFirstThemeCardSelector = 'div[aria-label="Theme"] > div'
 const owaThemeToggleSwitchSelector = 'button[aria-label="options-quick-darkMode"]';
+
+// the following subdomains have no dark theme selection, so must be excluded
+const excludedSubDomains = ["nam.delve", "tasks", "to-do", "insights.viva", "whiteboard"];
 
 var watchEventTriggered = false;
 var activeElement = null;
@@ -99,27 +103,43 @@ function updateTheme(changeToScheme) {
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
-    let waitForThemeAndSettingsAvailable = setInterval(function() {
-        // need to wait for one of the required buttons
-        if (window.__themeState__ && window.__themeState__.theme && window.__themeState__.theme.black && (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector))) {
-            clearInterval(waitForThemeAndSettingsAvailable);
+    let testSubDomainIndex = 0;
+    let testSubDomainEnd = excludedSubDomains.length;
+    let testSubDomainLoop = setInterval(function() {
+        if (window.location.hostname.startsWith(excludedSubDomains[testSubDomainIndex])) {
+            testSubDomainIndex = -1;
+        } else testSubDomainIndex++;
+        // only stop when we've reached that point
+        if (testSubDomainIndex >= testSubDomainEnd) {
+            clearInterval(testSubDomainLoop);
 
-            // now we can start
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                const newColorScheme = e.matches ? 'dark' : 'light';
-                watchEventTriggered = true;
-                activeElement = document.activeElement;
-                updateTheme(newColorScheme);
-            });
+            // will get here if there was no throw issue
+            let waitForThemeAndSettingsAvailable = setInterval(function() {
+                // need to wait for one of the required buttons
+                if (window.__themeState__ && window.__themeState__.theme && window.__themeState__.theme.black && (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector))) {
+                    clearInterval(waitForThemeAndSettingsAvailable);
 
-            // first time run
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                // dark mode
-                updateTheme('dark');
-            } else {
-                // light mode
-                updateTheme('light');
-            }
+                    // now we can start
+                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                        const newColorScheme = e.matches ? 'dark' : 'light';
+                        watchEventTriggered = true;
+                        activeElement = document.activeElement;
+                        updateTheme(newColorScheme);
+                    });
+
+                    // first time run
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        // dark mode
+                        updateTheme('dark');
+                    } else {
+                        // light mode
+                        updateTheme('light');
+                    }
+                }
+            }, INTERVAL_SPEED);
+        } else if (testSubDomainIndex < 0) {
+            // page has no dark mode, exit
+            clearInterval(testSubDomainLoop);
         }
-    }, INTERVAL_SPEED);
+    }, 0);
 }, false);
