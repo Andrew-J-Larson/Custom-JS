@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Makes reddit match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -50,7 +50,7 @@ function updateTheme(changeToScheme) {
         userMenu.click();
 
         // new method to click the dark mode button without the need to update it every new reddit update
-        let darkModeIcon = document.querySelector('i.icon-night');
+        let darkModeIcon = document.querySelector(darkModeIconSelector);
         let darkModeSwitch = darkModeIcon.parentElement; // this should grab the Dark Mode button
         darkModeSwitch.click();
 
