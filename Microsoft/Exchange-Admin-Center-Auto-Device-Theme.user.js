@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Exchange admin center - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes Exchange admin center match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -30,7 +30,7 @@
 
 const INTERVAL_SPEED = 100;
 const themeBtnSelector = 'button[data-automation-id="DarkLightBtn"]';
-const themeNotIconSelector = themeBtnSelector + ' > span > i.ms-Icon';
+const themeNotIconSelector = themeBtnSelector + ' > span > i[data-icon-name]';
 
 var watchEventTriggered = false;
 var activeElement = null;
