@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter - Auto Device Theme (Lights Out Version)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes twitter match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -92,9 +92,9 @@ function updateTheme(changeToScheme) {
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
-    // need to wait for the background-color style to not be empty
+    // must not be on logout page, and need to wait for the background-color style to not be empty
     let waitingForBGStyle = setInterval(function() {
-        if (document.body.style.backgroundColor) {
+        if (window.location.pathname != "/logout" && document.body.style.backgroundColor) {
             clearInterval(waitingForBGStyle);
 
             // now we can start
