@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.8";
+const VERSION = "2.4.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -86,6 +86,7 @@ const LIMITED_PLAYERS = ["8c81505ab941e0760697d777"];
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
+const MPP_ROOM_SETTINGS_ID = "room-settings-btn"; // (DON'T CHANGE)
 
 // Bot constant settings
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
@@ -144,6 +145,25 @@ const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
+
+// Element constants
+const CSS_VARIABLE_X_DISPLACEMENT = "--xDisplacement";
+const PRE_ELEMENT_ID = "aliendrew-midi-player-bot";
+// buttons have some constant styles/classes
+const ELEM_ON = "display:block;";
+const ELEM_OFF = "display:none;";
+const ELEM_POS = "position:absolute;";
+const BTN_PAD_LEFT = 8; // pixels
+const BTN_PAD_TOP = 4; // pixels
+const BTN_WIDTH = 112; // pixels
+const BTN_HEIGHT = 24; // pixels
+const BTN_SPACER_X = BTN_PAD_LEFT + BTN_WIDTH; //pixels
+const BTN_SPACER_Y = BTN_PAD_TOP + BTN_HEIGHT; //pixels
+const BTNS_START_X = 300; //pixels
+const BTNS_END_X = BTNS_START_X + 4 * BTN_SPACER_X; //pixels
+const BTNS_TOP_0 = BTN_PAD_TOP; //pixels
+const BTNS_TOP_1 = BTN_PAD_TOP + BTN_SPACER_Y; //pixels
+const BTN_STYLE = ELEM_POS + ELEM_OFF;
 
 // Gets the correct note from MIDIPlayer to play on MPP
 const MIDIPlayerToMPPNote = {
@@ -264,6 +284,9 @@ var previousSongData = null; // grabs current when changing successfully
 var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
+
+var mppRoomSettingsBtn = null; // tracks "Room Settings" element
+var xDisplacement = ""; // tracks xDisplacement value from CSS variables
 
 // =============================================== PAGE VISIBILITY
 
@@ -458,7 +481,7 @@ var PlayerSet = setInterval(function() {
                 downloading = setInterval(function() {
                     mppChatSend(PRE_DOWNLOADING + getProgress(progress));
                     progress++;
-                }, chatDelay);   
+                }, chatDelay);
             }
 
 			fetch(url, {
@@ -672,32 +695,19 @@ var PlayerSet = setInterval(function() {
 
 		// Creates the play, pause, resume, and stop button for the bot
 		var createButtons = function() {
-			const PRE_ELEMENT_ID = "aliendrew-midi-player-bot";
-			// buttons have some constant styles/classes
-			const ELEM_ON = "display:block;";
-			const ELEM_OFF = "display:none;";
-			const ELEM_POS = "position:absolute;";
-			const BTN_PAD_LEFT = 8; // pixels
-			const BTN_PAD_TOP = 4; // pixels
-			const BTN_WIDTH = 112; // pixels
-			const BTN_HEIGHT = 24; // pixels
-			const BTN_SPACER_X = BTN_PAD_LEFT + BTN_WIDTH; //pixels
-			const BTN_SPACER_Y = BTN_PAD_TOP + BTN_HEIGHT; //pixels
-			const BTNS_START_X = 300; //pixels
-			const BTNS_END_X = BTNS_START_X + 4 * BTN_SPACER_X; //pixels
-			const BTNS_TOP_0 = BTN_PAD_TOP; //pixels
-			const BTNS_TOP_1 = BTN_PAD_TOP + BTN_SPACER_Y; //pixels
-			const BTN_STYLE = ELEM_POS + ELEM_OFF;
 			// need the bottom area to append buttons to
 			var buttonContainer = document.querySelector("#bottom div");
 			// we need to keep track of the next button locations
 			var nextLocationX = BTNS_END_X;
+            
+            // need to initialize CSS_VARIABLE_X_DISPLACEMENT
+            document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
 
 			// play needs the div like all the other buttons
 			// PLAY
 			var playDiv = document.createElement("div");
 			playDiv.id = PRE_ELEMENT_ID + "-play";
-			playDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+			playDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			playDiv.classList.add("ugly-button");
 			buttonContainer.appendChild(playDiv);
 			// since we need upload files, there also needs to be an input element inside the play div
@@ -731,7 +741,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var stopDiv = document.createElement("div");
 			stopDiv.id = PRE_ELEMENT_ID + "-stop";
-			stopDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+			stopDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			stopDiv.classList.add("ugly-button");
 			stopDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) stop();
@@ -743,7 +753,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var repeatDiv = document.createElement("div");
 			repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
-			repeatDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+			repeatDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			repeatDiv.classList.add("ugly-button");
 			repeatDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) repeat();
@@ -755,7 +765,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var songDiv = document.createElement("div");
 			songDiv.id = PRE_ELEMENT_ID + "-song";
-			songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;";
+			songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			songDiv.classList.add("ugly-button");
 			songDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) song();
@@ -767,7 +777,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX = BTNS_END_X;
 			var pauseDiv = document.createElement("div");
 			pauseDiv.id = PRE_ELEMENT_ID + "-pause";
-			pauseDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+			pauseDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			pauseDiv.classList.add("ugly-button");
 			pauseDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) pause();
@@ -779,7 +789,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var resumeDiv = document.createElement("div");
 			resumeDiv.id = PRE_ELEMENT_ID + "-resume";
-			resumeDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+			resumeDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			resumeDiv.classList.add("ugly-button");
 			resumeDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) resume();
@@ -791,7 +801,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var sustainDiv = document.createElement("div");
 			sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
-			sustainDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+			sustainDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			sustainDiv.classList.add("ugly-button");
 			sustainDiv.onclick = function() {
 				if (!MPP.client.preventsPlaying()) sustain();
@@ -803,7 +813,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX += BTN_SPACER_X;
 			var publicDiv = document.createElement("div");
 			publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
-			publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:" + nextLocationX + "px;";
+			publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
 			publicDiv.classList.add("ugly-button");
 			publicDiv.onclick = function() { public(true, true) }
 			var publicTxt = document.createTextNode("Public");
@@ -815,7 +825,7 @@ var PlayerSet = setInterval(function() {
 			var buttonsOn = false;
 			var togglerDiv = document.createElement("div");
 			togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
-			togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:" + nextLocationX + "px;"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
+			togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
 			togglerDiv.classList.add("ugly-button");
 			togglerDiv.onclick = function() {
 				if (buttonsOn) { // if on, then turn off, else turn on
@@ -1126,6 +1136,25 @@ var PlayerSet = setInterval(function() {
 				setTimeout(function() {Player.play()}, REPEAT_DELAY);
 			}
 		}, 1);
+        var dynamicButtonDisplacement = setInterval(function() {
+            // required when "Room Settings" button shows up
+            mppRoomSettingsBtn = document.getElementById(MPP_ROOM_SETTINGS_ID);
+            xDisplacement = getComputedStyle(document.documentElement).getPropertyValue(CSS_VARIABLE_X_DISPLACEMENT);
+            // if "Room Settings" button exists and is visible, enable displacement, else revert only when not already changed
+            if (xDisplacement == "0px" &&
+                (mppRoomSettingsBtn &&
+                 (!mppRoomSettingsBtn.style ||
+                  (!mppRoomSettingsBtn.style.display ||
+                   (mppRoomSettingsBtn.style.display == "block"))))) {
+                document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, BTN_SPACER_X + "px");
+            } else if (xDisplacement != "0px" &&
+                       (!mppRoomSettingsBtn ||
+                        (mppRoomSettingsBtn.style &&
+                         mppRoomSettingsBtn.style.display &&
+                         mppRoomSettingsBtn.style.display != "block"))) {
+                document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
+            }
+        }, TENTH_OF_SECOND);
 		var slowRepeatingTasks = setInterval(function() {
 			// do background tab fix
 			if (!pageVisible) {
