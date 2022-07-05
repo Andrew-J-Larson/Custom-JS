@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.5.2";
+const VERSION = "2.5.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -140,7 +140,7 @@ const PRE_LOAD_MUSIC = PRE_MSG + "[Load Music]";
 const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
-const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via a site like https://www.file.io/";
+const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
@@ -342,9 +342,9 @@ var PlayerSet = setInterval(function() {
 		// CORS Anywhere (allows downloading files where JS can't)
 		var useCorsUrl = function(url) {
 			var newUrl = null; // send null back if it's already a cors url
-			var cors_api_url = 'https://cors-anywhere.herokuapp.com/';
-			// removes protocols before applying cors api url
-			if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url.replace(/(^\w+:|^)\/\//, '');
+			var cors_api_url = 'https://cors-proxy.htmldriven.com/?url=';
+			// prevents cors-anywhere-ifing a cors-anywhere link
+            if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
 			return newUrl;
 		}
 
