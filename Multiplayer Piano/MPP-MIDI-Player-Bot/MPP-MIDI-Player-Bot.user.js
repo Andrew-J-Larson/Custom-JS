@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.1
+// @version      2.5.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -931,7 +931,7 @@ var play = function(url) {
     } else {
         // downloads file if possible and then plays it if it's a MIDI
         urlToBlob(url, function(blob) {
-            if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS);
+            if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
             else if (isMidi(blob) || isOctetStream(blob)) {
                 // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
                 if (blob.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
