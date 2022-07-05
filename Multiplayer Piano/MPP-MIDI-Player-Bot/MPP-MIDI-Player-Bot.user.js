@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.0
+// @version      2.5.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -631,7 +631,7 @@ var playSong = function(songFileName, songData) {
                 previousSongData = currentSongData;
                 previousSongName = currentSongName;
                 currentSongData = songData;
-                //currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
+                currentSongName = /*(hasExtension > 0) ? songFileName.substring(0, hasExtension) :*/ songFileName;
                 currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
                 currentSongDuration = Player.getSongTime();
                 currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));

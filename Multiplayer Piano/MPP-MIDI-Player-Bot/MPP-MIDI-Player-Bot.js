@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.4.9";
+const VERSION = "2.5.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -642,7 +642,7 @@ var PlayerSet = setInterval(function() {
                         previousSongData = currentSongData;
                         previousSongName = currentSongName;
                         currentSongData = songData;
-                        //currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
+                        currentSongName = /*(hasExtension > 0) ? songFileName.substring(0, hasExtension) :*/ songFileName;
                         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
                         currentSongDuration = Player.getSongTime();
                         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
