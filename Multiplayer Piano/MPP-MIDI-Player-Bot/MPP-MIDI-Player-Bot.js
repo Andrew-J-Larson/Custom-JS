@@ -87,6 +87,7 @@ const LIMITED_PLAYERS = ["8c81505ab941e0760697d777"];
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 const MPP_ROOM_SETTINGS_ID = "room-settings-btn"; // (DON'T CHANGE)
+const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
 
 // Bot constant settings
 const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
@@ -637,11 +638,11 @@ var PlayerSet = setInterval(function() {
                         clearInterval(showSongName);
 
                         // changes song
-                        var hasExtension = songFileName.lastIndexOf('.');
+                        //var hasExtension = songFileName.lastIndexOf('.');
                         previousSongData = currentSongData;
                         previousSongName = currentSongName;
                         currentSongData = songData;
-                        currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
+                        //currentSongName = (hasExtension > 0) ? songFileName.substring(0, hasExtension) : songFileName;
                         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
                         currentSongDuration = Player.getSongTime();
                         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
@@ -673,24 +674,21 @@ var PlayerSet = setInterval(function() {
 			var error = PRE_ERROR + " (play)";
 			// load in the file
 			if (exists(songFile)) {
-				songFileName = songFile.name.split(/(\\|\/)/g).pop();
-				if (isMidi(songFile)) {
-					fileOrBlobToBase64(songFile, function(base64data) {
-						// play song only if we got data
-						if (exists(base64data)) {
-							currentFileLocation = songFile.name;
-							playSong(songFileName, base64data);
-							uploadButton.value = ""; // reset file input
-						} else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
-					});
-				} else {
-					stopLoadingMusic();
-					mppChatSend(error + " The file choosen, is either corrupted, or it's not really a MIDI file");
-				}
-			} else {
-				stopLoadingMusic();
-				mppChatSend(error + " MIDI file not found");
-			}
+                // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
+                songFileName = songFile.name.split(/(\\|\/)/g).pop();
+                if (songFile.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+                    if (isMidi(songFile)) {
+                        fileOrBlobToBase64(songFile, function(base64data) {
+                            // play song only if we got data
+                            if (exists(base64data)) {
+                                currentFileLocation = songFile.name;
+                                playSong(songFileName, base64data);
+                                uploadButton.value = ""; // reset file input
+                            } else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
+                        });
+                    } else mppChatSend(error + " The file choosen, \"" + songFileName + "\", is either corrupted, or it's not really a MIDI file");
+                } else mppChatSend(error + " The file choosen, \"" + songFileName + "\",  is too big (larger than " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+			} else mppChatSend(error + " MIDI file not found");
 		}
 
 		// Creates the play, pause, resume, and stop button for the bot
@@ -946,15 +944,18 @@ var PlayerSet = setInterval(function() {
 				urlToBlob(url, function(blob) {
 					if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(url) + "... " + WHERE_TO_FIND_MIDIS);
 					else if (isMidi(blob) || isOctetStream(blob)) {
-						fileOrBlobToBase64(blob, function(base64data) {
-							// play song only if we got data
-							if (exists(base64data)) {
-								if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-									base64data = base64data.replace("application/octet-stream", "audio/midi");
-								}
-								playURL(url, base64data);
-							} else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
-						});
+                        // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
+                        if (blob.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+                            fileOrBlobToBase64(blob, function(base64data) {
+                                // play song only if we got data
+                                if (exists(base64data)) {
+                                    if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                                        base64data = base64data.replace("application/octet-stream", "audio/midi");
+                                    }
+                                    playURL(url, base64data);
+                                } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
+                            });
+                        } else mppChatSend(error + " The file choosen, \"" + decodeURIComponent(url.substring(url.lastIndexOf('/') + 1)) + "\",  is too big (larger than " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
 					} else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
 				});
 			}
