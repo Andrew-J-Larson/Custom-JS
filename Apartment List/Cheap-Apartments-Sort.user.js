@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cheap Apartments Sort
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  try to take over the world!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -84,7 +84,7 @@ GM_addStyle(cheapPropertySortCSS);
 // create the basic button layout with IDs
 let cheapPropertiesSortElement = document.createElement('div');
 cheapPropertiesSortElement.id = cheapPropertiesSortId;
-cheapPropertiesSortElement.innerHTML = '<button type="button" id="'+cheapPropertiesLeftId+'" disabled>&#9664;</button> Cheapest<label id="'+cheapPropertiesPageTextId+'"></label> <button type="button" id="'+cheapPropertiesRightId+'" disabled>&#9654;</button>'
+cheapPropertiesSortElement.innerHTML = '<button type="button" id="'+cheapPropertiesLeftId+'" disabled>&#9664;</button> <label id="'+cheapPropertiesPageTextId+'"></label> <button type="button" id="'+cheapPropertiesRightId+'" disabled>&#9654;</button>'
 
 // need to add the button somewhere, chose right after logo in the first navbar element
 let firstNavbarElement = document.querySelector('#'+navbarId+' > div > div:first-of-type');
@@ -111,7 +111,7 @@ let updatePropertyButtons = function() {
     else if (currentIndex < (properties.length - 1) && propertyRightBtn.disabled) propertyRightBtn.disabled = false;
   }
   (properties[currentIndex]).element.scrollIntoView(true);
-  propertyPageTxt.innerText = " (" + (currentIndex + 1) + ")";
+  propertyPageTxt.innerText = "Cheapest (" + (currentIndex + 1) + ")";
 };
 
 updatePropertyButtons(); // need to activate at least once to initialize the buttons/entry label
