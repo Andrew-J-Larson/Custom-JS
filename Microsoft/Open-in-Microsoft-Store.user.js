@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Open in Microsoft Store
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?:\/\/www\.microsoft\.com\/[^\\]*\/p\/[^\\]*/[^\\]*$/
+// @include      /^https?:\/\/apps\.microsoft\.com\/store\/detail\/[^\\]*\/[^\\]*$/
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Open-in-Microsoft-Store.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Open-in-Microsoft-Store.user.js
 // @icon         https://www.google.com/s2/favicons?domain=microsoft.com
@@ -15,8 +15,8 @@
 
 // CONSTANTS
 const MS_STORE_URI = "ms-windows-store://pdp/?ProductId=";
-const OPEN_IN_MS = "Open in Microsoft Store";
-const Button_Pannel_Selector = "#ButtonPanel_buttonPanel > div";
+const OPEN_IN_MS = "Open in Store app";
+const Get_Or_Remove_Button_Selector = "button[id^='getOrRemoveButton-']";
 const intervalSpeed = 100; // ms
 
 // Only activate if we are running on Windows 10 or newer
@@ -24,41 +24,26 @@ let UserAgent = window.navigator.userAgent;
 if (!UserAgent.includes("Windows NT 10.0") && !UserAgent.includes("Windows NT 11.0")) return false;
 
 // Get the product ID from webpage
+let getOrRemoveButton; // need this button as reference to create new one
+let buttonPanel; // need panel area to insert new button
 let ProductID;
-let ProductTitle;
 let waitingForAppInfo = setInterval(function() {
-    // window.pl contains the MS store app info we need
-    let buttonPanel = document.querySelector(Button_Pannel_Selector);
-    if (window.pl && window.pl.id && window.pl.title && buttonPanel) {
+    // need to get the button and its parent element for creating a new button
+    getOrRemoveButton = document.querySelector(Get_Or_Remove_Button_Selector);
+    if (getOrRemoveButton && getOrRemoveButton.parentElement) {
         clearInterval(waitingForAppInfo);
 
-        ProductID = window.pl.id;
-        ProductTitle = window.pl.title;
+        buttonPanel = getOrRemoveButton.parentElement;
+        ProductID = getOrRemoveButton.id.split('-')[1];
 
         // Create elements for open in MS store button
-        let openInStoreAnchor = document.createElement("a");
-        openInStoreAnchor.href = MS_STORE_URI + ProductID;
-        openInStoreAnchor.target = "_self";
-        openInStoreAnchor.classList.add("pi-overflow-ctrl");
-        openInStoreAnchor.role = "presentation"
-        let openInStoreButton = document.createElement("button");
-        openInStoreButton.setAttribute("data-tv-default-focus-rank", "600");
-        openInStoreButton.setAttribute("data-focus-rank", "600");
-        openInStoreButton.setAttribute("aria-label", OPEN_IN_MS);
-        openInStoreButton.setAttribute("aria-disabled", "false");
-        openInStoreButton.id = "buttonPanel_AppIdentityOpenButton";
-        openInStoreButton.classList.add("c-button");
-        openInStoreButton.classList.add("f-primary");
-        openInStoreButton.classList.add("cli_defaultFocus");
-        openInStoreButton.type = "button";
-        openInStoreButton.setAttribute("data-tv-strategy-up", "projection");
-        openInStoreButton.setAttribute("data-tv-strategy-down", "projection");
-        let openInStoreSpan = document.createElement("span");
-        openInStoreSpan.setAttribute("aria-hidden", "true");
-        openInStoreSpan.innerText = OPEN_IN_MS;
-        // build element together
-        openInStoreButton.appendChild(openInStoreSpan);
-        openInStoreAnchor.appendChild(openInStoreButton);
-        buttonPanel.appendChild(openInStoreAnchor);
+        let openInStoreButton = getOrRemoveButton.cloneNode(true);
+        openInStoreButton.id = "openInStoreButton-" + ProductID;
+        openInStoreButton.onclick = function () {location.href = MS_STORE_URI+ProductID};
+        let openInStoreButtonDiv = openInStoreButton.querySelector('div');
+        openInStoreButtonDiv.ariaLabel = openInStoreButtonDiv.ariaLabel.replace("Get", "Open");
+        openInStoreButtonDiv.innerText = openInStoreButtonDiv.innerText.replace("Get", "Open");
+        // build and place button into page
+        buttonPanel.appendChild(openInStoreButton);
     }
 }, intervalSpeed);
