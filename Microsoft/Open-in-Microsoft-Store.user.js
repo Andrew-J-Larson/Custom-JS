@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Open in Microsoft Store
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -25,7 +25,6 @@ if (!UserAgent.includes("Windows NT 10.0") && !UserAgent.includes("Windows NT 11
 
 // Get the product ID from webpage
 let getOrRemoveButton; // need this button as reference to create new one
-let buttonPanel; // need panel area to insert new button
 let ProductID;
 let waitingForAppInfo = setInterval(function() {
     // need to get the button and its parent element for creating a new button
@@ -33,7 +32,6 @@ let waitingForAppInfo = setInterval(function() {
     if (getOrRemoveButton && getOrRemoveButton.parentElement) {
         clearInterval(waitingForAppInfo);
 
-        buttonPanel = getOrRemoveButton.parentElement;
         ProductID = getOrRemoveButton.id.split('-')[1];
 
         // Create elements for open in MS store button
@@ -43,7 +41,7 @@ let waitingForAppInfo = setInterval(function() {
         let openInStoreButtonDiv = openInStoreButton.querySelector('div');
         openInStoreButtonDiv.ariaLabel = openInStoreButtonDiv.ariaLabel.replace("Get", "Open");
         openInStoreButtonDiv.innerText = openInStoreButtonDiv.innerText.replace("Get", "Open");
-        // build and place button into page
-        buttonPanel.appendChild(openInStoreButton);
+        // place button right after the first button
+        getOrRemoveButton.parentElement.insertBefore(openInStoreButton, getOrRemoveButton.nextSibling);
     }
 }, intervalSpeed);
