@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Open in Microsoft Store
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?:\/\/apps\.microsoft\.com\/store\/detail\/[^\\]*\/[^\\]*$/
+// @match        https://apps.microsoft.com/store/detail/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Open-in-Microsoft-Store.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/Open-in-Microsoft-Store.user.js
 // @icon         https://www.google.com/s2/favicons?domain=microsoft.com
