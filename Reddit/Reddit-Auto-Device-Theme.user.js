@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.1
+// @version      1.2.0
 // @description  Makes reddit match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -28,12 +28,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+const loopInterval = 200; // ms
 const BG_VAR = '--background';
 const DARK_BG = '#1A1A1B';
 const LIGHT_BG = '#FFFFFF';
 const pageDivSelector = 'body > div > div';
-const userMenuSelector = '#USER_DROPDOWN_ID';
-const darkModeIconSelector = 'i.icon-night';
+const userMenuButtonSelector = '#USER_DROPDOWN_ID';
+const talkLiveIconSelector = 'i.icon-live'; // this is uniquely used in the pop-up menu to help search only within the menu
+const viewOptionsIconSelector = 'i.icon-views'; // helps find dark mode switch (user logged in)
+const settingsIconSelector = 'i.icon-settings'; // helps find dark mode switch (user NOT logged in)
+const errorMessage = "Unknown error occurred, please report a new issue on GitHub stating that the Reddit theme doesn't auto change.";
 
 var watchEventTriggered = false;
 var activeElement = null;
@@ -46,19 +50,43 @@ function updateTheme(changeToScheme) {
     if (background == DARK_BG) theme = 'dark';
 
     if (theme != changeToScheme) {
-        let userMenu = document.querySelector(userMenuSelector);
-        userMenu.click();
+        let userMenuButton = document.querySelector(userMenuButtonSelector);
+        userMenuButton.click();
 
-        // new method to click the dark mode button without the need to update it every new reddit update
-        let darkModeIcon = document.querySelector(darkModeIconSelector);
-        let darkModeSwitch = darkModeIcon.parentElement; // this should grab the Dark Mode button
-        darkModeSwitch.click();
+        let talkLiveIconActive = document.querySelector(talkLiveIconSelector);
+        if (talkLiveIconActive) {
+            // needed to simplify button searches, must select the 4th previous element sibling to select the pop-up menu
+            let userMenu = (((talkLiveIconActive.parentElement).parentElement).parentElement).parentElement;
 
-        // need to close the user menu after being switched (quirk requires it to be clicked twice)
-        userMenu.click();
-        userMenu.click();
+            // selects dark mode icon button regardless of language used or account being signed in
+            let viewOptionsIcon = userMenu.querySelector(viewOptionsIconSelector);
+            let settingsIcon = userMenu.querySelector(settingsIconSelector);
+            let darkModeSwitch = null; // needs to be found, depending on if user is logged in or not
+            if (viewOptionsIcon) { // user is logged in
+                // must select the 3rd previous element sibling, and then grab next element sibling
+                let viewOptionsArea = (((viewOptionsIcon.parentElement).parentElement).parentElement).nextElementSibling;
+                let viewOptionsButtons = viewOptionsArea.querySelectorAll('button');
+                darkModeSwitch = viewOptionsButtons[viewOptionsButtons.length - 1];
+            } else if (settingsIcon) { // user is NOT logged in
+                // must select the 3rd previous element sibling
+                let settingsButton = ((settingsIcon.parentElement).parentElement).parentElement;
+                // then grab the next element sibling
+                let settingsArea = settingsButton.nextElementSibling;
+                let settingsButtons = settingsArea.querySelectorAll('button');
+                darkModeSwitch = settingsButtons[settingsButtons.length - 1];
+            } else {
+                throw errorMessage
+            }
 
-        if (watchEventTriggered) activeElement.focus();
+            if (darkModeSwitch) darkModeSwitch.click();
+
+            // need to close the user menu after being switched
+            userMenuButton.click();
+
+            if (watchEventTriggered) activeElement.focus();
+        } else {
+            throw errorMessage
+        }
     }
 
     watchEventTriggered = false;
