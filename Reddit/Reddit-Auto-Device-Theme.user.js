@@ -75,7 +75,7 @@ function updateTheme(changeToScheme) {
                 let settingsButtons = settingsArea.querySelectorAll('button');
                 darkModeSwitch = settingsButtons[settingsButtons.length - 1];
             } else {
-                throw errorMessage
+                throw errorMessage;
             }
 
             if (darkModeSwitch) darkModeSwitch.click();
@@ -85,7 +85,7 @@ function updateTheme(changeToScheme) {
 
             if (watchEventTriggered) activeElement.focus();
         } else {
-            throw errorMessage
+            throw errorMessage;
         }
     }
 
