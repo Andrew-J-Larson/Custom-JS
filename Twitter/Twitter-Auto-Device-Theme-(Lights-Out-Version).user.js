@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter - Auto Device Theme (Lights Out Version)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Makes twitter match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -34,6 +34,7 @@ const DARK_BG = 'rgb(0, 0, 0)';
 const LIGHT_BG = 'rgb(255, 255, 255)';
 const hideMenusCSS = '#layers > div:nth-child(2) { display: none !important }';
 const moreMenuSelector = 'div[data-testid="AppTabBar_More_Menu"]';
+const settingsAndSupportSelector = 'div[data-testid="settingsAndSupport"]';
 const displayLinkSelector = 'a[href="/i/display"]';
 const displaySettingsSelector = '#layers > div:nth-child(2)';
 const lightModeSwitchSelector = 'input[aria-label="Light"]';
@@ -49,7 +50,7 @@ function updateTheme(changeToScheme) {
     if (background == DARK_BG) theme = 'dark';
 
     if (theme != changeToScheme) {
-        let moreMenu, displayLink, displayModeSwitch;
+        let moreMenu, settingsAndSupport, displayLink, displayModeSwitch;
         let displayModeSwitchSelector = changeToScheme == 'dark' ? darkModeSwitchSelector : lightModeSwitchSelector;
 
         // need a custom style to keep certain menus hidden while changing theme
@@ -63,6 +64,10 @@ function updateTheme(changeToScheme) {
                 if (!moreMenu) {
                     moreMenu = document.querySelector(moreMenuSelector);
                     moreMenu.click();
+                }
+                if (!settingsAndSupport) {
+                    settingsAndSupport = document.querySelector(settingsAndSupportSelector);
+                    settingsAndSupport.click();
                 }
                 if (!displayLink) {
                     displayLink = document.querySelector(displayLinkSelector);
