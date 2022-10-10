@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Indeed Archive All Messages
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Archives all your messages in your Indeed inbox.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -43,7 +43,7 @@ const archiveAllButtonClassname = "archiveAllButton";
 // FUNCTIONS
 
 function hideElementBasedOnInnerText(innerText, elementToCheck, elementToHide) {
-    if (elementToCheck.innerText == innerText) elementToHide.style.display = "";
+    if (elementToCheck && elementToCheck.innerText == innerText) elementToHide.style.display = "";
     else elementToHide.style.display = "none";
 }
 
@@ -134,8 +134,10 @@ archiveAllButton.onclick = function() {
 var conversationListMessagesObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === "childList") {
-            message = document.querySelector(messageSelector);
-            if (!message) archiveAllButton.setAttribute("disabled", "");
+            setTimeout(function() {
+                message = document.querySelector(messageSelector);
+                if (!message) archiveAllButton.setAttribute("disabled", "");
+            }, slowLoopDelay);
         }
     });
 });
@@ -144,10 +146,13 @@ var conversationListMessagesObserver = new MutationObserver(function(mutations) 
 var folderDropdownObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === "attributes") {
-            hideElementBasedOnInnerText("Inbox", folderDropdownButton, archiveAllButton);
-            // need to also check if there are messages in case of a needed re-enable
-            message = document.querySelector(messageSelector);
-            if (message) archiveAllButton.removeAttribute("disabled");
+            setTimeout(function() {
+                hideElementBasedOnInnerText("Inbox", folderDropdownButton, archiveAllButton);
+                // need to also check if there are messages in case of a needed re-enable
+                message = document.querySelector(messageSelector);
+                if (message) archiveAllButton.removeAttribute("disabled");
+                else archiveAllButton.setAttribute("disabled", "");
+            }, slowLoopDelay);
         }
     });
 });
@@ -159,29 +164,34 @@ let waitForReact = setInterval(function() {
 
         // if button ever disappears, put back into page, but must wait for header
         let foundArchiveAllButton = null;
+        let checkingArchiveButton = false;
         let readdButtonAsNeeded = setInterval(function () {
-            let listHeader = document.querySelector(listHeaderSelector);
-            foundArchiveAllButton = document.querySelector("button."+archiveAllButtonClassname);
-            folderDropdownButton = document.querySelector(folderDropdownButtonSelector);
-            conversationList = document.querySelector(conversationListSelector);
-            conversationListMessages = document.querySelector(conversationListMessagesSelector);
-            let folderDropdownText = folderDropdownButton
-            if (!foundArchiveAllButton && listHeader && folderDropdownButton) {
-                listHeader.appendChild(archiveAllButton);
-                if (document.querySelector(messageSelector)) archiveAllButton.removeAttribute("disabled");
-                hideElementBasedOnInnerText("Inbox", folderDropdownButton, archiveAllButton);
-                // also change display when switching groups
-                folderDropdownObserver.observe(folderDropdownButton, {
-                    attributes: true
-                });
-                // also change disabled when no more messages are left
-                conversationListMessagesObserver.observe(conversationList, {
-                    childList: true
-                });
-                conversationListMessagesObserver.observe(conversationListMessages, {
-                    childList: true
-                });
+            if (!checkingArchiveButton) {
+                checkingArchiveButton = true;
+                let listHeader = document.querySelector(listHeaderSelector);
+                foundArchiveAllButton = document.querySelector("button."+archiveAllButtonClassname);
+                folderDropdownButton = document.querySelector(folderDropdownButtonSelector);
+                conversationList = document.querySelector(conversationListSelector);
+                conversationListMessages = document.querySelector(conversationListMessagesSelector);
+                let folderDropdownText = folderDropdownButton
+                if (!foundArchiveAllButton && listHeader && folderDropdownButton) {
+                    listHeader.appendChild(archiveAllButton);
+                    if (document.querySelector(messageSelector)) archiveAllButton.removeAttribute("disabled");
+                    hideElementBasedOnInnerText("Inbox", folderDropdownButton, archiveAllButton);
+                    // also change display when switching groups
+                    folderDropdownObserver.observe(folderDropdownButton, {
+                        attributes: true
+                    });
+                    // also change disabled when no more messages are left
+                    conversationListMessagesObserver.observe(conversationList, {
+                        childList: true
+                    });
+                    conversationListMessagesObserver.observe(conversationListMessages, {
+                        childList: true
+                    });
+                }
+                checkingArchiveButton = false;
             }
-        }, slowLoopDelay);
+        }, loopDelay);
     }
 }, loopDelay);
