@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Indeed Archive All Messages
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Archives all your messages in your Indeed inbox.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -70,7 +70,7 @@ var message; // needs to be set for each message clear
 // MAIN
 
 // for stylizing archive all button
-GM_addStyle("."+archiveAllButtonClassname+"{box-shadow:inset 0 1px 0 0 #fff;background-color:#fff;border-radius:6px;border:1px solid #dcdcdc;display:inline-block;cursor:pointer;color:#666;font-family:Arial;font-size:15px;padding:4px;margin-left:auto;margin-right:0;text-decoration:none;text-shadow:0 1px 0 #fff}."+archiveAllButtonClassname+":disabled{box-shadow:none;background-color:#f6f6f6;color:#666;text-shadow:none}."+archiveAllButtonClassname+":not([disabled]):hover{background-color:#f6f6f6}."+archiveAllButtonClassname+":not([disabled]):active{position:relative;top:1px}");
+GM_addStyle("."+archiveAllButtonClassname+"{box-shadow:inset 0 1px 0 0 #fff;background-color:#fff;border-radius:6px;border:1px solid #dcdcdc;display:inline-block;cursor:pointer;color:#666;font-family:Arial;font-size:15px;padding:4px;margin-left:auto;margin-right:0;text-decoration:none;text-shadow:0 1px 0 #fff}."+archiveAllButtonClassname+":disabled{box-shadow:none;background-color:#f6f6f6;color:#bababa;text-shadow:none}."+archiveAllButtonClassname+":not([disabled]):hover{background-color:#f6f6f6}."+archiveAllButtonClassname+":not([disabled]):active{position:relative;top:1px}");
 
 // need to create archive all button
 let archiveAllButton = document.createElement("button");
