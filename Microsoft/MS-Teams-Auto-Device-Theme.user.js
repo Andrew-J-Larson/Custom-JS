@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Teams - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes Microsoft Teams match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -10,6 +10,7 @@
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Teams-Auto-Device-Theme.user.js
 // @icon         https://statics.teams.cdn.office.net/hashed/favicon/prod/favicon-9e2b8f1.ico
 // @grant        none
+// @noframes
 // ==/UserScript==
 
 /* globals getStoredTheme */
