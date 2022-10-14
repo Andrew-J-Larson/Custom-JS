@@ -10,6 +10,7 @@
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Docs-Auto-Device-Theme.user.js
 // @icon         https://docs.microsoft.com/favicon.ico
 // @grant        none
+// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
