@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Docs - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes Microsoft Docs match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
