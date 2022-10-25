@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.4
+// @version      1.4.5
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,6 @@
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
 // @resource     css https://raw.githubusercontent.com/TheAlienDrew/User-Styles/main/Any/Global-Dark-Scrollbar.user.css
 // @resource     config https://raw.githubusercontent.com/darkreader/darkreader/main/src/config/dark-sites.config
-// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
@@ -35,6 +34,10 @@
  */
 
 // dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
+
+// First make sure we were able to grab the required resources:
+
+if (!GM_getResourceText('css') || !GM_getResourceText('config')) {throw "Error: resources didn't load in time, or are pointing to a dead link."}
 
 // required variables
 const dark_scrollbar = GM_getResourceText('css').split('\n'); // gets updated dark scrollbar source (so I don't have to manually update this script all the time) and puts each line into an array
