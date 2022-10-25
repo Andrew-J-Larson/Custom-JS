@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.1
+// @version      1.4.2
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -9,6 +9,7 @@
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Any%20-%20For%20Dark%20Reader/Dark%20Scrollbar%20for%20Dark%20Websites.user.js
 // @icon         https://darkreader.org/images/darkreader-icon-256x256.png
+// @grant        GM_addStyle
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://code.jquery.com/jquery-3.4.1.min.js
@@ -39,12 +40,6 @@ const dark_scrollbar = GM_getResourceText('css').split('\n'); // gets updated da
 const dark_sites = GM_getResourceText('config').split('\n'); // gets all sites and puts them in an array
 const current_url = window.location.href.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, ""); // removes protocol and trailing slash
 var is_dark = false;
-// required functions
-function addStyleString(str) {
-    var node = document.createElement('style');
-    node.innerHTML = str;
-    document.body.appendChild(node);
-}
 var dark_sites_lines = dark_sites.length;
 // remove any and all blank lines from the end of the file in the line count
 while (!dark_sites[dark_sites_lines - 1]) { dark_sites_lines--; }
@@ -98,5 +93,5 @@ if (is_dark) {
         else encasementStarted = (dark_scrollbar[k].startsWith('@-moz-document'))
     }
 
-    addStyleString(dark_scrollbar_fixed);
+    GM_addStyle(dark_scrollbar_fixed);
 }
