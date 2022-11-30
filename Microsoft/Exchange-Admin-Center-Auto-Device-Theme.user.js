@@ -6,8 +6,8 @@
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://admin.exchange.microsoft.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Exchange-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Exchange-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Exchange-Admin-Center-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Exchange-Admin-Center-Auto-Device-Theme.user.js
 // @icon         https://eacprodeusstorage.blob.core.windows.net/resources/images/favicon_metro.ico
 // @grant        none
 // @noframes
