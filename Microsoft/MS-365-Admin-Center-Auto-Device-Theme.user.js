@@ -5,8 +5,8 @@
 // @description  Makes Microsoft 365 admin center match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://admin.microsoft365.com/*
 // @match        https://admin.microsoft.com/*
+// @match        https://admin.microsoft365.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-365-Admin-Center-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-365-Admin-Center-Auto-Device-Theme.user.js
 // @icon         https://res.cdn.office.net/admincenter/admin-content/images/favicon_metro.ico
