@@ -1,13 +1,14 @@
 // ==UserScript==
-// @name         Microsoft Endpoint Manager - Auto Device Theme
+// @name         Microsoft 365 admin center - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.0
-// @description  Makes Microsoft Endpoint Manager match the device theme at all times.
+// @description  Makes Microsoft 365 admin center match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
+// @match        https://admin.microsoft365.com/*
 // @match        https://admin.microsoft.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Endpoint-Manager-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-Endpoint-Manager-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-365-Admin-Center-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Microsoft/MS-365-Admin-Center-Auto-Device-Theme.user.js
 // @icon         https://res.cdn.office.net/admincenter/admin-content/images/favicon_metro.ico
 // @grant        none
 // @noframes
