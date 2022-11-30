@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Twitter - Auto Device Theme (Dim Version)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes twitter match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://twitter.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Twitter/Twitter-Auto-Device-Theme-(Dim-Version).user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Twitter/Twitter-Auto-Device-Theme-(Dim-Version).user.js
-// @icon         https://help.twitter.com/content/dam/help-twitter/brand/logo.png
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=twitter.com
 // @grant        none
 // ==/UserScript==
 

@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Seconds Tick Blink
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes the colon blink to each second.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?://www\.bitday\.me/legacy*/
+// @match        https://www.bitday.me/legacy*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/BitDay/BitDay%20(Legacy)%20-%20Seconds%20Tick%20Blink.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/BitDay/BitDay%20(Legacy)%20-%20Seconds%20Tick%20Blink.user.js
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=bitday.me
 // @grant        none
 // ==/UserScript==
 

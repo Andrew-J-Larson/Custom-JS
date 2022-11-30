@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.3
+// @version      2.5.4
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?://www\.multiplayerpiano\.com*/
-// @include      /^https?://multiplayerpiano\.(com|net)*/
-// @include      /^https?://mppclone\.com*/
+// @match        https://www.multiplayerpiano.com/*
+// @match        https://multiplayerpiano.com/*
+// @match        https://multiplayerpiano.net/*
+// @match        https://mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/MPP-MIDI-Player-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/MPP-MIDI-Player-Bot.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Multiplayer%20Piano/MPP-MIDI-Player-Bot/favicon.png
