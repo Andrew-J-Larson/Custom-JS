@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -30,6 +30,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// don't start script on old Exchange portal
+if (window.location.pathname.startsWith('/ecp/')) throw new Error(GM_info.script.name+" can't run on this website.");
 
 const INTERVAL_SPEED = 5; // ms
 const OLD_PAGE_DELAY = 1500; // ms
