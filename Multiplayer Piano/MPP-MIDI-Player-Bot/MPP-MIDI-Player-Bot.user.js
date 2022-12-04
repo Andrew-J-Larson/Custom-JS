@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.4
+// @version      2.5.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -293,7 +293,7 @@ document.addEventListener('visibilitychange', function () {
 // =============================================== OBJECTS
 
 // The MIDIPlayer
-var Player = new MidiPlayer.Player(function(event) {
+const Player = new MidiPlayer.Player(function(event) {
     if (MPP.client.preventsPlaying()) {
         if (Player.isPlaying()) pause();
         return;

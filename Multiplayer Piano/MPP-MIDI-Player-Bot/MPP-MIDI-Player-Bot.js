@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.5.4";
+const VERSION = "2.5.5";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -307,7 +307,7 @@ var PlayerSet = setInterval(function() {
     if (typeof(MidiPlayer) != "undefined" && MidiPlayer != null) {
         clearInterval(PlayerSet);
     
-        var Player = new MidiPlayer.Player(function(event) {
+        const Player = new MidiPlayer.Player(function(event) {
             if (MPP.client.preventsPlaying()) {
                 if (Player.isPlaying()) pause();
                 return;
