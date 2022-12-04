@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Exchange admin center - Auto Device Theme
+// @name         [FORCE UPDATE ME!] Exchange admin center - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.4
 // @description  Makes Exchange admin center match the device theme at all times.

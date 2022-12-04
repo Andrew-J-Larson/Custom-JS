@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Microsoft Docs (depricating; force update me now) - Auto Device Theme
+// @name         [FORCE UPDATE ME!] Microsoft Docs - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.2
 // @description  Makes Microsoft Docs match the device theme at all times.

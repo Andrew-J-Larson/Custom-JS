@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Microsoft Office Web Apps (depricating; force update me now) - Auto Device Theme
+// @name         [FORCE UPDATE ME!] Microsoft Office Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.3
 // @description  Makes any Microsoft Office web app match the device theme at all times.

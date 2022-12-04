@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Microsoft 365 Web Apps - Auto Device Theme
+// @name         [FORCE UPDATE ME!] Microsoft 365 Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.5
 // @description  Makes any Microsoft 365 web app match the device theme at all times.
