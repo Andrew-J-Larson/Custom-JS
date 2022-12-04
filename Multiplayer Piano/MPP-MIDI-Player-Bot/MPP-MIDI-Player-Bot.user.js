@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MIDI Player Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.5
+// @version      2.5.6
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -332,7 +332,7 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 // CORS Anywhere (allows downloading files where JS can't)
 var useCorsUrl = function(url) {
     var newUrl = null; // send null back if it's already a cors url
-    var cors_api_url = 'https://cors-proxy.htmldriven.com/?url=';
+    var cors_api_url = 'https://corsproxy.io/?';
     // prevents cors-anywhere-ifing a cors-anywhere link
     if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
     return newUrl;

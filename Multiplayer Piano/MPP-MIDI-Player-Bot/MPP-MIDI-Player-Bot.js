@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "MIDI Player Bot";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.5.5";
+const VERSION = "2.5.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -342,7 +342,7 @@ var PlayerSet = setInterval(function() {
 		// CORS Anywhere (allows downloading files where JS can't)
 		var useCorsUrl = function(url) {
 			var newUrl = null; // send null back if it's already a cors url
-			var cors_api_url = 'https://cors-proxy.htmldriven.com/?url=';
+			var cors_api_url = 'https://corsproxy.io/?';
 			// prevents cors-anywhere-ifing a cors-anywhere link
             if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
 			return newUrl;
