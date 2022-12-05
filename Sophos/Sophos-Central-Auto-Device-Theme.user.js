@@ -6,8 +6,8 @@
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://central.sophos.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/!-User-Scripts/Sophos/Sophos-Central-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/!-User-Scripts/Sophos/Sophos-Central-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Sophos/Sophos-Central-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/master/Sophos/Sophos-Central-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=central.sophos.com
 // @grant        none
 // @noframes
