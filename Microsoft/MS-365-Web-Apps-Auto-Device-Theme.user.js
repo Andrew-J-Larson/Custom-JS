@@ -62,7 +62,7 @@ var activeElement = null;
 function updateTheme(changeToScheme) {
     let contentRoot = document.querySelector(contentRootSelector);
 
-    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1'); // window.__themeState__.theme is not always garanteeded to load
+    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1'); // window.__themeState__.theme is not always guaranteed to load
     theme = theme ? theme.toLowerCase().trim() : theme; // need to test against lowercase only, and remove extra whitespace
     theme = theme == "#ffffff" ? 'dark' : 'light';
 
