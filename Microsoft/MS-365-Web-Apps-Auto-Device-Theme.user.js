@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -37,6 +37,9 @@ if (window.location.pathname.startsWith('/ecp/')) throw new Error(GM_info.script
 const INTERVAL_SPEED = 5; // ms
 const OLD_PAGE_DELAY = 1500; // ms
 
+// required for checking theme
+const contentRootSelector = 'body > ohp-app > div';
+
 // needed when screen is small
 const maybeMoreButtonSelector = '#O365_MainLink_Affordance';
 
@@ -55,19 +58,19 @@ const excludedSubDomains = ["nam.delve", "tasks", "to-do", "insights.viva", "whi
 
 var watchEventTriggered = false;
 var activeElement = null;
-var maybeMoreButton, firstThemeCard, settingsButton; // gets set later
 
 function updateTheme(changeToScheme) {
-    let html = document.querySelector('html');
+    let contentRoot = document.querySelector(contentRootSelector);
 
-    let theme = window.__themeState__.theme.black;
-    theme = (theme == "#ffffff" || (theme == "var(--black)" && getComputedStyle(document.documentElement).getPropertyValue('--black') == "#ffffff")) ? 'dark' : 'light';
+    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1'); // window.__themeState__.theme is not always garanteeded to load
+    theme = theme ? theme.toLowerCase().trim() : theme; // need to test against lowercase only, and remove extra whitespace
+    theme = theme == "#ffffff" ? 'dark' : 'light';
 
     if (theme != changeToScheme) {
         let waitForMoreAndSettings = setInterval(function() {
             let firstClicked;
-            maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
-            settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
+            let maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
+            let settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
             if (maybeMoreButton && !settingsButton) {
                 // more button needs to be pressed first
                 maybeMoreButton.click();
@@ -80,7 +83,7 @@ function updateTheme(changeToScheme) {
                 if (!firstClicked) firstClicked = settingsButton;
 
                 let waitForThemeToggle = setInterval(function() {
-                    firstThemeCard = document.querySelector(firstThemeCardSelector) || document.querySelector(owaFirstThemeCardSelector);
+                    let firstThemeCard = document.querySelector(firstThemeCardSelector) || document.querySelector(owaFirstThemeCardSelector);
                     let themeToggleSwitch = document.querySelector(themeToggleSwitchSelector) || document.querySelector(owaThemeToggleSwitchSelector);
                     if (firstThemeCard && themeToggleSwitch) {
                         clearInterval(waitForThemeToggle);
@@ -121,7 +124,7 @@ window.addEventListener('load', function () {
             // will get here if there was no throw issue
             let waitForThemeAndSettingsAvailable = setInterval(function() {
                 // need to wait for one of the required buttons
-                if (window.__themeState__ && window.__themeState__.theme && window.__themeState__.theme.black && (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector))) {
+                if (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector)) {
                     clearInterval(waitForThemeAndSettingsAvailable);
 
                     // now we can start
