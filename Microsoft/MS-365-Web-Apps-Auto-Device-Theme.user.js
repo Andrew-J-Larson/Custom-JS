@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 Web Apps - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -38,21 +38,26 @@ const INTERVAL_SPEED = 5; // ms
 const OLD_PAGE_DELAY = 1500; // ms
 
 // required for checking theme
-const contentRootSelector = 'body > ohp-app > div';
+const contentRootSelector = 'body > ohp-app > div, body > div#app';
 
 // needed when screen is small
 const maybeMoreButtonSelector = '#O365_MainLink_Affordance';
+const maybeMoreSettingsButtonSelector = '#O365_MainLink_Settings_Affordance';
 
 // the following if found don't need page to be refreshed
 const settingsButtonSelector = '#O365_MainLink_Settings';
+const settingsPaneSelector = '#FlexPane_Settings';
+const flexPaneCloseButtonSelector = 'button#flexPaneCloseButton';
 const firstThemeCardSelector = '#themecardpanel > div > div';
 const themeToggleSwitchSelector = '#DarkModeSwitch';
 
-// the following if found will need the page to be refreshed
+// Outlook Web App: the following if found will need the page to be refreshed
 const owaSettingsButtonSelector = '#owaSettingsButton';
 const owaFirstThemeCardSelector = 'div[aria-label="Theme"] > div'
 const owaThemeToggleSwitchSelector = 'button[aria-label="options-quick-darkMode"]';
 
+// used for checking subdomain
+let subdomain; // gets set later
 // the following subdomains have no dark theme selection, so must be excluded
 const excludedSubDomains = ["nam.delve", "tasks", "to-do", "insights.viva", "whiteboard"];
 
@@ -62,25 +67,24 @@ var activeElement = null;
 function updateTheme(changeToScheme) {
     let contentRoot = document.querySelector(contentRootSelector);
 
-    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1'); // window.__themeState__.theme is not always guaranteed to load
+    // window.__themeState__.theme is not always guaranteed to load , so need to check computed styles of Office and normal apps
+    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--black') || window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1');
     theme = theme ? theme.toLowerCase().trim() : theme; // need to test against lowercase only, and remove extra whitespace
     theme = theme == "#ffffff" ? 'dark' : 'light';
 
+    let maybeMoreButton, settingsButton; // needs to be here or else causes infinite loops
     if (theme != changeToScheme) {
         let waitForMoreAndSettings = setInterval(function() {
-            let firstClicked;
-            let maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
-            let settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
-            if (maybeMoreButton && !settingsButton) {
+            maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
+            settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(maybeMoreSettingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
+            if (maybeMoreButton && maybeMoreButton.ariaExpanded == "false") {
                 // more button needs to be pressed first
                 maybeMoreButton.click();
-                firstClicked = maybeMoreButton;
             } else if (settingsButton) {
                 clearInterval(waitForMoreAndSettings);
 
                 // now settings can be opened
                 settingsButton.click();
-                if (!firstClicked) firstClicked = settingsButton;
 
                 let waitForThemeToggle = setInterval(function() {
                     let firstThemeCard = document.querySelector(firstThemeCardSelector) || document.querySelector(owaFirstThemeCardSelector);
@@ -90,13 +94,16 @@ function updateTheme(changeToScheme) {
 
                         firstThemeCard.click();
                         themeToggleSwitch.click();
-                        firstClicked.click();
 
-                        // need to wait a short bit for change to go through, only on old pages that need reloading
+                        // need to wait a short bit for change to go through, only on old pages that need reloading (e.g. Outlook)
                         if (window.userNormalizedTheme) {
                             setTimeout(function() {
                                 window.location.reload();
                             }, OLD_PAGE_DELAY);
+                        } else { // click the close button on the settings pane
+                            let settingsPane = document.querySelector(settingsPaneSelector);
+                            let settingsPaneCloseButton = ((settingsPane.parentElement).parentElement).querySelector(flexPaneCloseButtonSelector);
+                            settingsPaneCloseButton.click();
                         }
 
                         if (watchEventTriggered) activeElement.focus();
@@ -111,10 +118,11 @@ function updateTheme(changeToScheme) {
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
+    subdomain = (window.location.host).split('.')[0];
     let testSubDomainIndex = 0;
     let testSubDomainEnd = excludedSubDomains.length;
     let testSubDomainLoop = setInterval(function() {
-        if (window.location.hostname.startsWith(excludedSubDomains[testSubDomainIndex])) {
+        if (subdomain == excludedSubDomains[testSubDomainIndex]) {
             testSubDomainIndex = -1;
         } else testSubDomainIndex++;
         // only stop when we've reached that point
