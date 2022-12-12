@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sophos Central - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes Sophos Central match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -29,10 +29,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const INTERVAL_SPEED = 100;
+const INTERVAL_SPEED = 1000; // ms; needs to be longer timed because of weird loading issues with Sophos Central
 const loadingScreenSelector = 'div#loading';
 const scLoaderSelector = 'div.sc-loader-container';
-const contentSelector = 'div.sc-loader-content > ng-transclude > div.mainpanel > ui-view.ng-scope > div.ng-scope > div.content'
+const contentSelector = 'div#angular-page-container > div.content-area'
 const themeBtnSelector = 'button#change-theme-header-button';
 const themeNotIconSelector = themeBtnSelector + ' > span.glyphicon';
 const themeToLightIconClass = 'glyphicon-sc-sun';
@@ -68,11 +68,13 @@ window.addEventListener('load', function () {
             content = document.querySelector(contentSelector);
         themeButton = document.querySelector(themeBtnSelector);
         themeNotIcon = document.querySelector(themeNotIconSelector);
+        content = content ? (content.querySelector('.ng-star-inserted').length > 1 ? content.querySelector('.ng-star-inserted')[1] : content ) : content;
 
         if (themeButton && themeNotIcon &&
             loadingScreen ? (window.getComputedStyle(loadingScreen)).getPropertyValue('display') == 'none' : true &&
             scLoader ? (window.getComputedStyle(scLoader)).getPropertyValue('visibility') == 'hidden' : true &&
-            content && (window.getComputedStyle(content)).getPropertyValue('visibility') == 'visible') {
+            content && (window.getComputedStyle(content)).getPropertyValue('display') != 'none' &&
+            (window.getComputedStyle(content)).getPropertyValue('visibility') != 'hidden') {
             clearInterval(waitingForThemeBtnAndIco);
 
             // now we can start
