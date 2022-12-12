@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bouncing DVD logo - Remove Links
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Removes the links from the website to give it a clear view of the bouncing logo.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -9,7 +9,7 @@
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Bouncing%20DVD%20logo/Remove-Links.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Bouncing%20DVD%20logo/Remove-Links.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bouncingdvdlogo.com
-// @grant        none
+// @grant        GM_info
 // ==/UserScript==
 
 // THIS COULD BE CONVERTED TO A CSS STYLE INSTEAD!
@@ -30,4 +30,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-document.querySelector('body > aside').style.display = 'none';
+const SCRIPT_NAME = (GM_info.script).name;
+const NEW_DL = "https://github.com/TheAlienDrew/Custom-CSS/blob/main/!-User-Styles/Bouncing%20DVD%20Logo/Remove-Links.user.css";
+let notify = confirm(`The current script "${SCRIPT_NAME}" has been converted to a User-Style. Please delete this script, and then press okay to bring up the new User-Style download.`)
+if (notify) window.location.href = `${NEW_DL}`;
