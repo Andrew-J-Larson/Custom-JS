@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sophos Central - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Makes Sophos Central match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -72,7 +72,7 @@ window.addEventListener('load', function () {
         if (themeButton && themeNotIcon &&
             loadingScreen ? (window.getComputedStyle(loadingScreen)).getPropertyValue('display') == 'none' : true &&
             scLoader ? (window.getComputedStyle(scLoader)).getPropertyValue('visibility') == 'hidden' : true &&
-            content && (window.getComputedStyle(scLoader)).getPropertyValue('visibility') == 'visible') {
+            content && (window.getComputedStyle(content)).getPropertyValue('visibility') == 'visible') {
             clearInterval(waitingForThemeBtnAndIco);
 
             // now we can start
