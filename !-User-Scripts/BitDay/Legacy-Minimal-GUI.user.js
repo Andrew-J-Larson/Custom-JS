@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         BitDay (Legacy) - Minimal GUI
+// @name         [DELETE ME!] BitDay (Legacy) - Minimal GUI
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.5
 // @description  Removes all GUI, except the clock area, originally made for a small screen Raspberry PI clock kiosk.

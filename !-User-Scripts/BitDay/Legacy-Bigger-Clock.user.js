@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         BitDay (Legacy) - Bigger Clock
+// @name         [DELETE ME!] BitDay (Legacy) - Bigger Clock
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.5
 // @description  Makes the clock much bigger (since zoom glitches position), originally made for a small screen Raspberry PI clock kiosk.

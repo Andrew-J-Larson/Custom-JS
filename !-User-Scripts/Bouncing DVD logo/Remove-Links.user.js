@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Bouncing DVD logo - Remove Links
+// @name         [DELETE ME!] Bouncing DVD logo - Remove Links
 // @namespace    https://thealiendrew.github.io/
 // @version      1.0.5
 // @description  Removes the links from the website to give it a clear view of the bouncing logo.
