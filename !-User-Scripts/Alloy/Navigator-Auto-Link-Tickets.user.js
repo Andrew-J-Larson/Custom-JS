@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.0
+// @version      1.3.1
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -30,9 +30,10 @@
 
 // CONSTANTS
 
+const ticketGoURL = "https://"+window.location.host+"/wp/Go/";
+const ticketViewObjectURL = "https://"+window.location.host+"/wp/ViewObject.aspx?ID=";
+const ticketPattern = /^[a-zA-Z]+[0-9]+$/
 const alloyGetURLSelector = 'li[title="Get URL"]'; // '> a[title="Get URL"]'
-const ticketGoURL = "https://support.nwpump.com/wp/Go/";
-const ticketViewObjectURL = "https://support.nwpump.com/wp/ViewObject.aspx?ID=";
 const alloyBreadcrumbsID = 'alloy-breadcrumbs'
 const headerSelector1 = ".full-form-header__1_1";
 const headerSelector2 = ".full-form-header__2_1";
@@ -114,10 +115,17 @@ window.addEventListener('load', function () {
                 ticketNumber = ticketNumberElement.innerText;
             }
             if (!ticketNumber & ticketHeader2) {
-                // get ticket number from sub title - format example: Incident T000001 => T000001
-                let tempTicketTitle = ticketHeader2.innerText;
-                let wordsTicketTitle = tempTicketTitle.split(" ");
-                let possibleTicketNumber = wordsTicketTitle[wordsTicketTitle.length - 1];
+                // get ticket number from website title - format example: "T000001 - Title of Ticket" => T000001
+console.log((document.title).split(' ')[0])
+                let wordsWebsiteTitle = (document.title).split(' ');
+                let possibleTicketNumber = wordsWebsiteTitle[wordsWebsiteTitle.length - 1];
+                ticketNumber = ticketPattern.test(possibleTicketNumber) ? possibleTicketNumber : false;
+            }
+            if (!ticketNumber & ticketHeader2) {
+                // get ticket number from sub title - format example: "Incident T000001" => T000001
+                let ticketHeader = ticketHeader2.innerText;
+                let wordsTicketHeader = ticketHeader.split(' ');
+                let possibleTicketNumber = wordsTicketHeader[wordsTicketHeader.length - 1];
                 ticketNumber = /^[a-zA-Z]+[0-9]+$/.test(possibleTicketNumber) ? possibleTicketNumber : false;
             }
             if (!ticketNumber && ticketHeader1) {
@@ -159,7 +167,7 @@ window.addEventListener('load', function () {
                 let alloyGetURLButton = document.querySelector(alloyGetURLSelector);
                 if (alloyGetURLButton) alloyGetURLButton.style.display = "none";
 
-                if (false) { // ticketNumberElement
+                if (ticketNumberElement) {
                     let fixMissingButton = setInterval(function() {
                         if (!document.getElementById(ticketLinkButtonID)) {
                             alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
