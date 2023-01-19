@@ -116,7 +116,6 @@ window.addEventListener('load', function () {
             }
             if (!ticketNumber & ticketHeader2) {
                 // get ticket number from website title - format example: "T000001 - Title of Ticket" => T000001
-console.log((document.title).split(' ')[0])
                 let wordsWebsiteTitle = (document.title).split(' ');
                 let possibleTicketNumber = wordsWebsiteTitle[wordsWebsiteTitle.length - 1];
                 ticketNumber = ticketPattern.test(possibleTicketNumber) ? possibleTicketNumber : false;
