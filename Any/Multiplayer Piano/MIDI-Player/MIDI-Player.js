@@ -11,7 +11,7 @@ const DOWNLOAD_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/m
 const MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/master/browser/midiplayer.js";
 // ==/JavaScript==
 
-/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

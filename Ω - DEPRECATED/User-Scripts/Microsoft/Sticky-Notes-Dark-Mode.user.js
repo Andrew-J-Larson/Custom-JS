@@ -16,7 +16,7 @@
 // @resource     cssDarkScrollbar https://raw.githubusercontent.com/TheAlienDrew/User-Styles/main/Any/Global-Dark-Scrollbar.user.css
 // ==/UserScript==
 
-/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
