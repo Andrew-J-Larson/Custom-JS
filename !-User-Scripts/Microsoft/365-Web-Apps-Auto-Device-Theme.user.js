@@ -1,21 +1,23 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://*.microsoft365.com/*
 // @match        https://*.office.com/*
 // @match        https://*.office365.com/*
+// @match        https://*.sharepoint.com/personal/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com
 // @grant        none
 // @noframes
 // ==/UserScript==
+/* globals __themeState__ */
 
-/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +40,7 @@ const INTERVAL_SPEED = 5; // ms
 const OLD_PAGE_DELAY = 1500; // ms
 
 // required for checking theme
-const contentRootSelector = 'body > ohp-app > div, body > div#app';
+const contentRootSelector = (window.location.hostname).endsWith('sharepoint.com') ? '#appRoot' : 'body > ohp-app > div, body > div#app';
 
 // needed when screen is small
 const maybeMoreButtonSelector = '#O365_MainLink_Affordance';
@@ -68,9 +70,9 @@ function updateTheme(changeToScheme) {
     let contentRoot = document.querySelector(contentRootSelector);
 
     // window.__themeState__.theme is not always guaranteed to load , so need to check computed styles of Office and normal apps
-    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--black') || window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1');
+    let theme = window.getComputedStyle(contentRoot).getPropertyValue('--black') || window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1') || __themeState__.theme.themeName;
     theme = theme ? theme.toLowerCase().trim() : theme; // need to test against lowercase only, and remove extra whitespace
-    theme = theme == "#ffffff" ? 'dark' : 'light';
+    theme = (theme == "#ffffff" || theme.includes('dark mode')) ? 'dark' : 'light';
 
     let maybeMoreButton, settingsButton; // needs to be here or else causes infinite loops
     if (theme != changeToScheme) {
