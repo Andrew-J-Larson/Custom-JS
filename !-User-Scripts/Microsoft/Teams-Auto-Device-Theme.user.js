@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Teams - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes Microsoft Teams match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -54,7 +54,7 @@ function updateTheme(changeToScheme) {
         theme = 'light';
     }
 
-    if (theme != changeToScheme) {
+    if (theme != changeToScheme && !document.hidden) { // teams settings won't always change when the window is hidden
         settingsMenuButton.click();
 
         let waitForMoreSettings = setInterval(function() {
