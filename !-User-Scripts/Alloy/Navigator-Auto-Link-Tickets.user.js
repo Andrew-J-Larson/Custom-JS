@@ -11,9 +11,8 @@
 // @icon         https://hd.alloysoftware.com/helpdesk/favicon.ico
 // @grant        GM_addStyle
 // ==/UserScript==
-/* globals GetIdFromURL */
 
-/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,10 +27,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* globals GetIdFromURL */
+
 // CONSTANTS
 
-const ticketGoURL = "https://"+window.location.host+"/wp/Go/";
-const ticketViewObjectURL = "https://"+window.location.host+"/wp/ViewObject.aspx?ID=";
+const ticketGoURL = "https://" + window.location.host + "/wp/Go/";
+const ticketViewObjectURL = "https://" + window.location.host + "/wp/ViewObject.aspx?ID=";
 const ticketPattern = /^[a-zA-Z]+[0-9]+$/
 const alloyGetURLSelector = 'li[title="Get URL"]'; // '> a[title="Get URL"]'
 const alloyBreadcrumbsID = 'alloy-breadcrumbs'
@@ -41,12 +42,12 @@ const tooltipString = "Click to copy link to ticket";
 const SPEED_SECOND = 1000; // ms
 const INTERVAL_SLOW_SPEED = 500; // ms
 const INTERVAL_SPEED = 200; // ms
-const ticketLinkRandomNumber = function () {
+const ticketLinkRandomNumber = function() {
     let length = 18; // 18 is likely overkill, but fine
-    return Math.floor(Math.pow(10, length-1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length-1) - 1));
+    return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
 }();
-let ticketLinkToastID = 'ticketLinkToast-'+ticketLinkRandomNumber;
-let ticketLinkButtonID = 'ticketLinkButton-'+ticketLinkRandomNumber;
+let ticketLinkToastID = 'ticketLinkToast-' + ticketLinkRandomNumber;
+let ticketLinkButtonID = 'ticketLinkButton-' + ticketLinkRandomNumber;
 
 // VECTORS
 
@@ -59,15 +60,15 @@ const googleFontLinkDarkMode = '<svg style="display: inline-block; vertical-alig
 const clipTextColor = '#666666';
 const clipHoverLightModeBackground = '#bedafc';
 const clipHoverDarkModeBackground = '#2b2f31';
-GM_addStyle('#'+ticketLinkButtonID+' {border: none !important; background: transparent !important}');
-GM_addStyle('#'+ticketLinkButtonID+':focus, #'+ticketLinkButtonID+' > svg:focus {outline: none !important}');
-GM_addStyle('.MuiTypography-root > #'+ticketLinkButtonID+' {padding: 0 !important}');
-GM_addStyle('.MuiTypography-root > #'+ticketLinkButtonID+' > svg {margin-top: -1.015px !important}');
-GM_addStyle('.full-form-header__1_1 > #'+ticketLinkButtonID+' > svg {margin-inline: -3px !important; padding: 0 3px 0.3333px !important; border-radius: 4px !important}');
-GM_addStyle('.full-form-header__1_1 > #'+ticketLinkButtonID+':not(.dkDark) :hover {background-color: '+clipHoverLightModeBackground+' !important}');
-GM_addStyle('.full-form-header__1_1 > #'+ticketLinkButtonID+'.dkDark :hover {background-color: '+clipHoverDarkModeBackground+'40 !important}');
-GM_addStyle('.MuiTypography-root > #'+ticketLinkToastID+' {font-size: 12px !important; margin-top: -1.015px !important}');
-GM_addStyle('.full-form-header__1_1 > #'+ticketLinkToastID+' {font-size: 14px !important; padding-bottom: 2.0833px !important; font-weight: 400 !important; color: '+clipTextColor+' !important}');
+GM_addStyle('#' + ticketLinkButtonID + ' {border: none !important; background: transparent !important}');
+GM_addStyle('#' + ticketLinkButtonID + ':focus, #' + ticketLinkButtonID + ' > svg:focus {outline: none !important}');
+GM_addStyle('.MuiTypography-root > #' + ticketLinkButtonID + ' {padding: 0 !important}');
+GM_addStyle('.MuiTypography-root > #' + ticketLinkButtonID + ' > svg {margin-top: -1.015px !important}');
+GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + ' > svg {margin-inline: -3px !important; padding: 0 3px 0.3333px !important; border-radius: 4px !important}');
+GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + ':not(.dkDark) :hover {background-color: ' + clipHoverLightModeBackground + ' !important}');
+GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + '.dkDark :hover {background-color: ' + clipHoverDarkModeBackground + '40 !important}');
+GM_addStyle('.MuiTypography-root > #' + ticketLinkToastID + ' {font-size: 12px !important; margin-top: -1.015px !important}');
+GM_addStyle('.full-form-header__1_1 > #' + ticketLinkToastID + ' {font-size: 14px !important; padding-bottom: 2.0833px !important; font-weight: 400 !important; color: ' + clipTextColor + ' !important}');
 
 // FUNCTIONS
 
@@ -94,7 +95,7 @@ let placementElement; // gets set dynamically
 // MAIN
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     // need to wait for element to be available
     let waitForAlloyBreadcrumbs = setInterval(function() {
         let ticketHeader = document.querySelector('.full-form-header-wrapper');
@@ -134,7 +135,7 @@ window.addEventListener('load', function () {
             if (!linkText) linkText = ticketNumber;
 
             // create copy to clipboard button if we have the information we needed
-            if (( ticketNumberElement || ticketHeader1) && linkText) {
+            if ((ticketNumberElement || ticketHeader1) && linkText) {
                 // need to craft rich-text link
                 let linkURL = ticketNumber ? (ticketGoURL + ticketNumber) : (ticketViewObjectURL + GetIdFromURL(window.location.href));
                 let ticketRichTextLink = `<a href="${linkURL}">${linkText}</a>`;

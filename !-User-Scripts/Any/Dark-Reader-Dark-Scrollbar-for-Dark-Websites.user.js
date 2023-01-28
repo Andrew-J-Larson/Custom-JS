@@ -17,8 +17,6 @@
 // @resource     config https://raw.githubusercontent.com/darkreader/darkreader/main/src/config/dark-sites.config
 // ==/UserScript==
 
-/* globals XRegExp */
-
 /* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
@@ -35,10 +33,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* globals XRegExp */
+
 // dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
 
 // First make sure we were able to grab the required resources
-if (!GM_getResourceText('css') || !GM_getResourceText('config')) {throw "Error: resources didn't load in time, or some point to a dead link."}
+if (!GM_getResourceText('css') || !GM_getResourceText('config')) { throw "Error: resources didn't load in time, or some point to a dead link." }
 
 // required variables
 const INTERVAL_SPEED = 0; // needs to act like for loop (no delay), but non-blocking

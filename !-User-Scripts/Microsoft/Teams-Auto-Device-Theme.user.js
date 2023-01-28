@@ -14,8 +14,6 @@
 // @noframes
 // ==/UserScript==
 
-/* globals getStoredTheme */
-
 /* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
@@ -31,6 +29,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+/* globals getStoredTheme */
 
 const INTERVAL_SPEED = 5; // ms
 const settingsMenuButtonSelector = '#settings-menu-button';
@@ -94,7 +94,7 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     let waitForSettingsButton = setInterval(function() {
         settingsMenuButton = document.querySelector(settingsMenuButtonSelector);
         if (settingsMenuButton) {

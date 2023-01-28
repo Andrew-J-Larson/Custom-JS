@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube - Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.0
+// @version      1.9.1
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -31,89 +31,89 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-var $ = window.jQuery;
+/* globals $ */
 
 // basic
 const scriptShortName = 'YTscrollSuggest';
-const fastDelay       = 100; // in milliseconds
+const fastDelay = 100; // in milliseconds
 
 // initial load
 const thumbnailsLoadInitial = 20;
-const thumbnailsLoadMust    = 10;
+const thumbnailsLoadMust = 10;
 
 // selectors
 //const pageSelector        = 'ytd-app';
-const headerSelector      = '#masthead-container';
-const leftSelector        = '#primary';
-const leftInSelector      = leftSelector + '-inner';
-const rightSelector       = '#secondary';
-const rightInSelector     = rightSelector + '-inner';
-const playerSelector      = '#player-container-outer';
-const theaterSelector     = '#player-theater-container';
-const miniplayerSelector  = 'button.ytp-miniplayer-button';
-const sizeSelector        = 'button.ytp-size-button';
-const fullscreenSelector  = 'button.ytp-fullscreen-button';
-const panelsSelector      = '#panels';
-const donationsSelector   = '#donation-shelf';
-const chatSelector        = 'ytd-live-chat-frame#chat';
-const playlistSelector    = '#playlist';
-const adsSelector         = '#player-ads';
+const headerSelector = '#masthead-container';
+const leftSelector = '#primary';
+const leftInSelector = leftSelector + '-inner';
+const rightSelector = '#secondary';
+const rightInSelector = rightSelector + '-inner';
+const playerSelector = '#player-container-outer';
+const theaterSelector = '#player-theater-container';
+const miniplayerSelector = 'button.ytp-miniplayer-button';
+const sizeSelector = 'button.ytp-size-button';
+const fullscreenSelector = 'button.ytp-fullscreen-button';
+const panelsSelector = '#panels';
+const donationsSelector = '#donation-shelf';
+const chatSelector = 'ytd-live-chat-frame#chat';
+const playlistSelector = '#playlist';
+const adsSelector = '#player-ads';
 const offerModuleSelector = '#offer-module';
-const sugContainSelector  = '#related > ytd-watch-next-secondary-results-renderer > #items';
+const sugContainSelector = '#related > ytd-watch-next-secondary-results-renderer > #items';
 const suggestionsSelector = sugContainSelector + ' > ytd-item-section-renderer > #contents';
-const autoPlaySelector    = 'ytd-compact-autoplay-renderer';
+const autoPlaySelector = 'ytd-compact-autoplay-renderer';
 const autoRelatedSelector = 'yt-related-chip-cloud-renderer';
 const notAutoPlaySelector = ':not(.ytd-compact-autoplay-renderer)';
-const itemThumbSelector  = 'ytd-thumbnail:not(.ytd-rich-metadata-renderer)';
-const videoPlaySelector   = 'ytd-compact-video-renderer';
-const videoItemSelector   = videoPlaySelector + notAutoPlaySelector;
-const plPlaySelector      = 'ytd-compact-playlist-renderer';
-const plItemSelector      = plPlaySelector + notAutoPlaySelector;
-const radioPlaySelector   = 'ytd-compact-radio-renderer';
-const radioItemSelector   = radioPlaySelector + notAutoPlaySelector;
-const moviePlaySelector   = 'ytd-compact-movie-renderer';
-const movieItemSelector   = moviePlaySelector + notAutoPlaySelector;
-const movieItemASelector  = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
-const spinnerSelector     = 'ytd-watch-next-secondary-results-renderer #continuations';
+const itemThumbSelector = 'ytd-thumbnail:not(.ytd-rich-metadata-renderer)';
+const videoPlaySelector = 'ytd-compact-video-renderer';
+const videoItemSelector = videoPlaySelector + notAutoPlaySelector;
+const plPlaySelector = 'ytd-compact-playlist-renderer';
+const plItemSelector = plPlaySelector + notAutoPlaySelector;
+const radioPlaySelector = 'ytd-compact-radio-renderer';
+const radioItemSelector = radioPlaySelector + notAutoPlaySelector;
+const moviePlaySelector = 'ytd-compact-movie-renderer';
+const movieItemSelector = moviePlaySelector + notAutoPlaySelector;
+const movieItemASelector = 'a.yt-simple-endpoint.ytd-compact-movie-renderer';
+const spinnerSelector = 'ytd-watch-next-secondary-results-renderer #continuations';
 
 // misc selectors
 const continuationsItemRendererSelector = 'ytd-continuation-item-renderer';
 
 // constant strings
-const miniplayerExit  = 'Expand (i)';
+const miniplayerExit = 'Expand (i)';
 const miniplayerEnter = 'Miniplayer (i)';
-const sizeExit  = 'Default view (t)';
+const sizeExit = 'Default view (t)';
 const sizeEnter = 'Theater mode (t)';
-const fullscreenExit  = 'Exit full screen (f)';
+const fullscreenExit = 'Exit full screen (f)';
 const fullscreenEnter = 'Full screen (f)';
 
 // styling
-const cssClassPrefix          = GM_info.script.author + scriptShortName;
-const standardPadding         = 24; // in px
-const videoItemPadding        = 8; // in px
-const spinnerPadding          = 16; // in px
-const scrollbarWidth          = 17; // in px
+const cssClassPrefix = GM_info.script.author + scriptShortName;
+const standardPadding = 24; // in px
+const videoItemPadding = 8; // in px
+const spinnerPadding = 16; // in px
+const scrollbarWidth = 17; // in px
 //const videoMinWidth           = 'var(--ytd-watch-flexy-min-player-width)';
 //const videoMaxWidth           = 'var(--ytd-watch-flexy-max-player-width)';
 //const sidebarWidth            = 'var(--ytd-watch-flexy-sidebar-width)';
 //const sidebarMinWidth         = 'var(--ytd-watch-flexy-sidebar-min-width)';
-const pageColorA              = 'var(--yt-spec-general-background-a)';
-const pageColorB              = 'var(--yt-spec-general-background-b)';
-const pageColorC              = 'var(--yt-spec-general-background-c)';
-const cssSuggestionsClass     = cssClassPrefix + 'Suggestions';
-const cssSpinnerClass         = cssClassPrefix + 'Spinner';
-const cssSugClassSelector     = '.' + cssSuggestionsClass;
-const cssScrollbarSelector    = '.' + cssSuggestionsClass + '::-webkit-scrollbar';
+const pageColorA = 'var(--yt-spec-general-background-a)';
+const pageColorB = 'var(--yt-spec-general-background-b)';
+const pageColorC = 'var(--yt-spec-general-background-c)';
+const cssSuggestionsClass = cssClassPrefix + 'Suggestions';
+const cssSpinnerClass = cssClassPrefix + 'Spinner';
+const cssSugClassSelector = '.' + cssSuggestionsClass;
+const cssScrollbarSelector = '.' + cssSuggestionsClass + '::-webkit-scrollbar';
 const cssSugItemClassSelector = '.' + cssSuggestionsClass + ' > *';
-const cssSpinClassSelector    = '.' + cssSpinnerClass;
+const cssSpinClassSelector = '.' + cssSpinnerClass;
 // scroll-padding is the margin between each item
-const cssSuggestionsStyle     = cssSugClassSelector + ' { overflow-y: auto; scroll-snap-type: y proximity }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid '+ pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
-const cssSugItemStyle         = cssSugItemClassSelector + ' { scroll-snap-align: end }';
+const cssSuggestionsStyle = cssSugClassSelector + ' { overflow-y: auto; scroll-snap-type: y proximity }' + cssScrollbarSelector + ' { height:auto } ' + cssScrollbarSelector + '-thumb { background-color:#ccc; border:2px solid ' + pageColorB + ' } ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-thumb { background-color:#333;border:2px solid ' + pageColorB + ' } [dark] ' + cssScrollbarSelector + '-track { background-color:' + pageColorB + ' }';
+const cssSugItemStyle = cssSugItemClassSelector + ' { scroll-snap-align: end }';
 // padding screws up the scrollbar effect, so must remove it
-const cssMovieItemStyle       = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
+const cssMovieItemStyle = cssSugClassSelector + ' ' + movieItemASelector + ' { padding-right: 0px }';
 // must be above everything, but not be showing so it's not awkward, and must follow scrollbar in view to activate
-const cssSpinnerStyle         = cssSpinClassSelector + ' { z-index: 999; position: fixed; opacity: 0 }';
-const cssConstantStyle        = cssSuggestionsStyle + ' ' + cssSugItemStyle + ' ' + cssMovieItemStyle + ' ' + cssSpinnerStyle;
+const cssSpinnerStyle = cssSpinClassSelector + ' { z-index: 999; position: fixed; opacity: 0 }';
+const cssConstantStyle = cssSuggestionsStyle + ' ' + cssSugItemStyle + ' ' + cssMovieItemStyle + ' ' + cssSpinnerStyle;
 
 let firstRun = true;
 // need to always be changed
@@ -140,7 +140,7 @@ let waitForPosition = function(element, aFunction, time) {
 let detectHeightChange = function(element, aFunction) {
     let prevHeight = element.height();
     element.attrchange({
-        callback: function (e) {
+        callback: function(e) {
             let curHeight = element.height();
             if (prevHeight !== curHeight) {
                 aFunction(true);
@@ -165,8 +165,8 @@ let disablePageScrolling = function(element) {
                 scrollHeight = this.scrollHeight,
                 height = $this.height(),
                 delta = (ev.type == 'DOMMouseScroll' ?
-                         ev.originalEvent.detail * -40 :
-                         ev.originalEvent.wheelDelta),
+                    ev.originalEvent.detail * -40 :
+                    ev.originalEvent.wheelDelta),
                 up = delta > 0;
 
             let prevent = function() {
@@ -240,14 +240,14 @@ let addStyleString = function(str) {
 let enableSuggestionsScroll = function(trueFalse) {
     // readdress where elements are first
     suggestions = $(suggestionsSelector).first();
-    autoPlay    = $(autoPlaySelector).first();
+    autoPlay = $(autoPlaySelector).first();
     autoRelated = $(autoRelatedSelector).first();
-    videoItem   = $(videoItemSelector);
-    plItem      = $(plItemSelector);
-    radioItem   = $(radioItemSelector);
-    movieItem   = $(movieItemSelector);
-    movieItemA  = $(movieItemASelector);
-    spinner     = $(spinnerSelector).first();
+    videoItem = $(videoItemSelector);
+    plItem = $(plItemSelector);
+    radioItem = $(radioItemSelector);
+    movieItem = $(movieItemSelector);
+    movieItemA = $(movieItemASelector);
+    spinner = $(spinnerSelector).first();
 
     // toggle styling
     if (trueFalse) {
@@ -258,15 +258,15 @@ let enableSuggestionsScroll = function(trueFalse) {
         if (spinner && spinner.classList && spinner.classList.contains(cssSpinnerClass)) spinner.removeClass(cssSpinnerClass);
 
         // these get dynamically changed in script
-        if (suggestions) suggestions.css({'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': ''});
-        if (autoPlay) autoPlay.css({'width': '', 'position': '', 'top': ''});
-        if (autoRelated) autoRelated.css({'width': '', 'position': '', 'top': ''});
-        if (spinner) spinner.css({'width': '', 'margin-top': '', 'top': '', 'bottom': ''});
-        if (videoItem) videoItem.css({'opacity': '', 'width': ''});
-        if (plItem) plItem.css({'opacity': '', 'width': ''});
-        if (radioItem) radioItem.css({'opacity': '', 'width': ''});
-        if (movieItem) movieItem.css({'opacity': '', 'width': ''});
-        if (movieItemA) movieItemA.css({'width': ''});
+        if (suggestions) suggestions.css({ 'width': '', 'height': '', 'margin-top': '', 'position': '', 'top': '' });
+        if (autoPlay) autoPlay.css({ 'width': '', 'position': '', 'top': '' });
+        if (autoRelated) autoRelated.css({ 'width': '', 'position': '', 'top': '' });
+        if (spinner) spinner.css({ 'width': '', 'margin-top': '', 'top': '', 'bottom': '' });
+        if (videoItem) videoItem.css({ 'opacity': '', 'width': '' });
+        if (plItem) plItem.css({ 'opacity': '', 'width': '' });
+        if (radioItem) radioItem.css({ 'opacity': '', 'width': '' });
+        if (movieItem) movieItem.css({ 'opacity': '', 'width': '' });
+        if (movieItemA) movieItemA.css({ 'width': '' });
     }
 };
 
@@ -276,8 +276,8 @@ addStyleString(cssConstantStyle);
 // enables for the first time (from video page)
 function yt_navigate_finish() {
     if (window.location.href.indexOf('youtube.com/watch?') > -1) {
-        enabledYT       = false;
-        disabledYT      = true;
+        enabledYT = false;
+        disabledYT = true;
         extendedDisable = false;
 
         // must run at least once (after the page is in view)
@@ -288,7 +288,8 @@ function yt_navigate_finish() {
                 // must check to make sure the first PRELOAD suggested videos have thumbnails
                 enableSuggestionsScroll(false); // needed first when dynamic loading happens
                 let imagesLoaded = 0;
-                let i = 0, j = 0;
+                let i = 0,
+                    j = 0;
                 let loadThumbnails = true;
                 let loopingItems = setInterval(function() {
                     if (loadThumbnails) {
@@ -324,42 +325,42 @@ function yt_navigate_finish() {
 
                         // set globals
                         suggestions = $(suggestionsSelector).first();
-                        autoPlay    = $(autoPlaySelector).first();
+                        autoPlay = $(autoPlaySelector).first();
                         autoRelated = $(autoRelatedSelector).first();
-                        videoItem   = $(videoItemSelector);
-                        plItem      = $(plItemSelector);
-                        radioItem   = $(radioItemSelector);
-                        movieItem   = $(movieItemSelector);
-                        movieItemA  = $(movieItemASelector);
-                        spinner     = $(spinnerSelector).first();
+                        videoItem = $(videoItemSelector);
+                        plItem = $(plItemSelector);
+                        radioItem = $(radioItemSelector);
+                        movieItem = $(movieItemSelector);
+                        movieItemA = $(movieItemASelector);
+                        spinner = $(spinnerSelector).first();
                         // initialize semi-globals
-                        var header      = $(headerSelector),
-                            leftCoIn    = $(leftInSelector),
-                            rightContn  = $(rightSelector),
-                            rightCoIn   = $(rightInSelector),
-                            player      = $(playerSelector).first(),
-                            theater     = $(theaterSelector).first(),
-                            panels      = $(panelsSelector),
-                            donations   = $(donationsSelector),
-                            chat        = $(chatSelector).first(),
-                            playlist    = $(playlistSelector),
-                            ads         = $(adsSelector),
+                        var header = $(headerSelector),
+                            leftCoIn = $(leftInSelector),
+                            rightContn = $(rightSelector),
+                            rightCoIn = $(rightInSelector),
+                            player = $(playerSelector).first(),
+                            theater = $(theaterSelector).first(),
+                            panels = $(panelsSelector),
+                            donations = $(donationsSelector),
+                            chat = $(chatSelector).first(),
+                            playlist = $(playlistSelector),
+                            ads = $(adsSelector),
                             offerModule = $(offerModuleSelector),
-                            videoThumb  = $(itemThumbSelector),
+                            videoThumb = $(itemThumbSelector),
                             autoPHeight = autoPlay.length ? autoPlay.outerHeight(true) : 0,
                             autoRHeight = autoRelated.length ? autoRelated.outerHeight(true) : 0,
                             autoHeights = autoPHeight + autoRHeight,
                             vItemHeight = videoItem.height() || plItem.height() || radioItem.height() || movieItem.height(),
-                            vItemHPad   = vItemHeight + videoItemPadding,
+                            vItemHPad = vItemHeight + videoItemPadding,
                             vThumbWidth = videoThumb.outerWidth(true),
-                            headHeight  = header.height(),
-                            contentTop  = headHeight + standardPadding,
+                            headHeight = header.height(),
+                            contentTop = headHeight + standardPadding,
                             autosBottom = contentTop + autoHeights,
-                            minHeight   = vItemHeight,
+                            minHeight = vItemHeight,
                             previousScr = 0,
-                            sliding     = false,
-                            atSugEnd    = false,
-                            fullscreen  = false;
+                            sliding = false,
+                            atSugEnd = false,
+                            fullscreen = false;
 
                         // disable page scrolling when scrollbar is active
                         disablePageScrolling(suggestions);
@@ -373,11 +374,11 @@ function yt_navigate_finish() {
                         // detect position changes to change size accordingly
                         window.fixDynamicSizes = function(forceRun) {
                             if (visibility == 'visible') {
-                                let viewHeight     = $(window).height(),
-                                    viewWidth      = $(window).width(),
-                                    playerWidth    = hasWidth(player) ? player.width() : 0,
+                                let viewHeight = $(window).height(),
+                                    viewWidth = $(window).width(),
+                                    playerWidth = hasWidth(player) ? player.width() : 0,
                                     theaterEnabled = theater.children().length > 0,
-                                    secondaryGone  = rightCoIn.children().length <= 1;
+                                    secondaryGone = rightCoIn.children().length <= 1;
 
                                 disabledYT = secondaryGone || extendedDisable;
 
@@ -388,21 +389,21 @@ function yt_navigate_finish() {
                                     enabledYT = false;
                                     window.fixDynamicSizes(false);
                                 } else if (enabledYT && !disabledYT) {
-                                    let scrTop          = $(window).scrollTop(),
-                                        outsidePadding  = leftCoIn.position().left,
-                                        resizeWidth     = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding*2)),
-                                        theatherHeight  = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
-                                        panelsHeight    = hasHeight(panels) ? panels.outerHeight(true) : 0,
-                                        donationsHeight = hasHeight(donations) ? (donations.outerHeight(true) + standardPadding): 0,
-                                        chatHeight      = hasHeight(chat) ? chat.outerHeight(true) : 0,
-                                        playlistHeight  = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
-                                        adsHeight       = hasHeight(ads) ? ads.outerHeight(true) : 0,
-                                        offerModHeight  = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
-                                        fillerHeight    = (fullscreen ? 0 : theatherHeight) + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
-                                        oriPosTop       = (fullscreen ? (viewHeight + standardPadding) : contentTop) + fillerHeight,
-                                        oriScrTop       = oriPosTop - scrTop,
-                                        belowTopPos     = viewHeight - oriScrTop,
-                                        allInView       = (belowTopPos - minHeight) >= 0;
+                                    let scrTop = $(window).scrollTop(),
+                                        outsidePadding = leftCoIn.position().left,
+                                        resizeWidth = (viewWidth - (leftCoIn.width() + standardPadding + outsidePadding * 2)),
+                                        theatherHeight = theaterEnabled ? (hasHeight(theater) ? theater.outerHeight(true) : 0) : 0,
+                                        panelsHeight = hasHeight(panels) ? panels.outerHeight(true) : 0,
+                                        donationsHeight = hasHeight(donations) ? (donations.outerHeight(true) + standardPadding) : 0,
+                                        chatHeight = hasHeight(chat) ? chat.outerHeight(true) : 0,
+                                        playlistHeight = hasHeight(playlist) ? playlist.outerHeight(true) : 0,
+                                        adsHeight = hasHeight(ads) ? ads.outerHeight(true) : 0,
+                                        offerModHeight = hasHeight(offerModule) ? offerModule.outerHeight(true) : 0,
+                                        fillerHeight = (fullscreen ? 0 : theatherHeight) + panelsHeight + donationsHeight + chatHeight + playlistHeight + adsHeight + offerModHeight,
+                                        oriPosTop = (fullscreen ? (viewHeight + standardPadding) : contentTop) + fillerHeight,
+                                        oriScrTop = oriPosTop - scrTop,
+                                        belowTopPos = viewHeight - oriScrTop,
+                                        allInView = (belowTopPos - minHeight) >= 0;
 
                                     // if suggestions is or not moving
                                     if (!sliding && previousScr != scrTop) {
@@ -418,21 +419,21 @@ function yt_navigate_finish() {
 
                                     // determine if position/size needs updating
                                     if (sliding || forceRun) {
-                                        let maxHeight            = (vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad)),
-                                            itemsNewWidth        = resizeWidth - scrollbarWidth,
-                                            movieItemANewWidth   = itemsNewWidth - vThumbWidth,
-                                            atContent            = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
-                                            opacityItems         = atSugEnd ? 0.33 : 1,
+                                        let maxHeight = (vItemHPad * Math.floor((viewHeight - (autosBottom + standardPadding)) / vItemHPad)),
+                                            itemsNewWidth = resizeWidth - scrollbarWidth,
+                                            movieItemANewWidth = itemsNewWidth - vThumbWidth,
+                                            atContent = ((fullscreen ? viewHeight : 0) + fillerHeight - scrTop) <= 0,
+                                            opacityItems = atSugEnd ? 0.33 : 1,
                                             marginTopSuggestions = autoHeights,
-                                            posSuggestions       = 'static',
-                                            topSuggestions       = 0,
-                                            posAutoPlay          = 'absolute',
-                                            topAutoPlay          = oriPosTop,
-                                            posAutoRelated       = 'absolute',
-                                            topAutoRelated       = oriPosTop + autoPHeight,
-                                            marginTopSpinner     = 0,
-                                            topSpinner           = 'auto',
-                                            botSpinner           = atSugEnd ? 'auto' : (viewHeight + 'px');
+                                            posSuggestions = 'static',
+                                            topSuggestions = 0,
+                                            posAutoPlay = 'absolute',
+                                            topAutoPlay = oriPosTop,
+                                            posAutoRelated = 'absolute',
+                                            topAutoRelated = oriPosTop + autoPHeight,
+                                            marginTopSpinner = 0,
+                                            topSpinner = 'auto',
+                                            botSpinner = atSugEnd ? 'auto' : (viewHeight + 'px');
 
                                         if (atContent) {
                                             marginTopSuggestions = 0;
@@ -459,16 +460,16 @@ function yt_navigate_finish() {
                                         */
 
                                         // updates style for each that changes
-                                        suggestions.css({'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px'});
-                                        autoPlay.css({'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px'});
-                                        autoRelated.css({'width': resizeWidth + 'px', 'position': posAutoRelated, 'top': topAutoRelated + 'px'});
-                                        spinner.css({'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner});
+                                        suggestions.css({ 'width': resizeWidth + 'px', 'height': maxHeight + 'px', 'margin-top': marginTopSuggestions, 'position': posSuggestions, 'top': topSuggestions + 'px' });
+                                        autoPlay.css({ 'width': resizeWidth + 'px', 'position': posAutoPlay, 'top': topAutoPlay + 'px' });
+                                        autoRelated.css({ 'width': resizeWidth + 'px', 'position': posAutoRelated, 'top': topAutoRelated + 'px' });
+                                        spinner.css({ 'width': resizeWidth + 'px', 'margin-top': marginTopSpinner + 'px', 'top': topSpinner, 'bottom': botSpinner });
                                         // widths of items and inside of movie items must change
-                                        videoItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                        plItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                        radioItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                        movieItem.css({'opacity': opacityItems, 'width': itemsNewWidth + 'px'});
-                                        movieItemA.css({'width': movieItemANewWidth + 'px'});
+                                        videoItem.css({ 'opacity': opacityItems, 'width': itemsNewWidth + 'px' });
+                                        plItem.css({ 'opacity': opacityItems, 'width': itemsNewWidth + 'px' });
+                                        radioItem.css({ 'opacity': opacityItems, 'width': itemsNewWidth + 'px' });
+                                        movieItem.css({ 'opacity': opacityItems, 'width': itemsNewWidth + 'px' });
+                                        movieItemA.css({ 'width': movieItemANewWidth + 'px' });
                                     }
                                 } else if (!enabledYT && !disabledYT) {
                                     // not enabled yet, enabling
@@ -494,7 +495,7 @@ function yt_navigate_finish() {
                         // when scroll has happened and we reach a change of ending, update positions
                         suggestions.on('scroll', function() {
                             if (enabledYT && !disabledYT) {
-                                let atPrevious       = atSugEnd,
+                                let atPrevious = atSugEnd,
                                     suggestScrBottom = suggestions.scrollTop() + suggestions.innerHeight(),
                                     suggestScrHeight = suggestions[0].scrollHeight;
                                 if (suggestScrBottom >= suggestScrHeight && !checkAttribute(spinner, 'hidden') && hasHeight(spinner)) atSugEnd = true;
@@ -527,14 +528,14 @@ function yt_navigate_finish() {
                                     let tempTitle = $(fullscreenSelector).attr('title');
 
                                     if (tempTitle == fullscreenEnter) fullscreen = false;
-                                    else if(tempTitle == fullscreenExit) fullscreen = true;
+                                    else if (tempTitle == fullscreenExit) fullscreen = true;
 
                                     window.fixDynamicSizes(true);
                                 }, fastDelay);
                             });
 
                             // key presses
-                            $(document).on("keyup", function (e) {
+                            $(document).on("keyup", function(e) {
                                 let keyUpCode = e.which;
 
                                 // miniplayer
@@ -549,7 +550,7 @@ function yt_navigate_finish() {
                                             let tempTitle = $(fullscreenSelector).attr('title');
 
                                             if (tempTitle == fullscreenEnter) fullscreen = false;
-                                            else if(tempTitle == fullscreenExit) fullscreen = true;
+                                            else if (tempTitle == fullscreenExit) fullscreen = true;
                                         }
 
                                         // size & fullscreen

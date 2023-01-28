@@ -15,9 +15,8 @@
 // @grant        none
 // @noframes
 // ==/UserScript==
-/* globals __themeState__ */
 
-/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +32,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* globals __themeState__ */
+
 // don't start script on old Exchange portal
-if (window.location.pathname.startsWith('/ecp/')) throw new Error(GM_info.script.name+" can't run on this website.");
+if (window.location.pathname.startsWith('/ecp/')) throw new Error(GM_info.script.name + " can't run on this website.");
 
 const INTERVAL_SPEED = 5; // ms
 const OLD_PAGE_DELAY = 1500; // ms
@@ -119,7 +120,7 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     subdomain = (window.location.host).split('.')[0];
     let testSubDomainIndex = 0;
     let testSubDomainEnd = excludedSubDomains.length;
