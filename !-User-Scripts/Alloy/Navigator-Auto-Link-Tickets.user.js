@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.1
+// @version      1.3.2
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -13,7 +13,7 @@
 // ==/UserScript==
 /* globals GetIdFromURL */
 
-/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -99,7 +99,7 @@ window.addEventListener('load', function () {
     let waitForAlloyBreadcrumbs = setInterval(function() {
         let ticketHeader = document.querySelector('.full-form-header-wrapper');
         document.getElementById(alloyBreadcrumbsID);
-        if (ticketHeader) {
+        if (ticketHeader && !document.hidden) {
             clearInterval(waitForAlloyBreadcrumbs);
 
             let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
