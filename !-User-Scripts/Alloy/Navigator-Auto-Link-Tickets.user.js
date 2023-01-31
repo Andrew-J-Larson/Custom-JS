@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.2
+// @version      1.3.3
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -151,7 +151,7 @@ window.addEventListener('load', function() {
                 ticketLinkButton.title = tooltipString;
                 ticketLinkButton.alt = tooltipString;
                 ticketLinkButton.onclick = function() {
-                    copyToClip(ticketRichTextLink, linkText);
+                    copyToClip(ticketRichTextLink, linkURL);
                     // need to remove active fade first
                     if (currentFade) clearTimeout(currentFade);
                     ticketLinkToast.style.transition = '';
