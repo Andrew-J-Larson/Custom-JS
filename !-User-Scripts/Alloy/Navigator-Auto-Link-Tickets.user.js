@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.3
+// @version      1.3.4
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://*/wp/*.aspx*
+// @match        https://*/*.aspx*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
 // @icon         https://hd.alloysoftware.com/helpdesk/favicon.ico
@@ -27,12 +27,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* globals GetIdFromURL */
+/* globals GetIdFromURL, applicationUrl */
 
 // CONSTANTS
 
-const ticketGoURL = "https://" + window.location.host + "/wp/Go/";
-const ticketViewObjectURL = "https://" + window.location.host + "/wp/ViewObject.aspx?ID=";
 const ticketPattern = /^[a-zA-Z]+[0-9]+$/
 const alloyGetURLSelector = 'li[title="Get URL"]'; // '> a[title="Get URL"]'
 const alloyBreadcrumbsID = 'alloy-breadcrumbs'
@@ -48,6 +46,12 @@ const ticketLinkRandomNumber = function() {
 }();
 let ticketLinkToastID = 'ticketLinkToast-' + ticketLinkRandomNumber;
 let ticketLinkButtonID = 'ticketLinkButton-' + ticketLinkRandomNumber;
+
+// VARIABLES
+
+let applicationUrl = window.applicationUrl ? window.applicationUrl : ((window.location.href).split('/')).slice(0, 4).join('/') + '/';
+let ticketGoURL = applicationUrl + "Go/";
+let ticketViewObjectURL = applicationUrl + "ViewObject.aspx?ID=";
 
 // VECTORS
 
@@ -137,7 +141,7 @@ window.addEventListener('load', function() {
             // create copy to clipboard button if we have the information we needed
             if ((ticketNumberElement || ticketHeader1) && linkText) {
                 // need to craft rich-text link
-                let linkURL = ticketNumber ? (ticketGoURL + ticketNumber) : (ticketViewObjectURL + GetIdFromURL(window.location.href));
+                let linkURL = ticketNumber ? (ticketGoURL + ticketNumber) : (ticketViewObjectURL + window.GetIdFromURL(window.location.href));
                 let ticketRichTextLink = `<a href="${linkURL}">${linkText}</a>`;
 
                 // modify element to create clickable copy link
