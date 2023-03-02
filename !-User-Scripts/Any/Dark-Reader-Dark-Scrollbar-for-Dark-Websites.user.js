@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Dark Reader - Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.9
+// @version      1.5.0
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -37,66 +37,78 @@
 
 // dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
 
-// First make sure we were able to grab the required resources
-if (!GM_getResourceText('css') || !GM_getResourceText('config')) { throw "Error: resources didn't load in time, or some point to a dead link." }
+// avoids breaking some websites that assume all errors are their own
+try {
+    // First make sure we were able to grab the required resources
+    if (!GM_getResourceText('css') || !GM_getResourceText('config')) throw new Error("[" + GM_info.script.name + "] Resources didn't load in time, or some URLs may be dead.");
 
-// required variables
-const INTERVAL_SPEED = 0; // needs to act like for loop (no delay), but non-blocking
-const dark_scrollbar = GM_getResourceText('css'); // gets updated dark scrollbar source (so I don't have to manually update this script all the time)
-const dark_sites = GM_getResourceText('config').split('\n'); // gets all sites and puts them in an array
-const current_domain = window.location.host;
-const current_url = (current_domain + window.location.pathname).replace(/\/$/, ""); // get host and pathname without trailing slash
-let is_dark = false;
+    // Constants
 
-// loop through dark_sites and see if the current URL matches
-let darkSiteIndex = 0;
-let checkDarkSites = setInterval(function() {
-    // only check if the entry is not blank (like in the case with the last line of some config files)
-    if (darkSiteIndex < dark_sites.length && dark_sites[darkSiteIndex]) {
-        // note:
-        // `$` = end of url; must match to end
-        // `*` = url can end in any way; preceeding must match
-        // `/` = it must match beyond the domain; url can end in any way
+    const INTERVAL_SPEED = 0; // needs to act like for loop (no delay), but non-blocking
+    const dark_scrollbar = GM_getResourceText('css'); // gets updated dark scrollbar source (so I don't have to manually update this script all the time)
+    const dark_sites = GM_getResourceText('config').split('\n'); // gets all sites and puts them in an array
+    const current_domain = window.location.host;
+    const current_url = (current_domain + window.location.pathname).replace(/\/$/, ""); // get host and pathname without trailing slash
 
-        let dark_url = dark_sites[darkSiteIndex];
 
-        // check dark url for special characters $ or *
-        if (dark_url.includes('$')) {
-            // string compare both urls for a match without trailing /
-            if (current_url.localeCompare(dark_url.split('$')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
-        } else if (dark_url.includes('*')) {
-            // string compare both urls without special character
-            if (current_url.localeCompare(dark_url.split('*')[0]) == 0) { is_dark = true; }
-            // only if the current_url is still possible
-            else if (current_url.length > dark_url.length - 1) {
-                // string compare both urls substringed current_url and without trailing * and /
-                if (current_url.substring(0, dark_url.length - 1).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
+    // avoids breaking some websites that assume all errors are their own
+
+    // Variables
+
+    let is_dark = false;
+
+    // loop through dark_sites and see if the current URL matches
+    let darkSiteIndex = 0;
+    let checkDarkSites = setInterval(function() {
+        // only check if the entry is not blank (like in the case with the last line of some config files)
+        if (darkSiteIndex < dark_sites.length && dark_sites[darkSiteIndex]) {
+            // note:
+            // `$` = end of url; must match to end
+            // `*` = url can end in any way; preceeding must match
+            // `/` = it must match beyond the domain; url can end in any way
+
+            let dark_url = dark_sites[darkSiteIndex];
+
+            // check dark url for special characters $ or *
+            if (dark_url.includes('$')) {
+                // string compare both urls for a match without trailing /
+                if (current_url.localeCompare(dark_url.split('$')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
+            } else if (dark_url.includes('*')) {
+                // string compare both urls without special character
+                if (current_url.localeCompare(dark_url.split('*')[0]) == 0) { is_dark = true; }
+                // only if the current_url is still possible
+                else if (current_url.length > dark_url.length - 1) {
+                    // string compare both urls substringed current_url and without trailing * and /
+                    if (current_url.substring(0, dark_url.length - 1).localeCompare(dark_url.split('*')[0].replace(/\/$/, "")) == 0) { is_dark = true; }
+                }
+            } else if (dark_url.includes('/')) { // comparing to full link
+                // compare strings without possible trailing slash on dark_url
+                let dark_verify = dark_url.replace(/\/$/, "");
+                // string compare both urls for a match
+                if (current_url.localeCompare(dark_verify) == 0) { is_dark = true; }
+                // only if the current_url is still possible
+                else if (current_url.length > dark_verify.length) {
+                    // string compare both urls substringed current_url and without trailing slash
+                    if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) { is_dark = true; }
+                }
+            } else { // comparing to domain
+                // find dark_url in the current_url
+                if (current_domain == dark_url) { is_dark = true; }
             }
-        } else if (dark_url.includes('/')) { // comparing to full link
-            // compare strings without possible trailing slash on dark_url
-            let dark_verify = dark_url.replace(/\/$/, "");
-            // string compare both urls for a match
-            if (current_url.localeCompare(dark_verify) == 0) { is_dark = true; }
-            // only if the current_url is still possible
-            else if (current_url.length > dark_verify.length) {
-                // string compare both urls substringed current_url and without trailing slash
-                if (current_url.substring(0, dark_verify.length).localeCompare(dark_verify) == 0) { is_dark = true; }
+        } else {
+            clearInterval(checkDarkSites);
+
+            // enable dark scrollbar accordingly
+            if (is_dark) {
+                // captures everything in first bracket pair (e.g. between "@-moz-document ... { ... }")
+                let dark_scrollbar_fixed = XRegExp.matchRecursive(dark_scrollbar, '\\{', '\\}', 'g');
+
+                GM_addStyle(dark_scrollbar_fixed);
             }
-        } else { // comparing to domain
-            // find dark_url in the current_url
-            if (current_domain == dark_url) { is_dark = true; }
         }
-    } else {
-        clearInterval(checkDarkSites);
 
-        // enable dark scrollbar accordingly
-        if (is_dark) {
-            // captures everything in first bracket pair (e.g. between "@-moz-document ... { ... }")                                                                                  console.log("in 'is_dark'"); // TODO
-            let dark_scrollbar_fixed = XRegExp.matchRecursive(dark_scrollbar, '\\{', '\\}', 'g');
-
-            GM_addStyle(dark_scrollbar_fixed);
-        }
-    }
-
-    darkSiteIndex++;
-}, INTERVAL_SPEED);
+        darkSiteIndex++;
+    }, INTERVAL_SPEED);
+} catch (e) {
+    console.warn(e);
+}

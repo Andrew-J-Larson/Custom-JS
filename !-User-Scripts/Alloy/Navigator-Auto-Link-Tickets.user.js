@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.3
+// @version      1.4.4
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -38,7 +38,7 @@ const headerWrapperSelector = '.full-form-header-wrapper';
 const headerSelector1 = '.full-form-header__1_1';
 const headerSelector2 = '.full-form-header__2_1';
 const COPY_TOOLTIP = 'Click to copy link to ticket';
-const NOT_ALLOY_NAVIGATOR = '[Alloy Navigator - Auto-Link Tickets] Aborted script, this website is not running the Alloy Navigator web app.';
+const NOT_ALLOY_NAVIGATOR = "[" + GM_info.script.name + "] Aborted script, this website is not running the Alloy Navigator web app.";
 const SPEED_SECOND = 1000; // ms
 const INTERVAL_SLOW_SPEED = 500; // ms
 const INTERVAL_SPEED = 200; // ms
@@ -111,7 +111,7 @@ window.addEventListener('load', function() {
 
     // avoids breaking some websites that assume all errors are their own
     try {
-        if (!applicationName || !applicationName.startsWith("Alloy Navigator")) {throw new Error(NOT_ALLOY_NAVIGATOR)}
+        if (!applicationName || !applicationName.startsWith("Alloy Navigator")) throw new Error(NOT_ALLOY_NAVIGATOR);
 
         // only version 2022.2 and newer have the breadcrumb trails
         let hasBreadcrumbs = (applicationVersionSplit && applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2);
@@ -248,6 +248,6 @@ window.addEventListener('load', function() {
             }
         }, INTERVAL_SPEED);
     } catch (e) {
-        console.log(e.message);
+        console.warn(e.message);
     }
 }, false);

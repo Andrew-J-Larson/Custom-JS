@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.3
+// @version      1.2.4
 // @description  Makes (new) Reddit match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -39,63 +39,68 @@ const userMenuButtonSelector = '#USER_DROPDOWN_ID';
 const talkLiveIconSelector = 'i.icon-live'; // this is uniquely used in the pop-up menu to help search only within the menu
 const viewOptionsIconSelector = 'i.icon-views'; // helps find dark mode switch (user logged in)
 const settingsIconSelector = 'i.icon-settings'; // helps find dark mode switch (user NOT logged in)
-const errorMessage = "Unknown error occurred, please report a new issue on GitHub stating that the Reddit theme doesn't auto change.";
+const ERROR_MSG = "[" + GM_info.script.name + "] Unknown error occurred, please report a new issue on GitHub stating that the Reddit theme doesn't auto change.";
 
 var watchEventTriggered = false;
 var activeElement = null;
 
 function updateTheme(changeToScheme) {
-    let pageDiv = document.querySelector(pageDivSelector);
-    let background = getComputedStyle(pageDiv).getPropertyValue(BG_VAR);
+    // avoids breaking some websites that assume all errors are their own
+    try {
+        let pageDiv = document.querySelector(pageDivSelector);
+        let background = getComputedStyle(pageDiv).getPropertyValue(BG_VAR);
 
-    let theme = 'light';
-    if (background == DARK_BG) theme = 'dark';
+        let theme = 'light';
+        if (background == DARK_BG) theme = 'dark';
 
-    if (theme != changeToScheme) {
-        let userMenuButton = document.querySelector(userMenuButtonSelector);
-        userMenuButton.click();
-
-        let talkLiveIconActive = document.querySelector(talkLiveIconSelector);
-        if (talkLiveIconActive) {
-            // needed to simplify button searches, must select the 4th previous element sibling to select the pop-up menu
-            let userMenu = (((talkLiveIconActive.parentElement).parentElement).parentElement).parentElement;
-
-            // selects dark mode icon button regardless of language used or account being signed in
-            let viewOptionsIcon = userMenu.querySelector(viewOptionsIconSelector);
-            let settingsIcon = userMenu.querySelector(settingsIconSelector);
-            let darkModeSwitch = null; // needs to be found, depending on if user is logged in or not
-            if (viewOptionsIcon) { // user is logged in
-                // must select the 3rd previous element sibling, and then grab next element sibling
-                let viewOptionsArea = (((viewOptionsIcon.parentElement).parentElement).parentElement).nextElementSibling;
-                let viewOptionsButtons = viewOptionsArea.querySelectorAll('button');
-                darkModeSwitch = viewOptionsButtons[viewOptionsButtons.length - 1];
-            } else if (settingsIcon) { // user is NOT logged in
-                // must select the 3rd previous element sibling
-                let settingsButton = ((settingsIcon.parentElement).parentElement).parentElement;
-                // then grab the next element sibling
-                let settingsArea = settingsButton.nextElementSibling;
-                let settingsButtons = settingsArea.querySelectorAll('button');
-                darkModeSwitch = settingsButtons[settingsButtons.length - 1];
-            } else {
-                throw errorMessage;
-            }
-
-            if (darkModeSwitch) darkModeSwitch.click();
-
-            // need to close the user menu after being switched
+        if (theme != changeToScheme) {
+            let userMenuButton = document.querySelector(userMenuButtonSelector);
             userMenuButton.click();
 
-            if (watchEventTriggered) activeElement.focus();
-        } else {
-            throw errorMessage;
-        }
-    }
+            let talkLiveIconActive = document.querySelector(talkLiveIconSelector);
+            if (talkLiveIconActive) {
+                // needed to simplify button searches, must select the 4th previous element sibling to select the pop-up menu
+                let userMenu = (((talkLiveIconActive.parentElement).parentElement).parentElement).parentElement;
 
-    watchEventTriggered = false;
+                // selects dark mode icon button regardless of language used or account being signed in
+                let viewOptionsIcon = userMenu.querySelector(viewOptionsIconSelector);
+                let settingsIcon = userMenu.querySelector(settingsIconSelector);
+                let darkModeSwitch = null; // needs to be found, depending on if user is logged in or not
+                if (viewOptionsIcon) { // user is logged in
+                    // must select the 3rd previous element sibling, and then grab next element sibling
+                    let viewOptionsArea = (((viewOptionsIcon.parentElement).parentElement).parentElement).nextElementSibling;
+                    let viewOptionsButtons = viewOptionsArea.querySelectorAll('button');
+                    darkModeSwitch = viewOptionsButtons[viewOptionsButtons.length - 1];
+                } else if (settingsIcon) { // user is NOT logged in
+                    // must select the 3rd previous element sibling
+                    let settingsButton = ((settingsIcon.parentElement).parentElement).parentElement;
+                    // then grab the next element sibling
+                    let settingsArea = settingsButton.nextElementSibling;
+                    let settingsButtons = settingsArea.querySelectorAll('button');
+                    darkModeSwitch = settingsButtons[settingsButtons.length - 1];
+                } else {
+                    throw new Error(ERROR_MSG);
+                }
+
+                if (darkModeSwitch) darkModeSwitch.click();
+
+                // need to close the user menu after being switched
+                userMenuButton.click();
+
+                if (watchEventTriggered) activeElement.focus();
+            } else {
+                throw new Error(ERROR_MSG);
+            }
+        }
+
+        watchEventTriggered = false;
+    } catch (e) {
+        console.warn(e);
+    }
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     // if old reddit might be loading, must delay; using timeline to get rough loadTime to use for delay
     let magicLoadingNumberDivisor = 4; // not sure why, but seems like the most reasonable number to use to get close to remote resource load times
     let timeoutDelay = (window.location.host).startsWith("www.") ? (document.timeline.currentTime / magicLoadingNumberDivisor) : 0;
