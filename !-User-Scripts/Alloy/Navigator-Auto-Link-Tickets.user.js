@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.1
+// @version      1.4.2
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -104,15 +104,15 @@ let placementElement; // gets set dynamically
 window.addEventListener('load', function() {
     // need to confirm we are running on Alloy Navigator, and confirm features
     let applicationNameElement = (document.head).querySelector(applicationNameSelector);
-    let applicationName = applicationNameElement.content;
-    let applicationNameSplit = applicationName.split(' ');
-    let applicationVersion = applicationNameSplit[applicationNameSplit.length - 1];
-    let applicationVersionSplit = applicationVersion.split('.');
+    let applicationName = applicationNameElement ? applicationNameElement.content : null;
+    let applicationNameSplit = applicationName ? applicationName.split(' ') : null;
+    let applicationVersion = applicationNameSplit ? applicationNameSplit[applicationNameSplit.length - 1] : null;
+    let applicationVersionSplit = applicationVersion ? applicationVersion.split('.') : null;
 
-    if (!applicationName.startsWith("Alloy Navigator")) {throw new Error(NOT_ALLOY_NAVIGATOR)}
+    if (!applicationName || !applicationName.startsWith("Alloy Navigator")) {throw new Error(NOT_ALLOY_NAVIGATOR)}
 
     // only version 2022.2 and newer have the breadcrumb trails
-    let hasBreadcrumbs = (applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2)
+    let hasBreadcrumbs = (applicationVersionSplit && applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2)
 
     // need to wait for element(s) to be available
     let waitForAlloyElements = setInterval(function() {
