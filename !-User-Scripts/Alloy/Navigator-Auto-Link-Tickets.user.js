@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.3.4
+// @version      1.4.0
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -33,10 +33,13 @@
 
 const ticketPattern = /^[a-zA-Z]+[0-9]+$/
 const alloyGetURLSelector = 'li[title="Get URL"]'; // '> a[title="Get URL"]'
-const alloyBreadcrumbsID = 'alloy-breadcrumbs'
-const headerSelector1 = ".full-form-header__1_1";
-const headerSelector2 = ".full-form-header__2_1";
-const tooltipString = "Click to copy link to ticket";
+const applicationNameSelector = 'meta[name="application-name"]';
+const alloyBreadcrumbsID = 'alloy-breadcrumbs';
+const headerWrapperSelector = '.full-form-header-wrapper';
+const headerSelector1 = '.full-form-header__1_1';
+const headerSelector2 = '.full-form-header__2_1';
+const COPY_TOOLTIP = 'Click to copy link to ticket';
+const NOT_ALLOY_NAVIGATOR = 'Aborted script, this website is not running Alloy Navigator.';
 const SPEED_SECOND = 1000; // ms
 const INTERVAL_SLOW_SPEED = 500; // ms
 const INTERVAL_SPEED = 200; // ms
@@ -90,8 +93,8 @@ function copyToClip(htmlStr, plainStr) {
 
 // VARIABLES
 
+let theme = null; // changes with Dark Reader (at this time)
 let currentFade; // gets set dynamically
-let theme = null; // changed with Dark Reader
 let ticketNumber; // gets set dynamically
 let linkText; // gets set dynamically
 let placementElement; // gets set dynamically
@@ -100,32 +103,44 @@ let placementElement; // gets set dynamically
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function() {
-    // need to wait for element to be available
-    let waitForAlloyBreadcrumbs = setInterval(function() {
-        let ticketHeader = document.querySelector('.full-form-header-wrapper');
-        document.getElementById(alloyBreadcrumbsID);
-        if (ticketHeader && !document.hidden) {
-            clearInterval(waitForAlloyBreadcrumbs);
+    // need to confirm we are running on Alloy Navigator, and confirm features
+    let applicationNameElement = (document.head).querySelector(applicationNameSelector);
+    let applicationName = applicationNameElement.content;
+    let applicationNameSplit = applicationName.split(' ');
+    let applicationVersion = applicationNameSplit[applicationNameSplit.length - 1];
+    let applicationVersionSplit = applicationVersion.split('.');
 
-            let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
-            let alloyObjectDirectoryItems = alloyBreadcrumbs ? alloyBreadcrumbs.querySelectorAll('div > div > div > a > span') : null;
+    if (!applicationName.startsWith("Alloy Navigator")) {throw new Error(NOT_ALLOY_NAVIGATOR)}
+
+    // only version 2022.2 and newer have the breadcrumb trails
+    let hasBreadcrumbs = (applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2)
+
+    // need to wait for element(s) to be available
+    let waitForAlloyElements = setInterval(function() {
+        let ticketHeader = document.querySelector(headerWrapperSelector);
+        let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
+        if (ticketHeader && !document.hidden && (hasBreadcrumbs ? alloyBreadcrumbs : true)) {
+            clearInterval(waitForAlloyElements);
+
             let ticketHeader1 = document.querySelector(headerSelector1);
             let ticketHeader2 = document.querySelector(headerSelector2);
+            let alloyObjectDirectoryItems = alloyBreadcrumbs ? alloyBreadcrumbs.querySelectorAll('div > div > div > a > span') : null;
             let ticketNumberElement; // gets set dynamically
 
+
             // create a link if ticket information found
-            if (alloyObjectDirectoryItems && alloyObjectDirectoryItems.length > 0) {
-                // get ticket number
+            if (hasBreadcrumbs && alloyObjectDirectoryItems && alloyObjectDirectoryItems.length > 0) {
+                // get ticket number from breadcrumbs
                 ticketNumberElement = alloyObjectDirectoryItems[alloyObjectDirectoryItems.length - 1];
                 ticketNumber = ticketNumberElement.innerText;
             }
-            if (!ticketNumber & ticketHeader2) {
+            if (!ticketNumber && ticketHeader2) {
                 // get ticket number from website title - format example: "T000001 - Title of Ticket" => T000001
                 let wordsWebsiteTitle = (document.title).split(' ');
                 let possibleTicketNumber = wordsWebsiteTitle[wordsWebsiteTitle.length - 1];
                 ticketNumber = ticketPattern.test(possibleTicketNumber) ? possibleTicketNumber : false;
             }
-            if (!ticketNumber & ticketHeader2) {
+            if (!ticketNumber && ticketHeader2) {
                 // get ticket number from sub title - format example: "Incident T000001" => T000001
                 let ticketHeader = ticketHeader2.innerText;
                 let wordsTicketHeader = ticketHeader.split(' ');
@@ -152,8 +167,8 @@ window.addEventListener('load', function() {
                 let ticketLinkButton = document.createElement('button');
                 ticketLinkButton.type = 'button';
                 ticketLinkButton.id = ticketLinkButtonID;
-                ticketLinkButton.title = tooltipString;
-                ticketLinkButton.alt = tooltipString;
+                ticketLinkButton.title = COPY_TOOLTIP;
+                ticketLinkButton.alt = COPY_TOOLTIP;
                 ticketLinkButton.onclick = function() {
                     copyToClip(ticketRichTextLink, linkURL);
                     // need to remove active fade first
@@ -171,7 +186,8 @@ window.addEventListener('load', function() {
                 let alloyGetURLButton = document.querySelector(alloyGetURLSelector);
                 if (alloyGetURLButton) alloyGetURLButton.style.display = "none";
 
-                if (ticketNumberElement) {
+                // button injection depends on if Alloy version has breadcrumbs
+                if (hasBreadcrumbs) {
                     let fixMissingButton = setInterval(function() {
                         if (!document.getElementById(ticketLinkButtonID)) {
                             alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
