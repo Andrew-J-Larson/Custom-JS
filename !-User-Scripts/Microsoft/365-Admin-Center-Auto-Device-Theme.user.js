@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 admin center - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes Microsoft 365 admin center match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -9,7 +9,7 @@
 // @match        https://admin.microsoft365.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js
-// @icon         https://res.cdn.office.net/admincenter/admin-content/images/favicon_metro.ico
+// @icon         https://res.cdn.office.net/admincenter/admin-content/images/favicon_fluent.ico
 // @grant        none
 // @noframes
 // ==/UserScript==
@@ -56,7 +56,7 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function () {
+window.addEventListener('load', function() {
     // need to wait for button & icon to be available
     let waitingForThemeBtnAndIco = setInterval(function() {
         themeButton = document.querySelector(themeBtnSelector);
