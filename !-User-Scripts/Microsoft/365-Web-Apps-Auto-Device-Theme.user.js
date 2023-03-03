@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.5
+// @version      1.1.6
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -166,5 +166,5 @@ try {
         }, 0);
     }, false);
 } catch (e) {
-    console.warn(e);
+    console.warn(e.message);
 }
