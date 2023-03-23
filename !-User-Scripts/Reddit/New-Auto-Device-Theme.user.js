@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.4
+// @version      1.2.5
 // @description  Makes (new) Reddit match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -36,7 +36,7 @@ const DARK_BG = '#1A1A1B';
 const LIGHT_BG = '#FFFFFF';
 const pageDivSelector = 'body > div > div';
 const userMenuButtonSelector = '#USER_DROPDOWN_ID';
-const talkLiveIconSelector = 'i.icon-live'; // this is uniquely used in the pop-up menu to help search only within the menu
+const menuHelpIconSelector = 'body > div > div[role="menu"] i.icon-help'; // this is uniquely used in the pop-up menu to help search only within the menu
 const viewOptionsIconSelector = 'i.icon-views'; // helps find dark mode switch (user logged in)
 const settingsIconSelector = 'i.icon-settings'; // helps find dark mode switch (user NOT logged in)
 const ERROR_MSG = "[" + GM_info.script.name + "] Unknown error occurred, please report a new issue on GitHub stating that the Reddit theme doesn't auto change.";
@@ -57,10 +57,10 @@ function updateTheme(changeToScheme) {
             let userMenuButton = document.querySelector(userMenuButtonSelector);
             userMenuButton.click();
 
-            let talkLiveIconActive = document.querySelector(talkLiveIconSelector);
-            if (talkLiveIconActive) {
+            let menuHelpIconActive = document.querySelector(menuHelpIconSelector);
+            if (menuHelpIconActive) {
                 // needed to simplify button searches, must select the 4th previous element sibling to select the pop-up menu
-                let userMenu = (((talkLiveIconActive.parentElement).parentElement).parentElement).parentElement;
+                let userMenu = (((menuHelpIconActive.parentElement).parentElement).parentElement).parentElement;
 
                 // selects dark mode icon button regardless of language used or account being signed in
                 let viewOptionsIcon = userMenu.querySelector(viewOptionsIconSelector);
