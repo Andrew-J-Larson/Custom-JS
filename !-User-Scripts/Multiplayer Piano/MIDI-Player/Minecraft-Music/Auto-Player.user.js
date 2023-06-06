@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.5.8
+// @version      2.5.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -60,7 +60,7 @@ const NAMESPACE = SCRIPT.namespace;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
-const DOWNLOAD_URL = "(there is no download, only source code at ...) https://github.com/TheAlienDrew/Tampermonkey-Scripts/blob/master/Multiplayer%20Piano/MPP-Minecraft-Music-Bot.user.js"; // SCRIPT.downloadURL;
+const DOWNLOAD_URL = "(there is no download, only source code at ...) " + SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -78,7 +78,7 @@ const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githu
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // empty for now
-const LIMITED_PLAYERS = ["8c81505ab941e0760697d777"];
+const LIMITED_PLAYERS = []; // empty for now
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)

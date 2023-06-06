@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.5.8";
+const VERSION = "2.5.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -85,7 +85,7 @@ const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githu
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // empty for now
-const LIMITED_PLAYERS = ["8c81505ab941e0760697d777"];
+const LIMITED_PLAYERS = []; // empty for now
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
@@ -827,6 +827,7 @@ var PlayerSet = setInterval(function() {
 			nextLocationX = BTNS_END_X - BTN_SPACER_X;
 			var buttonsOn = false;
 			var togglerDiv = document.createElement("div");
+            togglerDiv.title = 'Use `'+PREFIX+'help` for more commands'
 			togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
 			togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
 			togglerDiv.classList.add("ugly-button");
