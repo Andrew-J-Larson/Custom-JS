@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.6.0
+// @version      2.6.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,7 @@
 // @grant        GM_info
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     MIDIPlayerJS https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/master/browser/midiplayer.js
+// @resource     LatestMIDIPlayerJS https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest
 // @run-at       document-end
 // ==/UserScript==
 
@@ -41,11 +41,25 @@
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
 // (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
-var stringMIDIPlayerJS = GM_getResourceText("MIDIPlayerJS");
-var scriptMIDIPlayerJS = document.createElement("script");
-scriptMIDIPlayerJS.type = 'text/javascript';
-scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
-(document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
+var stringLatestMIDIPlayerJS = GM_getResourceText("LatestMIDIPlayerJS");
+var jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
+var LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
+var MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
+var stringMIDIPlayerJS = "";
+var scriptMIDIPlayerJS = null;
+var requestMPJS = new XMLHttpRequest();
+requestMPJS.open('GET', MIDIPlayerJS_URL, false);
+requestMPJS.send(null);
+if (requestMPJS.status === 200) {
+    var type = requestMPJS.getResponseHeader('Content-Type');
+    if (type.indexOf("text") !== 1) {
+        stringMIDIPlayerJS = requestMPJS.responseText;
+        scriptMIDIPlayerJS = document.createElement("script");
+        scriptMIDIPlayerJS.type = 'text/javascript';
+        scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
+        (document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
+    }
+}
 
 // =============================================== CONSTANTS
 
@@ -1166,7 +1180,10 @@ var clearSoundWarning = setInterval(function() {
     var playButton = document.querySelector("#sound-warning button");
     if (exists(playButton)) {
         clearInterval(clearSoundWarning);
-        playButton.click();
+
+        // only turn off sound warning if it hasn't already been turned off
+        if (window.getComputedStyle(playButton).display == "block") playButton.click();
+        
         // wait for the client to come online
         var waitForMPP = setInterval(function() {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
