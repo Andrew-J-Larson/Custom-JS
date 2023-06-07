@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.6.2
+// @version      2.6.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -149,6 +149,7 @@ const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_PLAY = PRE_MSG + "[Play]";
+const PRE_END = PRE_MSG + "[End]";
 const PRE_SKIP = PRE_MSG + "[Skip]";
 const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
@@ -675,6 +676,7 @@ var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
+var finished = { songName: null, songDurationFormatted: null }; // only checked when not on repeat, for End/Done playing message
 var ended = true;
 var stopped = false;
 var paused = false;
@@ -721,15 +723,21 @@ const Player = new MidiPlayer.Player(function(event) {
     if (!ended && !Player.isPlaying()) {
         ended = true;
         paused = false;
-        if (!repeatOption) currentSongIndex = null;
+        if (!repeatOption) {
+            if (autoplayOption == AUTOPLAY_OFF && !stopped) {
+                finished.songName = currentSongName;
+                finished.songDurationFormatted = currentSongDurationFormatted;
+            }
+            currentSongIndex = null;
+        }
         currentSongName = null;
     } else {
         var timeRemaining = Player.getSongTimeRemaining();
         var timeElapsed = currentSongDuration - (timeRemaining > 0 ? timeRemaining : 0);
-        // BELOW TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
+        // BELOW - TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-        // ABOVE TEMP
+        // ABOVE - TEMP
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
@@ -1338,6 +1346,12 @@ MPP.client.on('p', function(msg) {
 // Stuff that needs to be done by intervals (e.g. autoplay/repeat)
 var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
+    // display song end/done playing message when a song finishes (only when not on autoplay/repeat)
+    if (!repeatOption && autoplayOption == AUTOPLAY_OFF && finished.songName && finished.songDurationFormatted) {
+        mppChatSend(PRE_END + ' ' + getSongTimesFormatted(finished.songDurationFormatted, finished.songDurationFormatted) + " Done playing " + quoteString(finished.songName));
+        finished.songName = null;
+        finished.songDurationFormatted = null;
+    }
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();
     // do repeat

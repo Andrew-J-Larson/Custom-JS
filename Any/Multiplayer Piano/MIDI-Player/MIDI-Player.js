@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.6.2";
+const VERSION = "2.6.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
@@ -145,6 +145,7 @@ const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_PING = PRE_MSG + "[Ping]";
 const PRE_PLAY = PRE_MSG + "[Play]";
+const PRE_END = PRE_MSG + "[End]";
 const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
 const PRE_RESUME = PRE_MSG + "[Resume]";
@@ -287,6 +288,7 @@ var loadingOption = false; // controls if loading music should be on or not
 var loadingProgress = 0; // updates when loading files
 var loadingMusicLoop = null; // this is to play notes while a song is (down)loading
 var loadingMusicPrematureStop = false; // this is used when we need to stop the music after errors
+var finished = { songName: null, songDurationFormatted: null }; // only checked when not on repeat, for End/Done playing message
 var ended = true;
 var stopped = false;
 var paused = false;
@@ -337,16 +339,20 @@ const Player = new MidiPlayer.Player(function(event) {
         ended = true;
         paused = false;
         if (!repeatOption) {
+            if (!stopped) {
+                finished.songName = currentSongName;
+                finished.songDurationFormatted = currentSongDurationFormatted;
+            }
             currentSongData = null;
             currentSongName = null;
         }
     } else {
         var timeRemaining = Player.getSongTimeRemaining();
         var timeElapsed = currentSongDuration - (timeRemaining > 0 ? timeRemaining : 0);
-        // BELOW TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
+        // BELOW - TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
         currentSongDuration = Player.getSongTime();
         currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-        // ABOVE TEMP
+        // ABOVE - TEMP
         currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
     }
 });
@@ -1147,6 +1153,12 @@ MPP.client.on('p', function(msg) {
 // Stuff that needs to be done by intervals (e.g. repeat)
 var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
+    // display song end/done playing message when a song finishes (only when not on repeat)
+    if (!repeatOption && finished.songName && finished.songDurationFormatted) {
+        mppChatSend(PRE_END + ' ' + getSongTimesFormatted(finished.songDurationFormatted, finished.songDurationFormatted) + " Done playing " + quoteString(finished.songName));
+        finished.songName = null;
+        finished.songDurationFormatted = null;
+    }
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
         ended = false;
