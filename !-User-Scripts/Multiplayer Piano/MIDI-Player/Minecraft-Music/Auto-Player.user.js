@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.6.3
+// @version      2.7.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -101,7 +101,6 @@ const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
-const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
 const BOT_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
@@ -135,6 +134,7 @@ const BOT_COMMANDS = [
     ["song", "shows the current song playing and at what moment in time"],
     ["repeat", "toggles repeating current song on or off"],
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
+    ["percussion", "toggles the percussion instruments on or off (off by default since it makes most MIDIs sound bad)"],
     ["autoplay (choice)", "your choices are off, random, or ordered, no entry shows current setting"],
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"]
@@ -155,12 +155,9 @@ const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
 const PRE_RESUME = PRE_MSG + "[Resume]";
 const PRE_SONG = PRE_MSG + "[Song]";
+const PRE_SETTINGS = PRE_MSG + "[Settings]";
 const PRE_ALBUM = PRE_MSG + "[Album]";
-const PRE_AUTOPLAY = PRE_MSG + "[Autoplay]";
-const PRE_REPEAT = PRE_MSG + "[Repeat]";
-const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
 const PRE_ART = PRE_MSG + "[Art]";
-const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const NOT_OWNER = "The bot isn't the owner of the room";
@@ -676,13 +673,12 @@ var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
-var finished = { songName: null, songDurationFormatted: null }; // only checked when not on repeat, for End/Done playing message
+var finishedSongName = null; // only checked when not on repeat, for End/Done playing message
 var ended = true;
 var stopped = false;
 var paused = false;
-var currentSongElapsedFormatted = "00:00"; // changes with the amount of song being played
-var currentSongDurationFormatted = "00:00"; // gets updated when currentSongDuration is updated
-var currentSongDuration = 0; // this changes after each song is loaded
+var currentSongEventsPlayed = 0; // gets updated while a song plays
+var currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
 var currentSongIndex = null;
 var currentSongName = null; // extracted from the file name/end of URL
 var previousSongIndex = null; // grabs current when changing successfully
@@ -690,6 +686,7 @@ var autoplayActive = false;
 var autoplayOption = AUTOPLAY_OFF;
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
+var percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
 var artDisplaying = false;
 
 // =============================================== PAGE VISIBILITY
@@ -713,7 +710,7 @@ const Player = new MidiPlayer.Player(function(event) {
     }
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
-    if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
+    if (currentEvent.indexOf("Note") == 0 && (percussionOption || event.channel != PERCUSSION_CHANNEL)) {
         var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             MPP.press(currentNote, (event.velocity/100));
@@ -723,28 +720,36 @@ const Player = new MidiPlayer.Player(function(event) {
     if (!ended && !Player.isPlaying()) {
         ended = true;
         paused = false;
-        if (!repeatOption) {
-            if (autoplayOption == AUTOPLAY_OFF && !stopped) {
-                finished.songName = currentSongName;
-                finished.songDurationFormatted = currentSongDurationFormatted;
-            }
+        if (!repeatOption && autoplayOption == AUTOPLAY_OFF) {
+            if (!stopped) finishedSongName = currentSongName;
             currentSongIndex = null;
+            currentSongName = null;
         }
-        currentSongName = null;
-    } else {
-        var timeRemaining = Player.getSongTimeRemaining();
-        var timeElapsed = currentSongDuration - (timeRemaining > 0 ? timeRemaining : 0);
-        // BELOW - TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
-        currentSongDuration = Player.getSongTime();
-        currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-        // ABOVE - TEMP
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
-    }
+    } else currentSongEventsPlayed = Player.eventsPlayed();
 });
 // see https://github.com/grimmdude/MidiPlayerJS/issues/25
 Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
+
+// Get visual elapsing progress, first argument would elapsed amount while second argument would be total amount
+var getElapsingProgress = function(intElapsed, intTotal) {
+    var elapsedProgress = Math.round((intElapsed / intTotal) * 10);
+    switch(elapsedProgress) {
+        case 0: return "▓░░░░░░░░░░"; break;
+        case 1: return "▓▓░░░░░░░░░"; break;
+        case 2: return "▓▓▓░░░░░░░░"; break;
+        case 3: return "▓▓▓▓░░░░░░░"; break;
+        case 4: return "▓▓▓▓▓░░░░░░"; break;
+        case 5: return "▓▓▓▓▓▓░░░░░"; break;
+        case 6: return "▓▓▓▓▓▓▓░░░░"; break;
+        case 7: return "▓▓▓▓▓▓▓▓░░░"; break;
+        case 8: return "▓▓▓▓▓▓▓▓▓░░"; break;
+        case 9: return "▓▓▓▓▓▓▓▓▓▓░"; break;
+        case 10: return "▓▓▓▓▓▓▓▓▓▓▓"; break;
+        default: return "░░░░░░░░░░░" // should never end up here unless negative numbers were introduced
+    }
+}
 
 // Check to make sure variable is initialized with something
 var exists = function(element) {
@@ -753,7 +758,7 @@ var exists = function(element) {
 }
 
 // Format time to HH:MM:SS from seconds
-var secondsToHms = function(d) {
+/* var secondsToHms = function(d) {
     d = Number(d);
 
     var h, m, s;
@@ -772,19 +777,19 @@ var secondsToHms = function(d) {
     }
 
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
-}
+} */
 
 // Takes formatted time and removed preceeding zeros (only before minutes)
-var timeClearZeros = function(formattedHms) {
+/* var timeClearZeros = function(formattedHms) {
     var newTime = formattedHms;
     while (newTime.length > 5 && newTime.indexOf("00:") == 0) {
         newTime = newTime.substring(3);
     }
     return newTime;
-}
+} */
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
-var timeSizeFormat = function(timeCurrent, timeEnd) {
+/* var timeSizeFormat = function(timeCurrent, timeEnd) {
     var newTimeFormat = timeCurrent;
     var timeCurrentLength = timeCurrent.length;
     var timeEndLength = timeEnd.length;
@@ -794,7 +799,7 @@ var timeSizeFormat = function(timeCurrent, timeEnd) {
         newTimeFormat = "00:" + newTimeFormat;
     }
     return newTimeFormat;
-}
+} */
 
 // Generate a random number
 var randomNumber = function(min, max) {
@@ -888,7 +893,7 @@ var stopSong = function() {
     stopped = true;
     if (!ended) {
         Player.stop();
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+        currentSongEventsPlayed = 0;
         ended = true;
     }
     if (paused) paused = false;
@@ -916,11 +921,10 @@ var playSong = function(songIndex) {
                     previousSongIndex = currentSongIndex;
                     currentSongIndex = songIndex;
                     currentSongName = SONG_NAMES[songIndex];
-                    currentSongDuration = Player.getSongTime();
-                    currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-                    currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+                    currentSongEventsPlayed = Player.eventsPlayed();
+                    currentSongTotalEvents = Player.getTotalEvents();
 
-                    mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+                    mppChatSend(PRE_PLAY + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + " Now playing " + quoteString(currentSongName));
                 } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                     clearInterval(showSongName);
                 } else timeoutRecorder++;
@@ -976,11 +980,6 @@ var toggleAutoplay = function(choice) {
     if (choice == AUTOPLAY_RANDOM || choice == AUTOPLAY_ORDERED) autoplayActive = true;
     else autoplayActive = false;
     autoplayOption = choice;
-}
-
-// Sends back the current time in the song against total time
-var getSongTimesFormatted = function(elapsed, duration) {
-    return '[' + elapsed + " / " + duration + ']';
 }
 
 // Makes the bot the only one to play or turns it off
@@ -1151,31 +1150,35 @@ var stop = function() {
 }
 var pause = function() {
     // pauses the current song
-    var title = PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
-    if (ended) mppChatSend(title + ' ' + NO_SONG);
-    else if (paused) mppChatSend(title + " The song is already paused");
+    if (ended) mppChatSend(PRE_PAUSE + ' ' + NO_SONG);
     else {
-        Player.pause();
-        paused = true;
-        mppChatSend(title + " Paused " + quoteString(currentSongName));
+        var title = PRE_PAUSE + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
+        if (paused) mppChatSend(title + " The song is already paused");
+        else {
+            Player.pause();
+            paused = true;
+            mppChatSend(title + " Paused " + quoteString(currentSongName));
+        }
     }
 }
 var resume = function() {
     // resumes the current song
-    var title = PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
-    if (ended) mppChatSend(title + ' ' + NO_SONG);
-    else if (paused) {
-        Player.play();
-        paused = false;
-        mppChatSend(title + " Resumed " + quoteString(currentSongName));
-    } else mppChatSend(title + " The song is already playing");
+    if (ended) mppChatSend(PRE_RESUME + ' ' + NO_SONG);
+    else {
+        var title = PRE_RESUME + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
+        if (paused) {
+            Player.play();
+            paused = false;
+            mppChatSend(title + " Resumed " + quoteString(currentSongName));
+        } else mppChatSend(title + " The song is already playing");
+    }
 }
 var song = function() {
     // shows current song playing
-    var title = PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend(title + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName));
-    } else mppChatSend(title + ' ' + NO_SONG);
+        mppChatSend(PRE_SONG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents)
+                                   + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName));
+    } else mppChatSend(PRE_SONG + ' ' + NO_SONG);
 }
 var album = function() {
     // show list of songs available
@@ -1186,26 +1189,32 @@ var repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
-    mppChatSend(PRE_REPEAT + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
+    mppChatSend(PRE_SETTINGS + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
 }
 var sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
-    mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
+    mppChatSend(PRE_SETTINGS + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
+}
+var percussion = function() {
+    // turns on or off percussion instruments
+    percussionOption = !percussionOption;
+
+    mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
 }
 var autoplay = function(choice) {
     // changes the type of autoplay
     var currentAutoplay = getAutoplayString(autoplayOption);
 
-    if (!exists(choice) || choice == "") mppChatSend(PRE_AUTOPLAY + " Autoplay is currently set to " + currentAutoplay);
-    else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_AUTOPLAY + " Autoplay is already set to " + currentAutoplay);
+    if (!exists(choice) || choice == "") mppChatSend(PRE_SETTINGS + " Autoplay is currently set to " + currentAutoplay);
+    else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_SETTINGS + " Autoplay is already set to " + currentAutoplay);
     else {
         var valid = getAutoplayValue(choice);
         if (valid != null) {
             stopped = false;
             toggleAutoplay(valid);
-            mppChatSend(PRE_AUTOPLAY + " Autoplay set to " + getAutoplayString(valid));
+            mppChatSend(PRE_SETTINGS + " Autoplay set to " + getAutoplayString(valid));
         } else mppChatSend(PRE_ERROR + " (autoplay) Invalid autoplay choice");
     }
 }
@@ -1240,7 +1249,7 @@ var public = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
-    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+    mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
 }
 
 // =============================================== MAIN
@@ -1309,6 +1318,7 @@ MPP.client.on('a', function (msg) {
             case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
@@ -1347,10 +1357,9 @@ MPP.client.on('p', function(msg) {
 var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song end/done playing message when a song finishes (only when not on autoplay/repeat)
-    if (!repeatOption && autoplayOption == AUTOPLAY_OFF && finished.songName && finished.songDurationFormatted) {
-        mppChatSend(PRE_END + ' ' + getSongTimesFormatted(finished.songDurationFormatted, finished.songDurationFormatted) + " Done playing " + quoteString(finished.songName));
-        finished.songName = null;
-        finished.songDurationFormatted = null;
+    if (!repeatOption && autoplayOption == AUTOPLAY_OFF && finishedSongName) {
+        mppChatSend(PRE_END + ' ' + getElapsingProgress(1, 1) + " Done playing " + quoteString(finishedSongName));
+        finishedSongName = null;
     }
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();

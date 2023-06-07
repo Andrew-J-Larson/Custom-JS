@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.6.3
+// @version      2.7.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -97,7 +97,6 @@ const MPP_ROOM_SETTINGS_ID = "room-settings-btn"; // (DON'T CHANGE)
 const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
 
 // Bot constant settings
-const ALLOW_ALL_INTRUMENTS = false; // removes percussion instruments (turning this on makes a lot of MIDIs sound bad)
 const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
 // Bot custom constants
@@ -124,7 +123,8 @@ const BOT_COMMANDS = [
     ["resume", "plays music right where pause left off"],
     ["song", "shows the current song playing and at what moment in time"],
     ["repeat", "toggles repeating current song on or off"],
-    ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"]
+    ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
+    ["percussion", "toggles the percussion instruments on or off (off by default since it makes most MIDIs sound bad)"]
 ];
 const BOT_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
@@ -142,11 +142,8 @@ const PRE_STOP = PRE_MSG + "[Stop]";
 const PRE_PAUSE = PRE_MSG + "[Pause]";
 const PRE_RESUME = PRE_MSG + "[Resume]";
 const PRE_SONG = PRE_MSG + "[Song]";
-const PRE_REPEAT = PRE_MSG + "[Repeat]";
-const PRE_SUSTAIN = PRE_MSG + "[Sustain]";
+const PRE_SETTINGS = PRE_MSG + "[Settings]";
 const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
-const PRE_LOAD_MUSIC = PRE_MSG + "[Load Music]";
-const PRE_PUBLIC = PRE_MSG + "[Public]";
 const PRE_LIMITED = PRE_MSG + "Limited!";
 const PRE_ERROR = PRE_MSG + "Error!";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
@@ -280,14 +277,13 @@ var loadingOption = false; // controls if loading music should be on or not
 var loadingProgress = 0; // updates when loading files
 var loadingMusicLoop = null; // this is to play notes while a song is (down)loading
 var loadingMusicPrematureStop = false; // this is used when we need to stop the music after errors
-var finished = { songName: null, songDurationFormatted: null }; // only checked when not on repeat, for End/Done playing message
+var finishedSongName = null; // only checked when not on repeat, for End/Done playing message
 var ended = true;
 var stopped = false;
 var paused = false;
 var uploadButton = null; // this gets an element after it's loaded
-var currentSongElapsedFormatted = "00:00"; // changes with the amount of song being played
-var currentSongDurationFormatted = "00:00"; // gets updated when currentSongDuration is updated
-var currentSongDuration = 0; // this changes after each song is loaded
+var currentSongEventsPlayed = 0; // gets updated while a song plays
+var currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
 var currentSongData = null; // this contains the song as a data URI
 var currentFileLocation = null; // this leads to the MIDI location (local or by URL)
 var currentSongName = null; // extracted from the file name/end of URL
@@ -295,6 +291,7 @@ var previousSongData = null; // grabs current when changing successfully
 var previousSongName = null; // grabs current when changing successfully
 var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
+var percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
 
 var mppRoomSettingsBtn = null; // tracks "Room Settings" element
 var xDisplacement = ""; // tracks xDisplacement value from CSS variables
@@ -320,7 +317,7 @@ const Player = new MidiPlayer.Player(function(event) {
     }
     var currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
-    if (currentEvent.indexOf("Note") == 0 && (ALLOW_ALL_INTRUMENTS || event.channel != PERCUSSION_CHANNEL)) {
+    if (currentEvent.indexOf("Note") == 0 && (percussionOption || event.channel != PERCUSSION_CHANNEL)) {
         var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             MPP.press(currentNote, (event.velocity/100));
@@ -331,22 +328,11 @@ const Player = new MidiPlayer.Player(function(event) {
         ended = true;
         paused = false;
         if (!repeatOption) {
-            if (!stopped) {
-                finished.songName = currentSongName;
-                finished.songDurationFormatted = currentSongDurationFormatted;
-            }
+            if (!stopped) finishedSongName = currentSongName;
             currentSongData = null;
             currentSongName = null;
         }
-    } else {
-        var timeRemaining = Player.getSongTimeRemaining();
-        var timeElapsed = currentSongDuration - (timeRemaining > 0 ? timeRemaining : 0);
-        // BELOW - TEMP: helps mitigate duration calculation issue, but still not fully fixed, see https://github.com/grimmdude/MidiPlayerJS/issues/64
-        currentSongDuration = Player.getSongTime();
-        currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
-        // ABOVE - TEMP
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(timeElapsed), currentSongDurationFormatted);
-    }
+    } else currentSongEventsPlayed = Player.eventsPlayed();
 });
 // see https://github.com/grimmdude/MidiPlayerJS/issues/25
 Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
@@ -362,21 +348,41 @@ var useCorsUrl = function(url) {
     return newUrl;
 }
 
-// Get visual loading progress, just enter the current progressing number (usually time elapsed in seconds)
-var getProgress = function(intProgress) {
-    var progress = intProgress % 20;
-    switch(progress) {
-        case 0: return " █░░░░░░░░░░"; break;
-        case 1: case 19: return " ░█░░░░░░░░░"; break;
-        case 2: case 18: return " ░░█░░░░░░░░"; break;
-        case 3: case 17: return " ░░░█░░░░░░░"; break;
-        case 4: case 16: return " ░░░░█░░░░░░"; break;
-        case 5: case 15: return " ░░░░░█░░░░░"; break;
-        case 6: case 14: return " ░░░░░░█░░░░"; break;
-        case 7: case 13: return " ░░░░░░░█░░░"; break;
-        case 8: case 12: return " ░░░░░░░░█░░"; break;
-        case 9: case 11: return " ░░░░░░░░░█░"; break;
-        case 10: return " ░░░░░░░░░░█"; break;
+// Get visual loading progress, just use a progressing number (e.g. time elapsed, loop index, etc.)
+var getLoadingProgress = function(intProgress) {
+    var loadProgress = intProgress % 20;
+    switch(loadProgress) {
+        case 0: return "▓░░░░░░░░░░"; break;
+        case 1: case 19: return "░▓░░░░░░░░░"; break;
+        case 2: case 18: return "░░▓░░░░░░░░"; break;
+        case 3: case 17: return "░░░▓░░░░░░░"; break;
+        case 4: case 16: return "░░░░▓░░░░░░"; break;
+        case 5: case 15: return "░░░░░▓░░░░░"; break;
+        case 6: case 14: return "░░░░░░▓░░░░"; break;
+        case 7: case 13: return "░░░░░░░▓░░░"; break;
+        case 8: case 12: return "░░░░░░░░▓░░"; break;
+        case 9: case 11: return "░░░░░░░░░▓░"; break;
+        case 10: return "░░░░░░░░░░▓"; break;
+        default: return "░░░░░░░░░░░" // will never end up getting here
+    }
+}
+
+// Get visual elapsing progress, first argument would elapsed amount while second argument would be total amount
+var getElapsingProgress = function(intElapsed, intTotal) {
+    var elapsedProgress = Math.round((intElapsed / intTotal) * 10);
+    switch(elapsedProgress) {
+        case 0: return "▓░░░░░░░░░░"; break;
+        case 1: return "▓▓░░░░░░░░░"; break;
+        case 2: return "▓▓▓░░░░░░░░"; break;
+        case 3: return "▓▓▓▓░░░░░░░"; break;
+        case 4: return "▓▓▓▓▓░░░░░░"; break;
+        case 5: return "▓▓▓▓▓▓░░░░░"; break;
+        case 6: return "▓▓▓▓▓▓▓░░░░"; break;
+        case 7: return "▓▓▓▓▓▓▓▓░░░"; break;
+        case 8: return "▓▓▓▓▓▓▓▓▓░░"; break;
+        case 9: return "▓▓▓▓▓▓▓▓▓▓░"; break;
+        case 10: return "▓▓▓▓▓▓▓▓▓▓▓"; break;
+        default: return "░░░░░░░░░░░" // should never end up here unless negative numbers were introduced
     }
 }
 
@@ -428,7 +434,7 @@ var exists = function(element) {
 }
 
 // Format time to HH:MM:SS from seconds
-var secondsToHms = function(d) {
+/* var secondsToHms = function(d) {
     d = Number(d);
 
     var h, m, s;
@@ -447,19 +453,19 @@ var secondsToHms = function(d) {
     }
 
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
-}
+} */
 
 // Takes formatted time and removed preceeding zeros (only before minutes)
-var timeClearZeros = function(formattedHms) {
+/* var timeClearZeros = function(formattedHms) {
     var newTime = formattedHms;
     while (newTime.length > 5 && newTime.indexOf("00:") == 0) {
         newTime = newTime.substring(3);
     }
     return newTime;
-}
+} */
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
-var timeSizeFormat = function(timeCurrent, timeEnd) {
+/* var timeSizeFormat = function(timeCurrent, timeEnd) {
     var newTimeFormat = timeCurrent;
     var timeCurrentLength = timeCurrent.length;
     var timeEndLength = timeEnd.length;
@@ -469,7 +475,7 @@ var timeSizeFormat = function(timeCurrent, timeEnd) {
         newTimeFormat = "00:" + newTimeFormat;
     }
     return newTimeFormat;
-}
+} */
 
 // Generate a random number
 var randomNumber = function(min, max) {
@@ -494,7 +500,7 @@ var urlToBlob = function(url, callback) {
     else {
         var progress = 0;
         downloading = setInterval(function() {
-            mppChatSend(PRE_DOWNLOADING + getProgress(progress));
+            mppChatSend(PRE_DOWNLOADING + ' ' + getLoadingProgress(progress));
             progress++;
         }, chatDelay);
     }
@@ -628,7 +634,7 @@ var stopSong = function() {
     stopped = true;
     if (!ended) {
         Player.stop();
-        currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
+        currentSongEventsPlayed = 0;
         ended = true;
     }
     if (paused) paused = false;
@@ -657,11 +663,10 @@ var playSong = function(songFileName, songData) {
                 previousSongName = currentSongName;
                 currentSongData = songData;
                 currentSongName = /*(hasExtension > 0) ? songFileName.substring(0, hasExtension) :*/ songFileName;
-                currentSongElapsedFormatted = timeSizeFormat(secondsToHms(0), currentSongDurationFormatted);
-                currentSongDuration = Player.getSongTime();
-                currentSongDurationFormatted = timeClearZeros(secondsToHms(currentSongDuration));
+                currentSongEventsPlayed = Player.eventsPlayed();
+                currentSongTotalEvents = Player.getTotalEvents();
 
-                mppChatSend(PRE_PLAY + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted) + " Now playing " + quoteString(currentSongName));
+                mppChatSend(PRE_PLAY + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + " Now playing " + quoteString(currentSongName));
             } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                 clearInterval(showSongName);
             } else timeoutRecorder++;
@@ -868,11 +873,6 @@ var createButtons = function() {
     buttonContainer.appendChild(togglerDiv);
 }
 
-// Sends back the current time in the song against total time
-var getSongTimesFormatted = function(elapsed, duration) {
-    return '[' + elapsed + " / " + duration + ']';
-}
-
 // Shows limited message for user
 var playerLimited = function(username) {
     // displays message with their name about being limited
@@ -989,7 +989,7 @@ var pause = function() {
     // pauses the current song
     if (ended) mppChatSend(PRE_PAUSE + ' ' + NO_SONG);
     else {
-        var title = PRE_PAUSE + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
+        var title = PRE_PAUSE + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
         if (paused) mppChatSend(title + " The song is already paused");
         else {
             Player.pause();
@@ -1002,7 +1002,7 @@ var resume = function() {
     // resumes the current song
     if (ended) mppChatSend(PRE_RESUME + ' ' + NO_SONG);
     else {
-        var title = PRE_RESUME + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted);
+        var title = PRE_RESUME + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
         if (paused) {
             Player.play();
             paused = false;
@@ -1013,7 +1013,7 @@ var resume = function() {
 var song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend(PRE_SONG + ' ' + getSongTimesFormatted(currentSongElapsedFormatted, currentSongDurationFormatted)
+        mppChatSend(PRE_SONG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents)
                                    + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName));
     } else mppChatSend(PRE_SONG + ' ' + NO_SONG);
 }
@@ -1021,25 +1021,31 @@ var repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
-    mppChatSend(PRE_REPEAT + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
+    mppChatSend(PRE_SETTINGS + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
 }
 var sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
-    mppChatSend(PRE_SUSTAIN + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
+    mppChatSend(PRE_SETTINGS + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
+}
+var percussion = function() {
+    // turns on or off percussion instruments
+    percussionOption = !percussionOption;
+
+    mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
 }
 var loading = function(userId, yourId) {
     // only let the bot owner set if loading music should be on or not
     if (userId != yourId) return;
     loadingOption = !loadingOption;
-    mppChatSend(PRE_LOAD_MUSIC + " The MIDI loading progress is now set to " + (loadingOption ? "audio" : "text"));
+    mppChatSend(PRE_SETTINGS + " The MIDI loading progress is now set to " + (loadingOption ? "audio" : "text"));
 }
 var public = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
-    mppChatSend(PRE_PUBLIC + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+    mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
 }
 
 // =============================================== MAIN
@@ -1110,6 +1116,7 @@ MPP.client.on('a', function (msg) {
             case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
             case "loading": case "lo": loading(userId, yourId); break;
             case BOT_ACTIVATOR: public(userId, yourId); break;
         }
@@ -1146,10 +1153,9 @@ MPP.client.on('p', function(msg) {
 var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song end/done playing message when a song finishes (only when not on repeat)
-    if (!repeatOption && finished.songName && finished.songDurationFormatted) {
-        mppChatSend(PRE_END + ' ' + getSongTimesFormatted(finished.songDurationFormatted, finished.songDurationFormatted) + " Done playing " + quoteString(finished.songName));
-        finished.songName = null;
-        finished.songDurationFormatted = null;
+    if (!repeatOption && finishedSongName) {
+        mppChatSend(PRE_END + ' ' + getElapsingProgress(1, 1) + " Done playing " + quoteString(finishedSongName));
+        finishedSongName = null;
     }
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
