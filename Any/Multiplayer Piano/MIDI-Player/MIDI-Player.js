@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.7.2";
+const VERSION = "2.7.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1156,7 +1156,7 @@ var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song end/done playing message when a song finishes (only when not on repeat)
     if (!repeatOption && finishedSongName) {
-        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Done playing");
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(finishedSongName) + " ⚊➤ Done playing");
         finishedSongName = null;
     }
     // do repeat
