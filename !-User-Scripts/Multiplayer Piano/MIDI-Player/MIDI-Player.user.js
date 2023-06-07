@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.1
+// @version      2.7.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -130,16 +130,16 @@ const BOT_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
     [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
-const PRE_MSG = BOT_NAME + " (v" + VERSION + "): ";
-const PRE_HELP = PRE_MSG + "[Help]";
-const PRE_ABOUT = PRE_MSG + "[About]";
-const PRE_LINK = PRE_MSG + "[Link]";
-const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
-const PRE_PING = PRE_MSG + "[Ping]";
-const PRE_SETTINGS = PRE_MSG + "[Settings]";
-const PRE_DOWNLOADING = PRE_MSG + "[Downloading]";
-const PRE_LIMITED = PRE_MSG + "Limited!";
-const PRE_ERROR = PRE_MSG + "Error!";
+const PRE_MSG = BOT_NAME + " (v" + VERSION + "):";
+const PRE_HELP = PRE_MSG + " [Help]";
+const PRE_ABOUT = PRE_MSG + " [About]";
+const PRE_LINK = PRE_MSG + " [Link]";
+const PRE_FEEDBACK = PRE_MSG + " [Feedback]";
+const PRE_PING = PRE_MSG + " [Ping]";
+const PRE_SETTINGS = PRE_MSG + " [Settings]";
+const PRE_DOWNLOADING = PRE_MSG + " [Downloading]";
+const PRE_LIMITED = PRE_MSG + " Limited!";
+const PRE_ERROR = PRE_MSG + " Error!";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
@@ -660,7 +660,7 @@ var playSong = function(songFileName, songData) {
                 currentSongEventsPlayed = Player.eventsPlayed();
                 currentSongTotalEvents = Player.getTotalEvents();
 
-                mppChatSend(getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Now playing");
+                mppChatSend(PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Now playing");
             } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                 clearInterval(showSongName);
             } else timeoutRecorder++;
@@ -971,19 +971,19 @@ var play = function(url) {
 }
 var stop = function() {
     // stops the current song
-    if (ended) mppChatSend(NO_SONG);
+    if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
         stopSong();
         paused = false;
-        mppChatSend(getElapsingProgress(-1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Stopped");
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(-1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Stopped");
         currentFileLocation = currentSongName = null;
     }
 }
 var pause = function() {
     // pauses the current song
-    if (ended) mppChatSend(NO_SONG);
+    if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
-        var title = getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
+        var title = PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
         if (paused) mppChatSend(title + "Already paused");
         else {
             Player.pause();
@@ -994,9 +994,9 @@ var pause = function() {
 }
 var resume = function() {
     // resumes the current song
-    if (ended) mppChatSend(NO_SONG);
+    if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
-        var title = getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
+        var title = PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
         if (paused) {
             Player.play();
             paused = false;
@@ -1007,8 +1007,8 @@ var resume = function() {
 var song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend(getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Currently " + (paused ? "paused" : "playing"));
-    } else mppChatSend(NO_SONG);
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Currently " + (paused ? "paused" : "playing"));
+    } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
 var repeat = function() {
     // turns on or off repeat
@@ -1147,7 +1147,7 @@ var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song end/done playing message when a song finishes (only when not on repeat)
     if (!repeatOption && finishedSongName) {
-        mppChatSend(getElapsingProgress(1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Done playing");
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Done playing");
         finishedSongName = null;
     }
     // do repeat
