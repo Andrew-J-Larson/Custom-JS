@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.0
+// @version      2.7.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -148,13 +148,7 @@ const PRE_ABOUT = PRE_MSG + "[About]";
 const PRE_LINK = PRE_MSG + "[Link]";
 const PRE_FEEDBACK = PRE_MSG + "[Feedback]";
 const PRE_PING = PRE_MSG + "[Ping]";
-const PRE_PLAY = PRE_MSG + "[Play]";
-const PRE_END = PRE_MSG + "[End]";
 const PRE_SKIP = PRE_MSG + "[Skip]";
-const PRE_STOP = PRE_MSG + "[Stop]";
-const PRE_PAUSE = PRE_MSG + "[Pause]";
-const PRE_RESUME = PRE_MSG + "[Resume]";
-const PRE_SONG = PRE_MSG + "[Song]";
 const PRE_SETTINGS = PRE_MSG + "[Settings]";
 const PRE_ALBUM = PRE_MSG + "[Album]";
 const PRE_ART = PRE_MSG + "[Art]";
@@ -673,7 +667,7 @@ var currentRoom = null; // updates when it connects to room
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 var endDelay; // used in multiline chats send commands
 
-var finishedSongName = null; // only checked when not on repeat, for End/Done playing message
+var finishedSongName = null; // only checked when not on repeat, for end/done playing message
 var ended = true;
 var stopped = false;
 var paused = false;
@@ -736,18 +730,18 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 var getElapsingProgress = function(intElapsed, intTotal) {
     var elapsedProgress = Math.round((intElapsed / intTotal) * 10);
     switch(elapsedProgress) {
-        case 0: return "▓░░░░░░░░░░"; break;
-        case 1: return "▓▓░░░░░░░░░"; break;
-        case 2: return "▓▓▓░░░░░░░░"; break;
-        case 3: return "▓▓▓▓░░░░░░░"; break;
-        case 4: return "▓▓▓▓▓░░░░░░"; break;
-        case 5: return "▓▓▓▓▓▓░░░░░"; break;
-        case 6: return "▓▓▓▓▓▓▓░░░░"; break;
-        case 7: return "▓▓▓▓▓▓▓▓░░░"; break;
-        case 8: return "▓▓▓▓▓▓▓▓▓░░"; break;
-        case 9: return "▓▓▓▓▓▓▓▓▓▓░"; break;
-        case 10: return "▓▓▓▓▓▓▓▓▓▓▓"; break;
-        default: return "░░░░░░░░░░░" // should never end up here unless negative numbers were introduced
+        case 0: return "▐▓░░░░░░░░░░▌"; break;
+        case 1: return "▐▓▓░░░░░░░░░▌"; break;
+        case 2: return "▐▓▓▓░░░░░░░░▌"; break;
+        case 3: return "▐▓▓▓▓░░░░░░░▌"; break;
+        case 4: return "▐▓▓▓▓▓░░░░░░▌"; break;
+        case 5: return "▐▓▓▓▓▓▓░░░░░▌"; break;
+        case 6: return "▐▓▓▓▓▓▓▓░░░░▌"; break;
+        case 7: return "▐▓▓▓▓▓▓▓▓░░░▌"; break;
+        case 8: return "▐▓▓▓▓▓▓▓▓▓░░▌"; break;
+        case 9: return "▐▓▓▓▓▓▓▓▓▓▓░▌"; break;
+        case 10: return "▐▓▓▓▓▓▓▓▓▓▓▓▌"; break;
+        default: return "▐░░░░░░░░░░░▌" // should never end up here unless negative numbers were introduced
     }
 }
 
@@ -924,7 +918,7 @@ var playSong = function(songIndex) {
                     currentSongEventsPlayed = Player.eventsPlayed();
                     currentSongTotalEvents = Player.getTotalEvents();
 
-                    mppChatSend(PRE_PLAY + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + " Now playing " + quoteString(currentSongName));
+                    mppChatSend(getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Now playing");
                 } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                     clearInterval(showSongName);
                 } else timeoutRecorder++;
@@ -1130,9 +1124,9 @@ var play = function(args, argsString) {
 var skip = function() {
     // skips the current song if on autoplay
     if (autoplayOption != AUTOPLAY_OFF) {
-        if (ended) mppChatSend(PRE_SKIP + ' ' + NO_SONG);
+        if (ended) mppChatSend(NO_SONG);
         else {
-            mppChatSend(PRE_SKIP + " Skipped song");
+            mppChatSend("Skipped song");
             Player.stop();
             ended = true;
         }
@@ -1140,45 +1134,44 @@ var skip = function() {
 }
 var stop = function() {
     // stops the current song
-    if (ended) mppChatSend(PRE_STOP + ' ' + NO_SONG);
+    if (ended) mppChatSend(NO_SONG);
     else {
         stopSong();
         paused = false;
-        mppChatSend(PRE_STOP + " Stopped playing " + quoteString(currentSongName));
+        mppChatSend(getElapsingProgress(-1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Stopped");
         currentSongIndex = currentSongName = null;
     }
 }
 var pause = function() {
     // pauses the current song
-    if (ended) mppChatSend(PRE_PAUSE + ' ' + NO_SONG);
+    if (ended) mppChatSend(NO_SONG);
     else {
-        var title = PRE_PAUSE + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
-        if (paused) mppChatSend(title + " The song is already paused");
+        var title = getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
+        if (paused) mppChatSend(title + "Already paused");
         else {
             Player.pause();
             paused = true;
-            mppChatSend(title + " Paused " + quoteString(currentSongName));
+            mppChatSend(title + "Paused");
         }
     }
 }
 var resume = function() {
     // resumes the current song
-    if (ended) mppChatSend(PRE_RESUME + ' ' + NO_SONG);
+    if (ended) mppChatSend(NO_SONG);
     else {
-        var title = PRE_RESUME + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
+        var title = getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ ";
         if (paused) {
             Player.play();
             paused = false;
-            mppChatSend(title + " Resumed " + quoteString(currentSongName));
-        } else mppChatSend(title + " The song is already playing");
+            mppChatSend(title + "Resumed");
+        } else mppChatSend(title + "Already resumed");
     }
 }
 var song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend(PRE_SONG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents)
-                                   + " Currently " + (paused ? "paused on" : "playing") + ' ' + quoteString(currentSongName));
-    } else mppChatSend(PRE_SONG + ' ' + NO_SONG);
+        mppChatSend(getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Currently " + (paused ? "paused" : "playing"));
+    } else mppChatSend(NO_SONG);
 }
 var album = function() {
     // show list of songs available
@@ -1358,7 +1351,7 @@ var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song end/done playing message when a song finishes (only when not on autoplay/repeat)
     if (!repeatOption && autoplayOption == AUTOPLAY_OFF && finishedSongName) {
-        mppChatSend(PRE_END + ' ' + getElapsingProgress(1, 1) + " Done playing " + quoteString(finishedSongName));
+        mppChatSend(getElapsingProgress(1, 1) + ' ' + quoteString(currentSongName) + " ⚊➤ Done playing");
         finishedSongName = null;
     }
     // do autoplay
