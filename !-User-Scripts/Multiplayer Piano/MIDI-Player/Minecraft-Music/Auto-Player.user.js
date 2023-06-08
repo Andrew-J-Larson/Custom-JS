@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.3
+// @version      2.7.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1368,7 +1368,7 @@ var slowRepeatingTasks = setInterval(function() {
     if (!pageVisible) {
         var note = MPP.piano.keys["a-1"].note;
         var participantId = MPP.client.getOwnParticipant().id;
-        MPP.piano.audio.play(note, 0.01, 0, participantId);
+        MPP.piano.audio.play(note, 0.001, 0, participantId);
         MPP.piano.audio.stop(note, 0, participantId);
     }
 }, SECOND);

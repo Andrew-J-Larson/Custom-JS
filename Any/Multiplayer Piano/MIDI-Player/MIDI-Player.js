@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.7.3";
+const VERSION = "2.7.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1190,7 +1190,7 @@ var slowRepeatingTasks = setInterval(function() {
     if (!pageVisible) {
         var note = MPP.piano.keys["a-1"].note;
         var participantId = MPP.client.getOwnParticipant().id;
-        MPP.piano.audio.play(note, 0.01, 0, participantId);
+        MPP.piano.audio.play(note, 0.001, 0, participantId);
         MPP.piano.audio.stop(note, 0, participantId);
     }
 }, SECOND);

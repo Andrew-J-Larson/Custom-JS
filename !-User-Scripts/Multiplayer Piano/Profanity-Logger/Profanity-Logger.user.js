@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Profanity Logger
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -131,6 +131,17 @@ var endDelay; // used in multiline chats send commands
 var tempBannedPlayers = [
 //  empty for now, this is for adding and removing users via commands
 ];
+
+// =============================================== PAGE VISIBILITY
+
+var pageVisible = true;
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        pageVisible = false;
+    } else {
+        pageVisible = true;
+    }
+});
 
 // ============================================== FUNCTIONS
 
@@ -484,6 +495,17 @@ MPP.client.on('p', function(msg) {
 });
 
 // =============================================== INTERVALS
+
+// Stuff that needs to be done by intervals (e.g. repeat)
+var slowRepeatingTasks = setInterval(function() {
+    // do background tab fix
+    if (!pageVisible) {
+        var note = MPP.piano.keys["a-1"].note;
+        var participantId = MPP.client.getOwnParticipant().id;
+        MPP.piano.audio.play(note, 0.001, 0, participantId);
+        MPP.piano.audio.stop(note, 0, participantId);
+    }
+}, SECOND);
 
 // Automatically turns off the sound warning
 var clearSoundWarning = setInterval(function() {

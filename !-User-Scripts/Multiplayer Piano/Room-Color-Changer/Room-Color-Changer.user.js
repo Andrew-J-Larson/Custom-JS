@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Room Color Changer
 // @namespace    https://thealiendrew.github.io/
-// @version      0.1.9
+// @version      0.2.0
 // @description  Advanced room color changing!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -105,6 +105,17 @@ const DESCRIPTION_SEPARATOR = " - ";
 
 var active = true; // turn off the bot if needed
 var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
+
+// =============================================== PAGE VISIBILITY
+
+var pageVisible = true;
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+        pageVisible = false;
+    } else {
+        pageVisible = true;
+    }
+});
 
 // =============================================== FUNCTIONS
 
@@ -549,6 +560,17 @@ MPP.client.on("ch", function(msg) {
 });
 
 // =============================================== INTERVALS
+
+// Stuff that needs to be done by intervals (e.g. repeat)
+var slowRepeatingTasks = setInterval(function() {
+    // do background tab fix
+    if (!pageVisible) {
+        var note = MPP.piano.keys["a-1"].note;
+        var participantId = MPP.client.getOwnParticipant().id;
+        MPP.piano.audio.play(note, 0.001, 0, participantId);
+        MPP.piano.audio.stop(note, 0, participantId);
+    }
+}, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 var clearSoundWarning = setInterval(function() {
