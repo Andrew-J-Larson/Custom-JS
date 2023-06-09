@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.5
+// @version      2.7.6
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1154,6 +1154,10 @@ var repeatingTasks = setInterval(function() {
             currentSongProgress0to10 = tempCurrentSongProgress0to10;
             if (currentSongProgress0to10 != 0) song();
         }
+    }
+    if (finishedSongName) {
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(finishedSongName) + " ⚊➤ Done playing");
+        finishedSongName = null;
     }
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.5
+// @version      2.7.6
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1358,6 +1358,10 @@ var repeatingTasks = setInterval(function() {
             currentSongProgress0to10 = tempCurrentSongProgress0to10;
             if (currentSongProgress0to10 != 0) song();
         }
+    }
+    if (finishedSongName) {
+        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(finishedSongName) + " ⚊➤ Done playing");
+        finishedSongName = null;
     }
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();
