@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.4
+// @version      2.7.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -276,6 +276,7 @@ var ended = true;
 var stopped = false;
 var paused = false;
 var uploadButton = null; // this gets an element after it's loaded
+var currentSongProgress0to10 = 0; // gets updated while a song plays
 var currentSongEventsPlayed = 0; // gets updated while a song plays
 var currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
 var currentSongData = null; // this contains the song as a data URI
@@ -321,11 +322,9 @@ const Player = new MidiPlayer.Player(function(event) {
     if (!ended && !Player.isPlaying()) {
         ended = true;
         paused = false;
-        if (!repeatOption) {
-            if (!stopped) finishedSongName = currentSongName;
-            currentSongData = null;
-            currentSongName = null;
-        }
+        if (!stopped) finishedSongName = currentSongName;
+        currentSongData = null;
+        currentSongName = null;
     } else currentSongEventsPlayed = Player.eventsPlayed();
 });
 // see https://github.com/grimmdude/MidiPlayerJS/issues/25
@@ -362,8 +361,11 @@ var getLoadingProgress = function(intProgress) {
 }
 
 // Get visual elapsing progress, first argument would elapsed amount while second argument would be total amount
+var getElapsedProgressInt0to10 = function(intElapsed, intTotal) {
+    return Math.round((intElapsed / intTotal) * 10);
+}
 var getElapsingProgress = function(intElapsed, intTotal) {
-    var elapsedProgress = Math.round((intElapsed / intTotal) * 10);
+    var elapsedProgress = getElapsedProgressInt0to10(intElapsed, intTotal);
     switch(elapsedProgress) {
         case 0: return "▐▓░░░░░░░░░░▌"; break;
         case 1: return "▐▓▓░░░░░░░░░▌"; break;
@@ -1145,10 +1147,13 @@ MPP.client.on('p', function(msg) {
 // Stuff that needs to be done by intervals (e.g. repeat)
 var repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
-    // display song end/done playing message when a song finishes (only when not on repeat)
-    if (!repeatOption && finishedSongName) {
-        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(1, 1) + ' ' + quoteString(finishedSongName) + " ⚊➤ Done playing");
-        finishedSongName = null;
+    // display song progression status and end/done status
+    if (exists(currentSongName) && currentSongName != "") {
+        var tempCurrentSongProgress0to10 = getElapsedProgressInt0to10(currentSongEventsPlayed, currentSongTotalEvents);
+        if (tempCurrentSongProgress0to10 != currentSongProgress0to10) {
+            currentSongProgress0to10 = tempCurrentSongProgress0to10;
+            if (currentSongProgress0to10 != 0) song();
+        }
     }
     // do repeat
     if (repeatOption && ended && !stopped && exists(currentSongName) && exists(currentSongData)) {
