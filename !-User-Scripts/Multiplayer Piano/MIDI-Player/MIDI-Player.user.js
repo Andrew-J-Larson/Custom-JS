@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.6
+// @version      2.7.7
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -781,7 +781,7 @@ var createButtons = function() {
     songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
     songDiv.classList.add("ugly-button");
     songDiv.onclick = function() {
-        if (!MPP.client.preventsPlaying()) song();
+        if (!MPP.client.preventsPlaying()) song(true);
     }
     var songTxt = document.createTextNode("Song");
     songDiv.appendChild(songTxt);
@@ -1006,10 +1006,12 @@ var resume = function() {
         } else mppChatSend(title + "Already resumed");
     }
 }
-var song = function() {
+var song = function(showStatusText) {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        mppChatSend(PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName) + " ⚊➤ Currently " + (paused ? "paused" : "playing"));
+        var title = PRE_MSG + ' ' + getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents) + ' ' + quoteString(currentSongName);
+        if (showStatusText) title += " ⚊➤ Currently " + (paused ? "paused" : "playing");
+        mppChatSend(title);
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
 var repeat = function() {
@@ -1108,7 +1110,7 @@ MPP.client.on('a', function (msg) {
             case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
             case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
             case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
+            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(true); break;
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
