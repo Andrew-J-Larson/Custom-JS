@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.7.8";
+const VERSION = "2.7.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -653,6 +653,7 @@ var stopSong = function() {
         Player.stop();
         currentSongProgress0to10 = -1;
         currentSongEventsPlayed = 0;
+        currentSongName = null;
         ended = true;
     }
     if (paused) paused = false;
@@ -997,10 +998,11 @@ var stop = function() {
     // stops the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
+        var tempSongName = currentSongName;
         stopSong();
+        currentFileLocation = null;
         paused = false;
-        mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
-        currentFileLocation = currentSongName = null;
+        mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(tempSongName) + '`');
     }
 }
 var pause = function() {
