@@ -8,7 +8,8 @@
    - Firefox Keyboard Shortcut: 
      - Windows/Linux: `Shift + Control + K`
      - Mac: `Option + Command + K`
-   - Safari Keyboard Shortcut: `Option + ⌘ + C`
+   - Safari Keyboard Shortcut:
+     - `Option + Command + C`
 2. Copy the code from [MIDI-Player.js](https://github.com/TheAlienDrew/Custom-JS/blob/master/Any/Multiplayer%20Piano/MIDI-Player/MIDI-Player.js) file in.
 3. Paste the code into the browser's dev tools console, and press enter.
 
