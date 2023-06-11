@@ -5,8 +5,12 @@ const VERSION = "2.8.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
-const INCLUDE = [/^https?:\/\/www\.multiplayerpiano\.com*/g,
-                 /^https?:\/\/multiplayerpiano\.(com|net)*/g,
+const INCLUDE = [/^https?:\/\/(www\.)?multiplayerpiano\.(org|com|dev)*/g,
+                 /^https?:\/\/piano\.ourworldofpixels\.com*/g,
+                 /^https?:\/\/beta\-mpp\.csys64\.com*/g,
+                 /^https?:\/\/mpp\.hri7566\.info*/g,
+                 /^https?:\/\/mpp\.autoplayer\.xyz*/g,
+                 /^https?:\/\/mpp\.lapishusky\.dev*/g,
                  /^https?:\/\/mppclone\.com*/g];
 const DOWNLOAD_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/Any/Multiplayer%20Piano/MIDI-Player/MIDI-Player.js";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";

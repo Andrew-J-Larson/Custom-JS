@@ -1,13 +1,18 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.0
+// @version      2.8.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
+// @match        https://www.multiplayerpiano.org/*
 // @match        https://www.multiplayerpiano.com/*
-// @match        https://multiplayerpiano.com/*
-// @match        https://multiplayerpiano.net/*
+// @match        https://www.multiplayerpiano.dev/*
+// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://beta-mpp.csys64.com/*
+// @match        https://mpp.hri7566.info/*
+// @match        https://mpp.autoplayer.xyz/*
+// @match        https://mpp.lapishusky.dev/*
 // @match        https://mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js

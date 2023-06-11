@@ -1,13 +1,18 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Profanity Logger
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
+// @match        https://www.multiplayerpiano.org/*
 // @match        https://www.multiplayerpiano.com/*
-// @match        https://multiplayerpiano.com/*
-// @match        https://multiplayerpiano.net/*
+// @match        https://www.multiplayerpiano.dev/*
+// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://beta-mpp.csys64.com/*
+// @match        https://mpp.hri7566.info/*
+// @match        https://mpp.autoplayer.xyz/*
+// @match        https://mpp.lapishusky.dev/*
 // @match        https://mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Profanity-Logger/Profanity-Logger.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Profanity-Logger/Profanity-Logger.user.js
