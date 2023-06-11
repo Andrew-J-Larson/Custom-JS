@@ -1,6 +1,7 @@
 # MIDI Player (MOD for Multiplayer Piano)
 
 ### How to use
+
 1. In the window where Multiplayer Piano (or clone) website is open, open the browser's dev tools console:
    - Chrome/Edge Keyboard Shortcut: 
      - Windows/Linux: `Shift + Control + J`
@@ -16,16 +17,15 @@
 
 You'll know it worked if you can see the `MIDI Player` button with the other buttons.
 
-### Don't want to copy and paste every single time?
-Create the bookmarklet instead for easy activation.
-1. Copy the code from this file:
-   - [MIDI-Player.js.bookmarklet](https://github.com/TheAlienDrew/Custom-JS/blob/master/Any/Multiplayer%20Piano/MIDI-Player/bookmarklet/MIDI-Player.js.bookmarklet)
-2. Create a new bookmark, name it `MIDI Player (load mod)` or something that you can easily identify, and paste in the code where the URL would 
+### Don't want to copy and paste every single time? Use the Bookmarklet!
 
-### Want to use the user script?
+Location of the Bookmarklet (`MIDI-Player.js.bookmarklet`) is at:
+- https://github.com/TheAlienDrew/Custom-JS/tree/master/Any/!-Bookmarklets/Multiplayer%20Piano/MIDI-Player
+
+### Want it auto activate? Use the User-Script instead!
 
 Location of the User-Script (`MIDI-Player.user.js`) is at:
-https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
+- https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
 
 ## Credits
 
