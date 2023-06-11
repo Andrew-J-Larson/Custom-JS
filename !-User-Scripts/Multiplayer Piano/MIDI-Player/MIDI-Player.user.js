@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.9
+// @version      2.8.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -72,6 +72,8 @@ const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
 const DOWNLOAD_URL = SCRIPT.downloadURL;
 
+// NOTE: Pure JS version code is the same from here down
+
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
@@ -93,7 +95,6 @@ const LIMITED_PLAYERS = []; // empty for now
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
-const MPP_ROOM_SETTINGS_ID = "room-settings-btn"; // (DON'T CHANGE)
 const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
 
 // Bot constant settings
@@ -160,21 +161,16 @@ const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weigh
 
 // Element constants
 const CSS_VARIABLE_X_DISPLACEMENT = "--xDisplacement";
+const CSS_VARIABLE_Y_DISPLACEMENT = "--yDisplacement";
+const CSS_VARIABLE_X_INITIAL = "--xInitial";
+const CSS_VARIABLE_Y_INITIAL = "--yInitial";
+const CSS_VARIABLE_Y_TOGGLE_INITIAL = "--yToggleInitial"; // helps special case of determining toggle button placement
 const PRE_ELEMENT_ID = "aliendrew-midi-player-bot";
+const QUERY_BOTTOM_UGLY_BTNS = `#bottom > div > .ugly-button:not([id^=${PRE_ELEMENT_ID}])`;
 // buttons have some constant styles/classes
 const ELEM_ON = "display:block;";
 const ELEM_OFF = "display:none;";
 const ELEM_POS = "position:absolute;";
-const BTN_PAD_LEFT = 8; // pixels
-const BTN_PAD_TOP = 4; // pixels
-const BTN_WIDTH = 112; // pixels
-const BTN_HEIGHT = 24; // pixels
-const BTN_SPACER_X = BTN_PAD_LEFT + BTN_WIDTH; //pixels
-const BTN_SPACER_Y = BTN_PAD_TOP + BTN_HEIGHT; //pixels
-const BTNS_START_X = 300; //pixels
-const BTNS_END_X = BTNS_START_X + 4 * BTN_SPACER_X; //pixels
-const BTNS_TOP_0 = BTN_PAD_TOP; //pixels
-const BTNS_TOP_1 = BTN_PAD_TOP + BTN_SPACER_Y; //pixels
 const BTN_STYLE = ELEM_POS + ELEM_OFF;
 
 // Gets the correct note from MIDIPlayer to play on MPP
@@ -299,8 +295,6 @@ var repeatOption = false; // allows for repeat of one song
 var sustainOption = true; // makes notes end according to the midi file
 var percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
 
-var mppRoomSettingsBtn = null; // tracks "Room Settings" element
-var xDisplacement = ""; // tracks xDisplacement value from CSS variables
 
 // =============================================== PAGE VISIBILITY
 
@@ -344,11 +338,11 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 
 // =============================================== FUNCTIONS
 
-// CORS Anywhere (allows downloading files where JS can't)
+// CORS Proxy (allows downloading files where JS can't)
 var useCorsUrl = function(url) {
     var newUrl = null; // send null back if it's already a cors url
     var cors_api_url = 'https://corsproxy.io/?';
-    // prevents cors-anywhere-ifing a cors-anywhere link
+    // prevents proxying an already corsproxy link
     if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
     return newUrl;
 }
@@ -725,16 +719,21 @@ var createButtons = function() {
     // need the bottom area to append buttons to
     var buttonContainer = document.querySelector("#bottom div");
     // we need to keep track of the next button locations
-    var nextLocationX = BTNS_END_X;
+    var nextLocationX = 1;
+    var nextLocationY = 0;
 
-    // need to initialize CSS_VARIABLE_X_DISPLACEMENT
+    // need to initialize CSS variables: DISPLACEMENT & INITIAL for X and Y
     document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_DISPLACEMENT, "0px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_X_INITIAL, "0px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, "0px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, "0px");
 
     // play needs the div like all the other buttons
     // PLAY
     var playDiv = document.createElement("div");
     playDiv.id = PRE_ELEMENT_ID + "-play";
-    playDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    playDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     playDiv.classList.add("ugly-button");
     buttonContainer.appendChild(playDiv);
     // since we need upload files, there also needs to be an input element inside the play div
@@ -765,10 +764,10 @@ var createButtons = function() {
 
     // other buttons can work fine without major adjustments
     // STOP
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var stopDiv = document.createElement("div");
     stopDiv.id = PRE_ELEMENT_ID + "-stop";
-    stopDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    stopDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     stopDiv.classList.add("ugly-button");
     stopDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) stop();
@@ -777,10 +776,10 @@ var createButtons = function() {
     stopDiv.appendChild(stopTxt);
     buttonContainer.appendChild(stopDiv);
     // REPEAT
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var repeatDiv = document.createElement("div");
     repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
-    repeatDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    repeatDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     repeatDiv.classList.add("ugly-button");
     repeatDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) repeat();
@@ -789,10 +788,10 @@ var createButtons = function() {
     repeatDiv.appendChild(repeatTxt);
     buttonContainer.appendChild(repeatDiv);
     // SONG
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var songDiv = document.createElement("div");
     songDiv.id = PRE_ELEMENT_ID + "-song";
-    songDiv.style = BTN_STYLE + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    songDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     songDiv.classList.add("ugly-button");
     songDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) song(true);
@@ -801,10 +800,11 @@ var createButtons = function() {
     songDiv.appendChild(songTxt);
     buttonContainer.appendChild(songDiv);
     // PAUSE
-    nextLocationX = BTNS_END_X;
+    nextLocationX = 1;
+    nextLocationY++;
     var pauseDiv = document.createElement("div");
     pauseDiv.id = PRE_ELEMENT_ID + "-pause";
-    pauseDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    pauseDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     pauseDiv.classList.add("ugly-button");
     pauseDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) pause();
@@ -813,10 +813,10 @@ var createButtons = function() {
     pauseDiv.appendChild(pauseTxt);
     buttonContainer.appendChild(pauseDiv);
     // RESUME
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var resumeDiv = document.createElement("div");
     resumeDiv.id = PRE_ELEMENT_ID + "-resume";
-    resumeDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    resumeDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     resumeDiv.classList.add("ugly-button");
     resumeDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) resume();
@@ -825,10 +825,10 @@ var createButtons = function() {
     resumeDiv.appendChild(resumeTxt);
     buttonContainer.appendChild(resumeDiv);
     // SUSTAIN
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var sustainDiv = document.createElement("div");
     sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
-    sustainDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    sustainDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     sustainDiv.classList.add("ugly-button");
     sustainDiv.onclick = function() {
         if (!MPP.client.preventsPlaying()) sustain();
@@ -837,10 +837,10 @@ var createButtons = function() {
     sustainDiv.appendChild(sustainTxt);
     buttonContainer.appendChild(sustainDiv);
     // PUBLIC
-    nextLocationX += BTN_SPACER_X;
+    nextLocationX++;
     var publicDiv = document.createElement("div");
     publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
-    publicDiv.style = BTN_STYLE + "top:" + BTNS_TOP_1 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));";
+    publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     publicDiv.classList.add("ugly-button");
     publicDiv.onclick = function() { public(true, true) }
     var publicTxt = document.createTextNode("Public");
@@ -848,12 +848,13 @@ var createButtons = function() {
     buttonContainer.appendChild(publicDiv);
 
     // one more button to toggle the visibility of the other buttons
-    nextLocationX = BTNS_END_X - BTN_SPACER_X;
+    nextLocationX = 0;
+    nextLocationY = 0;
     var buttonsOn = false;
     var togglerDiv = document.createElement("div");
     togglerDiv.title = 'Use `'+PREFIX+'help` for more commands'
     togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
-    togglerDiv.style = ELEM_POS + ELEM_ON + "top:" + BTNS_TOP_0 + "px;left:calc(" + nextLocationX + "px + var(" + CSS_VARIABLE_X_DISPLACEMENT + "));"; // normally BTNS_TOP_1, but had to be changed to work with mppclone
+    togglerDiv.style = ELEM_POS + ELEM_ON + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_TOGGLE_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function() {
         if (buttonsOn) { // if on, then turn off, else turn on
@@ -903,7 +904,8 @@ var help = function(command, userId, yourId) {
         var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
                              + (publicOption ? ' ' + publicCommands : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ') + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ')
+                             + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
@@ -1193,23 +1195,44 @@ var repeatingTasks = setInterval(function() {
     }
 }, 1);
 var dynamicButtonDisplacement = setInterval(function() {
-    // required when "Room Settings" button shows up
-    mppRoomSettingsBtn = document.getElementById(MPP_ROOM_SETTINGS_ID);
-    xDisplacement = getComputedStyle(document.documentElement).getPropertyValue(CSS_VARIABLE_X_DISPLACEMENT);
-    // if "Room Settings" button exists and is visible, enable displacement, else revert only when not already changed
-    if (xDisplacement == "0px" &&
-        (mppRoomSettingsBtn &&
-         (!mppRoomSettingsBtn.style ||
-          (!mppRoomSettingsBtn.style.display ||
-           (mppRoomSettingsBtn.style.display == "block"))))) {
-        document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, BTN_SPACER_X + "px");
-    } else if (xDisplacement != "0px" &&
-               (!mppRoomSettingsBtn ||
-                (mppRoomSettingsBtn.style &&
-                 mppRoomSettingsBtn.style.display &&
-                 mppRoomSettingsBtn.style.display != "block"))) {
-        document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
+    // required when other ugly-button's change visibility
+    var allUglyBtns = [];
+    [...document.querySelectorAll(QUERY_BOTTOM_UGLY_BTNS)].forEach(uglyBtn => {
+        if (uglyBtn.offsetWidth > 0 || uglyBtn.offsetHeight > 0 || uglyBtn.getClientRects().length > 0) allUglyBtns.push(uglyBtn);
+    });
+    var topOffset = allUglyBtns[0].offsetTop;
+    var bottomOffset = allUglyBtns[0].offsetTop;
+    for (let i = 1; i < allUglyBtns.length; i++) {
+        let uglyBtn = allUglyBtns[i];
+        if (uglyBtn.offsetTop > bottomOffset) bottomOffset = uglyBtn.offsetTop;
+        else if (uglyBtn.offsetTop < topOffset) topOffset = uglyBtn.offsetTop;
     }
+    var topUglyBtns = [];
+    var bottomUglyBtns = [];
+    allUglyBtns.forEach(uglyBtn => {
+        if (uglyBtn.offsetTop == topOffset) topUglyBtns.push(uglyBtn);
+        if (uglyBtn.offsetTop == bottomOffset) bottomUglyBtns.push(uglyBtn);
+    });
+    // find top and bottom buttons furthest to the right (that are visible)
+    var topRightMostBtn = topUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
+    var bottomRightMostBtn = bottomUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
+    // determine from buttons which one is farthest right
+    var rightMostBtn = topRightMostBtn;
+    if (topRightMostBtn.offsetLeft < bottomRightMostBtn.offsetLeft) rightMostBtn = bottomRightMostBtn;
+    // need to find displacements after
+    var displacement = { x: allUglyBtns[1].offsetLeft - allUglyBtns[0].offsetLeft,
+                         y: bottomRightMostBtn.offsetTop - topRightMostBtn.offsetTop};
+    // then we can finally generate initial placements
+    var initial = { x: (topRightMostBtn.offsetLeft == bottomRightMostBtn.offsetLeft) ? rightMostBtn.offsetLeft + displacement.x : rightMostBtn.offsetLeft,
+                    y: topRightMostBtn.offsetTop};
+    // toggle button has a special case as to fit between pre existing buttons
+    var toggleInitialY = initial.y + ((topRightMostBtn.offsetLeft > bottomRightMostBtn.offsetLeft) ? displacement.y : 0);
+    // set CSS displacement values and initial locations
+    document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, displacement.x + "px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_DISPLACEMENT, displacement.y + "px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_X_INITIAL, initial.x + "px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, initial.y + "px");
+    document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, toggleInitialY + "px");
 }, TENTH_OF_SECOND);
 var slowRepeatingTasks = setInterval(function() {
     // do background tab fix

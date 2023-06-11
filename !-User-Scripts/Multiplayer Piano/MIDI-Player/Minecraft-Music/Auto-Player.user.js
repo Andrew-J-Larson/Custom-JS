@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.7.9
+// @version      2.8.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1027,7 +1027,8 @@ var help = function(command, userId, yourId) {
         var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
                              + (publicOption ? ' ' + publicCommands : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ') + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ')
+                             + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
