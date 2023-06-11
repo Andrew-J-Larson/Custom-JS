@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.5
+// @version      2.8.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1281,11 +1281,18 @@ var art = function(name, yourParticipant) {
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
-var public = function(userId, yourId) {
+var publicCommands = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+}
+var mppGetRoom = function() {
+    if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
+        return MPP.client.channel._id;
+    } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
+        return MPP.client.desiredChannelId;
+    } else return null;
 }
 
 // =============================================== MAIN
@@ -1358,7 +1365,7 @@ MPP.client.on('a', function (msg) {
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
-            case BOT_ACTIVATOR: public(userId, yourId); break;
+            case BOT_ACTIVATOR: publicCommands(userId, yourId); break;
         }
     }
 });
@@ -1367,9 +1374,9 @@ MPP.client.on("ch", function(msg) {
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
-    var newRoom = MPP.client.channel._id;
+    var newRoom = mppGetRoom();
     if (currentRoom != newRoom) {
-        currentRoom = MPP.client.channel._id;
+        currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
         if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) == -1) stopSong();
     }
@@ -1424,23 +1431,23 @@ var slowRepeatingTasks = setInterval(function() {
 }, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
+var playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
+var playButtonCheckCounter = 0;
 var clearSoundWarning = setInterval(function() {
     var playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton)) {
+    if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
         clearInterval(clearSoundWarning);
 
         // only turn off sound warning if it hasn't already been turned off
-        if (window.getComputedStyle(playButton).display == "block") playButton.click();
+        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
 
         // wait for the client to come online
         var waitForMPP = setInterval(function() {
-            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "";
-            var MPP_Official_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") : false;
-            var mppforkNetlifyApp_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.desiredChannelId) && MPP.client.desiredChannelId != "") : false;
-            if (MPP_Official_Loaded || mppforkNetlifyApp_Loaded) {
+            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client);
+            if (MPP_Client_Loaded && mppGetRoom()) {
                 clearInterval(waitForMPP);
 
-                currentRoom = MPP.client.channel._id;
+                currentRoom = mppGetRoom();
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
                     publicOption = true;
                     autoplayOption = AUTOPLAY_RANDOM;
@@ -1450,4 +1457,5 @@ var clearSoundWarning = setInterval(function() {
             }
         }, TENTH_OF_SECOND);
     }
+    playButtonCheckCounter++;
 }, TENTH_OF_SECOND);

@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.8.5";
+const VERSION = "2.8.7";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -862,7 +862,7 @@ var createButtons = function() {
     publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
     publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     publicDiv.classList.add("ugly-button");
-    publicDiv.onclick = function() { public(true, true) }
+    publicDiv.onclick = function() { publicCommands(true, true) }
     var publicTxt = document.createTextNode("Public");
     publicDiv.appendChild(publicTxt);
     buttonContainer.appendChild(publicDiv);
@@ -1084,11 +1084,18 @@ var loading = function(userId, yourId) {
     loadingOption = !loadingOption;
     mppChatSend(PRE_SETTINGS + " The MIDI loading progress is now set to " + (loadingOption ? "audio" : "text"));
 }
-var public = function(userId, yourId) {
+var publicCommands = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+}
+var mppGetRoom = function() {
+    if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
+        return MPP.client.channel._id;
+    } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
+        return MPP.client.desiredChannelId;
+    } else return null;
 }
 
 // =============================================== MAIN
@@ -1161,7 +1168,7 @@ MPP.client.on('a', function (msg) {
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
             case "loading": case "lo": loading(userId, yourId); break;
-            case BOT_ACTIVATOR: public(userId, yourId); break;
+            case BOT_ACTIVATOR: publicCommands(userId, yourId); break;
         }
     }
 });
@@ -1170,9 +1177,9 @@ MPP.client.on("ch", function(msg) {
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
-    var newRoom = MPP.client.channel._id;
+    var newRoom = mppGetRoom();
     if (currentRoom != newRoom) {
-        currentRoom = MPP.client.channel._id;
+        currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
         if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) == -1) stopSong();
     }
@@ -1265,23 +1272,23 @@ var slowRepeatingTasks = setInterval(function() {
 }, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
+var playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
+var playButtonCheckCounter = 0;
 var clearSoundWarning = setInterval(function() {
     var playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton)) {
+    if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
         clearInterval(clearSoundWarning);
 
         // only turn off sound warning if it hasn't already been turned off
-        if (window.getComputedStyle(playButton).display == "block") playButton.click();
+        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
 
         // wait for the client to come online
         var waitForMPP = setInterval(function() {
-            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "";
-            var MPP_Official_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") : false;
-            var mppforkNetlifyApp_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.desiredChannelId) && MPP.client.desiredChannelId != "") : false;
-            if (MPP_Official_Loaded || mppforkNetlifyApp_Loaded) {
+            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client);
+            if (MPP_Client_Loaded && mppGetRoom()) {
                 clearInterval(waitForMPP);
 
-                currentRoom = MPP.client.channel._id;
+                currentRoom = mppGetRoom();
                 if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
                     loadingOption = publicOption = true;
                 }
@@ -1290,4 +1297,5 @@ var clearSoundWarning = setInterval(function() {
             }
         }, TENTH_OF_SECOND);
     }
+    playButtonCheckCounter++;
 }, TENTH_OF_SECOND);
