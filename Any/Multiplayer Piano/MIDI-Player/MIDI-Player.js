@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.0.0";
+const VERSION = "3.1.0";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -363,13 +363,44 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 // =============================================== FUNCTIONS
 
 // CORS Proxy (allows downloading files where JS can't)
-let useCorsUrl = function(url) {
+let useCorsUrl = function(url, useAlt = false) {
     let newUrl = null; // send null back if it's already a cors url
     let cors_api_url = 'https://corsproxy.io/?';
-    let cors_api_url_p2 = 'https://api.allorigins.win/get?url=';
+    let cors_api_url_alt = 'https://api.allorigins.win/get?url=';
+    if (useAlt) cors_api_url = cors_api_url_alt;
     // prevents proxying an already corsproxy link
-    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + encodeURIComponent(cors_api_url_p2 + url);
+    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + encodeURIComponent(url);
     return newUrl;
+}
+
+// When using CORS proxies, sometimes a filename isn't available as content-disposition
+let getContentDispositionFilename = function(url, blob, callback) {
+    fetch("https://api.httpstatus.io/v1/status", {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": "{\"requestUrl\":\""+url+"\",\"responseHeaders\":true}"
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        let attachmentFilename = null;
+        try {
+            let contentDisposition = data.response.chain[0].responseHeaders['content-disposition'];
+            attachmentFilename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9);
+            let lastCharacter = attachmentFilename.length - 1;
+            // if filename was encased in double quotes, they need to be removed
+            if (attachmentFilename[0] == attachmentFilename[lastCharacter] && attachmentFilename[0] == '"') {
+                attachmentFilename = attachmentFilename.substring(1, lastCharacter);
+            }
+        } catch {
+            attachmentFilename = null;
+        }
+        return attachmentFilename;
+    })
+    .then((serverFileName) => {
+        callback(blob, serverFileName);
+    });
 }
 
 // Get visual loading progress, just use a progressing number (e.g. time elapsed, loop index, etc.)
@@ -534,6 +565,31 @@ function dataURItoBlob(dataURI) {
 
 // Gets file as a blob (data URI)
 let urlToBlob = function(url, callback) {
+    let urlLowerCase = url.toLowerCase();
+    let isHTTP = urlLowerCase.indexOf('http://') == 0;
+    let isHTTPS = urlLowerCase.indexOf('https://') == 0;
+    
+    let invalidProtocol = !isHTTP && !isHTTPS && url.indexOf('://') != -1;
+    if (invalidProtocol) {
+        callback(null);
+        return null;
+    }
+
+    let noProtocol = !isHTTP && !isHTTPS;
+    let urlNoProtocol = url;
+    let urlBasicProtocol = url;
+    let urlSecureProtocol = url;
+    if (isHTTP) {
+        urlNoProtocol = urlNoProtocol.substring(7);
+        urlSecureProtocol = 'https://' + urlNoProtocol;
+    } else if (isHTTPS) {
+        urlNoProtocol = urlNoProtocol.substring(8);
+        urlBasicProtocol = 'http://' + urlNoProtocol;;
+    } else {
+        urlBasicProtocol = 'http://' + urlBasicProtocol;
+        urlSecureProtocol = 'https://' + urlSecureProtocol;
+    }
+
     // show file download progress
     mppChatSend(PRE_DOWNLOADING + ' ' + url);
     if (loadingOption) startLoadingMusic();
@@ -545,10 +601,8 @@ let urlToBlob = function(url, callback) {
         }, chatDelay);
     }
 
-    fetch (url, {
-        headers: {
-            "Content-Disposition": "attachment" // this might not be doing anything
-        },
+    // can't have "mixed content", so must start off secure
+    fetch (urlSecureProtocol, {
         signal: fetchAbortSignal
     }).then(response => {
         if (!response.ok) {
@@ -565,44 +619,120 @@ let urlToBlob = function(url, callback) {
             throw new Error("BLOB wasn't retrieved");
         }
     }).catch(error => {
-        console.error("Normal fetch couldn't get the file:", error.message);
-        let corsUrl = useCorsUrl(url);
-        if (loadingOption) startLoadingMusic();
+        console.error("Normal fetch (secure URL) couldn't get the file:", error.message);
 
-        fetch (corsUrl, {
-            headers: {
-                "Content-Disposition": "attachment" // this might not be doing anything
-            },
+        let corsBasicUrl = useCorsUrl(urlBasicProtocol);
+
+        // try and single proxy fetch (insecure URL), as it's faster
+        fetch (corsBasicUrl, {
             signal: fetchAbortSignal
         }).then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
             }
-            return response.json();
+            return response.blob();
         }).then(blob => {
             if (blob) {
-                if (blob.contents || json.contents == '') {
-                    if (blob.contents.indexOf('base64') == -1) {
-                        throw new Error("Content wasn't base64");
-                    } else {
-                        let newBlob = dataURItoBlob(blob.contents);
-                        stopLoadingMusic();
-                        clearInterval(downloading);
-                        downloading = null;
-                        callback(newBlob);
-                    }
-                } else {
-                    throw new Error("JSON content was empty");
-                }
+                stopLoadingMusic();
+                clearInterval(downloading);
+                downloading = null;
+                callback(blob);
             } else {
                 throw new Error("BLOB wasn't retrieved");
             }
         }).catch(error => {
-            console.error("CORS Anywhere API fetch couldn't get the file:", error.message);
-            stopLoadingMusic();
-            clearInterval(downloading);
-            downloading = null;
-            callback(error);
+            console.error("Single proxy fetch (insecure URL) couldn't get the file:", error.message);
+
+            let corsSecureUrl = useCorsUrl(urlSecureProtocol);
+
+            // try and single proxy fetch (secure URL), as it's faster
+            fetch (corsSecureUrl, {
+                signal: fetchAbortSignal
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.blob();
+            }).then(blob => {
+                if (blob) {
+                    stopLoadingMusic();
+                    clearInterval(downloading);
+                    downloading = null;
+                    callback(blob);
+                } else {
+                    throw new Error("BLOB wasn't retrieved");
+                }
+            }).catch(error => {
+                console.error("Single proxy fetch (secure URL) couldn't get the file:", error.message);
+
+                let corsBasicUrlAlt = useCorsUrl(useCorsUrl(urlBasicProtocol, true));
+
+                // try and double proxy fetch (insecure URL), but it's slower
+                fetch (corsBasicUrlAlt, {
+                    signal: fetchAbortSignal
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                }).then(blob => {
+                    if (blob) {
+                        if (blob.contents || blob.contents == '') {
+                            if (blob.contents.indexOf('base64') == -1) {
+                                throw new Error("Content wasn't base64");
+                            } else {
+                                let newBlob = dataURItoBlob(blob.contents);
+                                stopLoadingMusic();
+                                clearInterval(downloading);
+                                downloading = null;
+                                callback(newBlob);
+                            }
+                        } else {
+                            throw new Error("JSON content was empty");
+                        }
+                    } else {
+                        throw new Error("BLOB wasn't retrieved");
+                    }
+                }).catch(error => {
+                    console.error("Double proxy fetch (insecure URL) couldn't get the file:", error.message);
+
+                    let corsSecureUrlAlt = useCorsUrl(useCorsUrl(urlSecureProtocol, true));
+
+                    // try and double proxy fetch (secure URL), but it's slower
+                    fetch (corsSecureUrlAlt, {
+                        signal: fetchAbortSignal
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json();
+                    }).then(blob => {
+                        if (blob) {
+                            if (blob.contents || blob.contents == '') {
+                                if (blob.contents.indexOf('base64') == -1) {
+                                    throw new Error("Content wasn't base64");
+                                } else {
+                                    let newBlob = dataURItoBlob(blob.contents);
+                                    stopLoadingMusic();
+                                    clearInterval(downloading);
+                                    downloading = null;
+                                    callback(newBlob);
+                                }
+                            } else {
+                                throw new Error("JSON content was empty");
+                            }
+                        } else {
+                            throw new Error("BLOB wasn't retrieved");
+                        }
+                    }).catch(error => {
+                        console.error("Double proxy fetch (secure URL) couldn't get the file:", error.message);
+                        stopLoadingMusic();
+                        clearInterval(downloading);
+                        downloading = null;
+                        callback(error);
+                    });
+                });
+            });
         });
     });
 }
@@ -1022,18 +1152,22 @@ let play = function(url) {
                 mppChatSend(PRE_MSG + ' ' + ABORTED_DOWNLOAD)
             } else if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
             else if (isMidi(blob) || isOctetStream(blob)) {
-                // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
-                if (blob.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
-                    fileOrBlobToBase64(blob, function(base64data) {
-                        // play song only if we got data
-                        if (exists(base64data)) {
-                            //if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                            //    base64data = base64data.replace("application/octet-stream", "audio/midi");
-                            //}
-                            playURL(url, base64data);
-                        } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
-                    });
-                } else mppChatSend(error + " The file choosen, \"" + decodeURIComponent(url.substring(url.lastIndexOf('/') + 1)) + "\",  is too big (larger than the limit of " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+                // if there is a remote filename, use it instead
+                getContentDispositionFilename(url, blob, function(blobFile, remoteFileName) {
+                    // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
+                    if (blobFile.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+                        fileOrBlobToBase64(blobFile, function(base64data) {
+                            // play song only if we got data
+                            if (exists(base64data)) {
+                                if (isOctetStream(blobFile)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                                    base64data = base64data.replace("application/octet-stream", "audio/midi");
+                                }
+                                if (remoteFileName) playSong(remoteFileName, base64data);
+                                else playURL(url, base64data);
+                            } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
+                        });
+                    } else mppChatSend(error + " The file choosen, \"" + (remoteFileName ? remoteFileName : decodeURIComponent(url.substring(url.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+                });
             } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
         });
     }
