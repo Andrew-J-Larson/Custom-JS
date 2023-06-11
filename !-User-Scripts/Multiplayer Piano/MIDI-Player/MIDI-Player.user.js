@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.7
+// @version      2.8.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1223,29 +1223,41 @@ var dynamicButtonDisplacement = setInterval(function() {
     });
     var topOffset = allUglyBtns[0].offsetTop;
     var bottomOffset = allUglyBtns[0].offsetTop;
+    var moddedTopOffset = allUglyBtns[0].offsetTop;
+    var moddedBottomOffset = allUglyBtns[0].offsetTop;
     for (let i = 1; i < allUglyBtns.length; i++) {
         let uglyBtn = allUglyBtns[i];
-        if (uglyBtn.offsetTop > bottomOffset) bottomOffset = uglyBtn.offsetTop;
-        else if (uglyBtn.offsetTop < topOffset) topOffset = uglyBtn.offsetTop;
+        // must factor that modded buttons might be added
+        if (!uglyBtn.style.position) {
+            if (uglyBtn.offsetTop > bottomOffset) bottomOffset = uglyBtn.offsetTop;
+            else if (uglyBtn.offsetTop < topOffset) topOffset = uglyBtn.offsetTop;
+        }
+        if (uglyBtn.offsetTop > bottomOffset) moddedBottomOffset = uglyBtn.offsetTop;
+        else if (uglyBtn.offsetTop < topOffset) moddedTopOffset = uglyBtn.offsetTop;
     }
     var topUglyBtns = [];
     var bottomUglyBtns = [];
+    var allTopUglyBtns = [];
+    var allBottomUglyBtns = [];
     allUglyBtns.forEach(uglyBtn => {
         if (uglyBtn.offsetTop == topOffset) topUglyBtns.push(uglyBtn);
         if (uglyBtn.offsetTop == bottomOffset) bottomUglyBtns.push(uglyBtn);
+        // for if we have modded in buttons e.g. from a clone website
+        if (uglyBtn.offsetTop == topOffset || uglyBtn.offsetTop == topOffset) allTopUglyBtns.push(uglyBtn);
+        if (uglyBtn.offsetTop == bottomOffset || uglyBtn.offsetTop == bottomOffset) allBottomUglyBtns.push(uglyBtn);
     });
     // find top and bottom buttons furthest to the right (that are visible)
-    var topRightMostBtn = topUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
-    var bottomRightMostBtn = bottomUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
+    var topRightMostBtn = allTopUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
+    var bottomRightMostBtn = allBottomUglyBtns.reduce((prev, current) => (prev.offsetLeft > current.offsetLeft) ? prev : current);
     // determine from buttons which one is farthest right
     var rightMostBtn = topRightMostBtn;
     if (topRightMostBtn.offsetLeft < bottomRightMostBtn.offsetLeft) rightMostBtn = bottomRightMostBtn;
     // need to find displacements after
     var displacement = { x: allUglyBtns[1].offsetLeft - allUglyBtns[0].offsetLeft,
-                         y: bottomRightMostBtn.offsetTop - topRightMostBtn.offsetTop};
+                         y: bottomOffset - topOffset};
     // then we can finally generate initial placements
     var initial = { x: (topRightMostBtn.offsetLeft == bottomRightMostBtn.offsetLeft) ? rightMostBtn.offsetLeft + displacement.x : rightMostBtn.offsetLeft,
-                    y: topRightMostBtn.offsetTop};
+                    y: topOffset};
     // toggle button has a special case as to fit between pre existing buttons
     var toggleInitialY = initial.y + ((topRightMostBtn.offsetLeft > bottomRightMostBtn.offsetLeft) ? displacement.y : 0);
     // set CSS displacement values and initial locations
