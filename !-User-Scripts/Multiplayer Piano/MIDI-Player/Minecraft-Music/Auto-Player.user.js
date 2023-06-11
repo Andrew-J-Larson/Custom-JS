@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.9
+// @version      2.9.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -127,7 +127,7 @@ const BOT_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public co
 const BOT_ACTIVATOR = BOT_KEYWORD.toLowerCase();
 const BOT_NAME = "Minecraft Music Auto Player";
 const BOT_USERNAME = BOT_NAME + " [" + PREFIX + "help]";
-const BOT_NAMESPACE = '(' + NAMESPACE + ')';
+const BOT_NAMESPACE = '( ' + NAMESPACE + ' )';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const BOT_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
 const BOT_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.9
+// @version      2.9.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -121,7 +121,7 @@ const BOT_KEYWORD = "MIDI"; // this is used for auto enabling the public command
 const BOT_ACTIVATOR = BOT_KEYWORD.toLowerCase();
 const BOT_NAME = "MIDI Player";
 const BOT_USERNAME = BOT_NAME + " [" + PREFIX + "help]";
-const BOT_NAMESPACE = '(' + NAMESPACE + ')';
+const BOT_NAMESPACE = '( ' + NAMESPACE + ' )';
 const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const BOT_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
