@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.9.0";
+const VERSION = "2.9.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -620,14 +620,14 @@ let formattedCommands = function(commandsArray, prefix, spacing) { // needs to b
     if (!exists(prefix)) prefix = '';
     let commands = '';
     for (let i = 0; i < commandsArray.length; ++i) {
-        commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
+        commands += (spacing ? ' `' : '`') + prefix + commandsArray[i][0] + '`' + (i < (commandsArray.length - 1) ? ',' : '');
     }
     return commands;
 }
 
 // Gets 1 command and info about it into a string
 let formatCommandInfo = function(commandsArray, commandIndex) {
-    return LIST_BULLET + PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
+    return '`' + PREFIX + commandsArray[commandIndex][0] + '`' + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Send messages without worrying about timing
@@ -919,11 +919,11 @@ let cmdNotFound = function(cmd) {
 let help = function(command, userId, yourId) {
     let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        let publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
-        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (publicOption ? ' ' + publicCommands : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ')
-                             + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+        let publicCommands = formattedCommands(BOT_COMMANDS, PREFIX, true);
+        mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
+                             + (publicOption ? ', ' + publicCommands : '')
+                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
+                             + formattedCommands(BOT_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
         let commandIndex = null;
