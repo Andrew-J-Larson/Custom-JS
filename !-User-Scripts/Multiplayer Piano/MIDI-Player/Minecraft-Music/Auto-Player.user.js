@@ -1434,7 +1434,10 @@ var clearSoundWarning = setInterval(function() {
 
         // wait for the client to come online
         var waitForMPP = setInterval(function() {
-            if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
+            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "";
+            var MPP_Official_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") : false;
+            var mppforkNetlifyApp_Loaded = (MPP_Client_Loaded) ? (exists(MPP.client.desiredChannelId) && MPP.client.desiredChannelId != "") : false;
+            if (MPP_Official_Loaded || mppforkNetlifyApp_Loaded) {
                 clearInterval(waitForMPP);
 
                 currentRoom = MPP.client.channel._id;
