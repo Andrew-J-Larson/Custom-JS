@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.1
+// @version      2.8.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -47,23 +47,26 @@
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
 // (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
 var stringLatestMIDIPlayerJS = GM_getResourceText("LatestMIDIPlayerJS");
+if (!stringLatestMIDIPlayerJS) {
+    throw new Error('[' + NAME + "] failed to find latest MidiPlayerJS release from " + GM_getResourceURL("LatestMIDIPlayerJS"));
+}
 var jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
 var LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
 var MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
-var stringMIDIPlayerJS = "";
-var scriptMIDIPlayerJS = null;
 var requestMPJS = new XMLHttpRequest();
 requestMPJS.open('GET', MIDIPlayerJS_URL, false);
 requestMPJS.send(null);
 if (requestMPJS.status === 200) {
     var type = requestMPJS.getResponseHeader('Content-Type');
     if (type.indexOf("text") !== 1) {
-        stringMIDIPlayerJS = requestMPJS.responseText;
-        scriptMIDIPlayerJS = document.createElement("script");
+        var stringMIDIPlayerJS = requestMPJS.responseText;
+        var scriptMIDIPlayerJS = document.createElement("script");
         scriptMIDIPlayerJS.type = 'text/javascript';
         scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
         (document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
     }
+} else {
+    throw new Error(GM_info.script + " failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
 }
 
 // =============================================== CONSTANTS

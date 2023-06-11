@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.8.1";
+const VERSION = "2.8.2";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -61,24 +61,26 @@ if (requestLatestMPJS.status === 200) {
     if (type.indexOf("text") !== 1) {
         stringLatestMIDIPlayerJS = requestLatestMPJS.responseText;
     }
+} else {
+    throw new Error('[' + NAME + "] failed to find latest MidiPlayerJS release from " + LatestMIDIPlayerJS_URL);
 }
 var jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
 var LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
 var MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
-var stringMIDIPlayerJS = "";
-var scriptMIDIPlayerJS = null;
 var requestMPJS = new XMLHttpRequest();
 requestMPJS.open('GET', MIDIPlayerJS_URL, false);
 requestMPJS.send(null);
 if (requestMPJS.status === 200) {
     var type = requestMPJS.getResponseHeader('Content-Type');
     if (type.indexOf("text") !== 1) {
-        stringMIDIPlayerJS = requestMPJS.responseText;
-        scriptMIDIPlayerJS = document.createElement("script");
+        var stringMIDIPlayerJS = requestMPJS.responseText;
+        var scriptMIDIPlayerJS = document.createElement("script");
         scriptMIDIPlayerJS.type = 'text/javascript';
         scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
         (document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
     }
+} else {
+    throw new Error('[' + NAME + "] failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
 }
 
 // should be global: MPP, MidiPlayer
