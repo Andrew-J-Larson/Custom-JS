@@ -9,7 +9,7 @@ You'll know it worked if you can see the `MIDI Player` button with the other but
 
 ### Don't want to use the user script?
 
-Location of the pure javascript (`MIDI-Playerloader.js` or `MIDI-Player.js`) is at:
+Location of the pure javascript (`MIDI-Player.js`) is at:
 https://github.com/TheAlienDrew/Custom-JS/tree/master/Any/Multiplayer%20Piano/MIDI-Player
 
 ## Credits

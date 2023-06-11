@@ -1,7 +1,8 @@
 ## Steps to generate
-Do this for both files:
-- `MIDI-Player.loader.js` => `MIDI-Player.loader.js.bookmarklet`
+
+Do this for:
 - `MIDI-Player.js` => `MIDI-Player.js.bookmarklet`
+
 1. Use https://codebeautify.org/minify-js to minify the code.
    1. Paste the original code in the box.
    2. Press `Minify JS` (if output is empty).
