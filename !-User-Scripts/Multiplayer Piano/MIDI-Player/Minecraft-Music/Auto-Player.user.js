@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.8
+// @version      2.8.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -56,21 +56,21 @@
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
 // (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
-var stringLatestMIDIPlayerJS = GM_getResourceText("LatestMIDIPlayerJS");
+let stringLatestMIDIPlayerJS = GM_getResourceText("LatestMIDIPlayerJS");
 if (!stringLatestMIDIPlayerJS) {
     throw new Error('[' + NAME + "] failed to find latest MidiPlayerJS release from " + GM_getResourceURL("LatestMIDIPlayerJS"));
 }
-var jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
-var LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
-var MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
-var requestMPJS = new XMLHttpRequest();
+let jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
+let LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
+let MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
+let requestMPJS = new XMLHttpRequest();
 requestMPJS.open('GET', MIDIPlayerJS_URL, false);
 requestMPJS.send(null);
 if (requestMPJS.status === 200) {
-    var type = requestMPJS.getResponseHeader('Content-Type');
+    let type = requestMPJS.getResponseHeader('Content-Type');
     if (type.indexOf("text") !== 1) {
-        var stringMIDIPlayerJS = requestMPJS.responseText;
-        var scriptMIDIPlayerJS = document.createElement("script");
+        let stringMIDIPlayerJS = requestMPJS.responseText;
+        let scriptMIDIPlayerJS = document.createElement("script");
         scriptMIDIPlayerJS.type = 'text/javascript';
         scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
         (document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
@@ -685,33 +685,33 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
-var publicOption = false; // turn off the public bot commands if needed
-var pinging = false; // helps aid in getting response time
-var pingTime = 0; // changes after each ping
-var currentRoom = null; // updates when it connects to room
-var chatDelay = CHAT_DELAY; // for how long to wait until posting another message
-var endDelay; // used in multiline chats send commands
+let publicOption = false; // turn off the public bot commands if needed
+let pinging = false; // helps aid in getting response time
+let pingTime = 0; // changes after each ping
+let currentRoom = null; // updates when it connects to room
+let chatDelay = CHAT_DELAY; // for how long to wait until posting another message
+let endDelay; // used in multiline chats send commands
 
-var finishedSongName = null; // only checked when not on repeat, for end/done playing message
-var ended = true;
-var stopped = false;
-var paused = false;
-var currentSongProgress0to10 = -1; // gets updated while a song plays
-var currentSongEventsPlayed = 0; // gets updated while a song plays
-var currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
-var currentSongIndex = null;
-var currentSongName = null; // extracted from the file name/end of URL
-var previousSongIndex = null; // grabs current when changing successfully
-var autoplayActive = false;
-var autoplayOption = AUTOPLAY_OFF;
-var repeatOption = false; // allows for repeat of one song
-var sustainOption = true; // makes notes end according to the midi file
-var percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
-var artDisplaying = false;
+let finishedSongName = null; // only checked when not on repeat, for end/done playing message
+let ended = true;
+let stopped = false;
+let paused = false;
+let currentSongProgress0to10 = -1; // gets updated while a song plays
+let currentSongEventsPlayed = 0; // gets updated while a song plays
+let currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
+let currentSongIndex = null;
+let currentSongName = null; // extracted from the file name/end of URL
+let previousSongIndex = null; // grabs current when changing successfully
+let autoplayActive = false;
+let autoplayOption = AUTOPLAY_OFF;
+let repeatOption = false; // allows for repeat of one song
+let sustainOption = true; // makes notes end according to the midi file
+let percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
+let artDisplaying = false;
 
 // =============================================== PAGE VISIBILITY
 
-var pageVisible = true;
+let pageVisible = true;
 document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
         pageVisible = false;
@@ -728,10 +728,10 @@ const Player = new MidiPlayer.Player(function(event) {
         if (Player.isPlaying()) pause();
         return;
     }
-    var currentEvent = event.name;
+    let currentEvent = event.name;
     if (!exists(currentEvent) || currentEvent == "") return;
     if (currentEvent.indexOf("Note") == 0 && (percussionOption || event.channel != PERCUSSION_CHANNEL)) {
-        var currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
+        let currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
         if (currentEvent == "Note on" && event.velocity > 0) { // start note
             MPP.press(currentNote, (event.velocity/100));
             if (!sustainOption) MPP.release(currentNote);
@@ -752,11 +752,11 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 // =============================================== FUNCTIONS
 
 // Get visual elapsing progress, first argument would elapsed amount while second argument would be total amount
-var getElapsedProgressInt0to10 = function(intElapsed, intTotal) {
+let getElapsedProgressInt0to10 = function(intElapsed, intTotal) {
     return Math.round((intElapsed / intTotal) * 10);
 }
-var getElapsingProgress = function(intElapsed, intTotal) {
-    var elapsedProgress = getElapsedProgressInt0to10(intElapsed, intTotal);
+let getElapsingProgress = function(intElapsed, intTotal) {
+    let elapsedProgress = getElapsedProgressInt0to10(intElapsed, intTotal);
     switch(elapsedProgress) {
         case 0: return BAR_LEFT + "▩▢▢▢▢▢▢▢▢▢▢" + BAR_RIGHT; break;
         case 1: return BAR_LEFT + "▩▩▢▢▢▢▢▢▢▢▢" + BAR_RIGHT; break;
@@ -774,19 +774,19 @@ var getElapsingProgress = function(intElapsed, intTotal) {
 }
 
 // Check to make sure variable is initialized with something
-var exists = function(element) {
+let exists = function(element) {
     if (typeof(element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Format time to HH:MM:SS from seconds
-/* var secondsToHms = function(d) {
+/* let secondsToHms = function(d) {
     d = Number(d);
 
-    var h, m, s;
-    var hDisplay = "00";
-    var mDisplay = hDisplay;
-    var sDisplay = hDisplay;
+    let h, m, s;
+    let hDisplay = "00";
+    let mDisplay = hDisplay;
+    let sDisplay = hDisplay;
 
     if (d != null && d > 0) {
         h = Math.floor(d / 3600);
@@ -802,8 +802,8 @@ var exists = function(element) {
 } */
 
 // Takes formatted time and removed preceeding zeros (only before minutes)
-/* var timeClearZeros = function(formattedHms) {
-    var newTime = formattedHms;
+/* let timeClearZeros = function(formattedHms) {
+    let newTime = formattedHms;
     while (newTime.length > 5 && newTime.indexOf("00:") == 0) {
         newTime = newTime.substring(3);
     }
@@ -811,10 +811,10 @@ var exists = function(element) {
 } */
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
-/* var timeSizeFormat = function(timeCurrent, timeEnd) {
-    var newTimeFormat = timeCurrent;
-    var timeCurrentLength = timeCurrent.length;
-    var timeEndLength = timeEnd.length;
+/* let timeSizeFormat = function(timeCurrent, timeEnd) {
+    let newTimeFormat = timeCurrent;
+    let timeCurrentLength = timeCurrent.length;
+    let timeEndLength = timeEnd.length;
     // lose or add 00's
     if (timeCurrentLength > timeEndLength) newTimeFormat = timeCurrent.substring(timeCurrentLength - timeEndLength);
     while (newTimeFormat.length < timeEndLength) {
@@ -824,21 +824,21 @@ var exists = function(element) {
 } */
 
 // Generate a random number
-var randomNumber = function(min, max) {
+let randomNumber = function(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Puts quotes around string
-var quoteString = function(string) {
-    var newString = string;
+let quoteString = function(string) {
+    let newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
 }
 
 // Check if the color is light or dark
-var getContrast = function (hexcolor){
+let getContrast = function (hexcolor){
 
     // If a leading # is provided, remove it
     if (hexcolor.slice(0, 1) === '#') {
@@ -853,12 +853,12 @@ var getContrast = function (hexcolor){
     }
 
     // Convert to RGB value
-    var r = parseInt(hexcolor.substr(0,2),16);
-    var g = parseInt(hexcolor.substr(2,2),16);
-    var b = parseInt(hexcolor.substr(4,2),16);
+    let r = parseInt(hexcolor.substr(0,2),16);
+    let g = parseInt(hexcolor.substr(2,2),16);
+    let b = parseInt(hexcolor.substr(4,2),16);
 
     // Get YIQ ratio
-    var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    let yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
 
     // Check contrast
     //return (yiq >= 128) ? 'black' : 'white';
@@ -868,33 +868,31 @@ var getContrast = function (hexcolor){
 }
 
 // Makes all commands into one string
-var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+let formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
     if (!exists(prefix)) prefix = '';
-    var commands = '';
-    var i;
-    for(i = 0; i < commandsArray.length; ++i) {
+    let commands = '';
+    for (let i = 0; i < commandsArray.length; ++i) {
         commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
     }
     return commands;
 }
 
 // Gets 1 command and info about it into a string
-var formatCommandInfo = function(commandsArray, commandIndex) {
+let formatCommandInfo = function(commandsArray, commandIndex) {
     return LIST_BULLET + PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Send messages without worrying about timing
-var mppChatSend = function(str, delay) {
+let mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
-var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
+let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
-    var newDelay = 0;
-    var i;
-    for (i = 0; i < strArray.length; ++i) {
-        var currentString = strArray[i];
+    let newDelay = 0;
+    for (let i = 0; i < strArray.length; ++i) {
+        let currentString = strArray[i];
         if (currentString != "") {
             ++newDelay;
             mppChatSend(optionalPrefix + strArray[i], chatDelay * newDelay);
@@ -904,14 +902,14 @@ var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
 }
 
 // Sends art and tracks art being displayed
-var mppArtSend = function(strArray, initialDelay) {
+let mppArtSend = function(strArray, initialDelay) {
     artDisplaying = true;
-    var newDelay = mppChatMultiSend(strArray, null, 0);
+    let newDelay = mppChatMultiSend(strArray, null, 0);
     setTimeout(function() {artDisplaying = false}, newDelay);
 }
 
 // Stops the current song if any are playing
-var stopSong = function() {
+let stopSong = function() {
     stopped = true;
     if (!ended) {
         Player.stop();
@@ -924,7 +922,7 @@ var stopSong = function() {
 }
 
 // Gets song from array and plays it
-var playSong = function(songIndex) {
+let playSong = function(songIndex) {
     // stop any current songs from playing
     stopSong();
     // play song if it loaded correctly
@@ -936,8 +934,8 @@ var playSong = function(songIndex) {
             Player.play();
             ended = false;
             stopped = false;
-            var timeoutRecorder = 0;
-            var showSongName = setInterval(function() {
+            let timeoutRecorder = 0;
+            let showSongName = setInterval(function() {
                 if (Player.isPlaying()) {
                     clearInterval(showSongName);
 
@@ -962,10 +960,10 @@ var playSong = function(songIndex) {
 }
 
 // plays a random song, but not the same song twice in a row
-var playRandom = function() {
-    var newSongIndex = currentSongIndex;
+let playRandom = function() {
+    let newSongIndex = currentSongIndex;
     // ignore empty elements
-    var testName = "";
+    let testName = "";
     while (testName == "" || newSongIndex == currentSongIndex) {
         if (autoplayOption == AUTOPLAY_RANDOM || autoplayOption == AUTOPLAY_OFF) newSongIndex = randomNumber(0, SONG_LENGTH - 1);
         else if (autoplayOption == AUTOPLAY_ORDERED) {
@@ -978,8 +976,8 @@ var playRandom = function() {
 }
 
 // Get the string/value to the autoplay option
-var getAutoplayString = function(choice) {
-    var typeString;
+let getAutoplayString = function(choice) {
+    let typeString;
     switch(choice) {
         case AUTOPLAY_OFF: typeString = "off"; break;
         case AUTOPLAY_RANDOM: typeString = "random"; break;
@@ -988,8 +986,8 @@ var getAutoplayString = function(choice) {
     }
     return typeString;
 }
-var getAutoplayValue = function(choice) {
-    var valid = null;
+let getAutoplayValue = function(choice) {
+    let valid = null;
     switch (choice.toLowerCase()) {
         case "false": case "off": case "no": case "0": valid = 0; break;
         case "random": case "1": valid = 1; break;
@@ -999,7 +997,7 @@ var getAutoplayValue = function(choice) {
 }
 
 // Turns autoplay onto certain modes
-var toggleAutoplay = function(choice) {
+let toggleAutoplay = function(choice) {
     // need to set different intervals for different types
     if (choice == AUTOPLAY_RANDOM || choice == AUTOPLAY_ORDERED) autoplayActive = true;
     else autoplayActive = false;
@@ -1007,10 +1005,10 @@ var toggleAutoplay = function(choice) {
 }
 
 // Makes the bot the only one to play or turns it off
-var setOwnerOnlyPlay = function(choice) {
-    var isOwner = MPP.client.isOwner();
+let setOwnerOnlyPlay = function(choice) {
+    let isOwner = MPP.client.isOwner();
     if (isOwner && exists(choice) && (choice == true || choice == false)) {
-        var set = {crownsolo: choice};
+        let set = {crownsolo: choice};
         MPP.client.sendArray([{m: "chset", set: set}]);
         console.log("Solo play set to: " + choice.toString());
         return true;
@@ -1022,51 +1020,48 @@ var setOwnerOnlyPlay = function(choice) {
 }
 
 // Shows limited message for user
-var playerLimited = function(username) {
+let playerLimited = function(username) {
     // displays message with their name about being limited
     mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot");
 }
 
 // When there is an incorrect command, show this error
-var cmdNotFound = function(cmd) {
-    var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
+let cmdNotFound = function(cmd) {
+    let error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (publicOption) mppChatSend(error);
     else console.log(error);
 }
 
 // Commands
-var help = function(command, userId, yourId) {
-    var isOwner = MPP.client.isOwner();
+let help = function(command, userId, yourId) {
+    let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
+        let publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
                              + (publicOption ? ' ' + publicCommands : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ' ')
                              + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
-        var valid = null;
-        var commandIndex = null;
-        var commandArray = null;
+        let valid = null;
+        let commandIndex = null;
+        let commandArray = null;
         command = command.toLowerCase();
         // check commands arrays
-        var i;
-        for(i = 0; i < BASE_COMMANDS.length; i++) {
+        for (let i = 0; i < BASE_COMMANDS.length; i++) {
             if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BASE_COMMANDS;
                 commandIndex = i;
             }
         }
-        var j;
-        for(j = 0; j < BOT_COMMANDS.length; j++) {
+        for (let j = 0; j < BOT_COMMANDS.length; j++) {
             if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_COMMANDS;
                 commandIndex = j;
             }
         }
-        var k;
-        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+        for (let k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
             if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_OWNER_COMMANDS;
@@ -1078,16 +1073,16 @@ var help = function(command, userId, yourId) {
         else cmdNotFound(command);
     }
 }
-var about = function() {
+let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
-var link = function() {
+let link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
 }
-var feedback = function() {
+let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
 }
-var ping = function() {
+let ping = function() {
     // get a response back in milliseconds
     pinging = true;
     pingTime = Date.now();
@@ -1097,16 +1092,16 @@ var ping = function() {
         pinging = false;
     }, SECOND);
 }
-var play = function(args, argsString) {
-    var error = PRE_ERROR + " (play)";
+let play = function(args, argsString) {
+    let error = PRE_ERROR + " (play)";
     // args should contain one number related to a song
     if (args == null || args == "") {
         if (autoplayOption == AUTOPLAY_OFF) playRandom();
         else mppChatSend(error + " No song entered");
     } else {
-        var valid = null;
+        let valid = null;
         // check which song was picked, and validate it
-        var choice = args[0];
+        let choice = args[0];
         switch (argsString.toLowerCase()) {
             case "key": choice = "1"; break;
             case "door": choice = "2"; break;
@@ -1152,7 +1147,7 @@ var play = function(args, argsString) {
         }
     }
 }
-var skip = function() {
+let skip = function() {
     // skips the current song if on autoplay
     if (autoplayOption != AUTOPLAY_OFF) {
         if (ended) mppChatSend(NO_SONG);
@@ -1163,22 +1158,22 @@ var skip = function() {
         }
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
 }
-var stop = function() {
+let stop = function() {
     // stops the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
-        var tempSongName = currentSongName;
+        let tempSongName = currentSongName;
         stopSong();
         currentSongIndex = null;
         paused = false;
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(tempSongName) + '`');
     }
 }
-var pause = function() {
+let pause = function() {
     // pauses the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
-        var title = PRE_MSG + ' `';
+        let title = PRE_MSG + ' `';
         if (paused) title += BAR_STILL_PAUSED;
         else {
             Player.pause();
@@ -1188,11 +1183,11 @@ var pause = function() {
         mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
     }
 }
-var resume = function() {
+let resume = function() {
     // resumes the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
-        var title = PRE_MSG + ' `';
+        let title = PRE_MSG + ' `';
         if (paused) {
             Player.play();
             paused = false;
@@ -1201,10 +1196,10 @@ var resume = function() {
         mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
     }
 }
-var song = function(showStatusText) {
+let song = function(showStatusText) {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        var title = PRE_MSG + ' `';
+        let title = PRE_MSG + ' `';
         if (showStatusText) {
             if (paused) {
                 title += BAR_PAUSED;
@@ -1216,37 +1211,37 @@ var song = function(showStatusText) {
         mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
-var album = function() {
+let album = function() {
     // show list of songs available
     mppChatSend(PRE_ALBUM);
     mppChatMultiSend(SONG_NAMES, null, chatDelay);
 }
-var repeat = function() {
+let repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
     mppChatSend(PRE_SETTINGS + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
 }
-var sustain = function() {
+let sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
     mppChatSend(PRE_SETTINGS + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
 }
-var percussion = function() {
+let percussion = function() {
     // turns on or off percussion instruments
     percussionOption = !percussionOption;
 
     mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
 }
-var autoplay = function(choice) {
+let autoplay = function(choice) {
     // changes the type of autoplay
-    var currentAutoplay = getAutoplayString(autoplayOption);
+    let currentAutoplay = getAutoplayString(autoplayOption);
 
     if (!exists(choice) || choice == "") mppChatSend(PRE_SETTINGS + " Autoplay is currently set to " + currentAutoplay);
     else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_SETTINGS + " Autoplay is already set to " + currentAutoplay);
     else {
-        var valid = getAutoplayValue(choice);
+        let valid = getAutoplayValue(choice);
         if (valid != null) {
             stopped = false;
             toggleAutoplay(valid);
@@ -1254,12 +1249,12 @@ var autoplay = function(choice) {
         } else mppChatSend(PRE_ERROR + " (autoplay) Invalid autoplay choice");
     }
 }
-var art = function(name, yourParticipant) {
+let art = function(name, yourParticipant) {
     // sends Minecraft mob ASCII art, when some isn't already being displayed
     if (exists(name) && !artDisplaying) {
         // depending on color, show normal or inverted art
-        var userColor = yourParticipant.color;
-        var colorIsDark = getContrast(userColor) == 'black';
+        let userColor = yourParticipant.color;
+        let colorIsDark = getContrast(userColor) == 'black';
         switch(name.toLowerCase()) {
             case "cow": mppArtSend(colorIsDark ? cowArt : cowArtInverted, 0); break;
             case "pig": mppArtSend(colorIsDark ? pigArt : pigArtInverted, 0); break;
@@ -1281,13 +1276,13 @@ var art = function(name, yourParticipant) {
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
-var publicCommands = function(userId, yourId) {
+let publicCommands = function(userId, yourId) {
     // only let the bot owner set if public bot commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
 }
-var mppGetRoom = function() {
+let mppGetRoom = function() {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
         return MPP.client.channel._id;
     } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
@@ -1299,11 +1294,11 @@ var mppGetRoom = function() {
 
 MPP.client.on('a', function (msg) {
     // if user switches to VPN, these need to update
-    var yourParticipant = MPP.client.getOwnParticipant();
-    var yourId = yourParticipant._id;
-    var yourUsername = yourParticipant.name;
+    let yourParticipant = MPP.client.getOwnParticipant();
+    let yourId = yourParticipant._id;
+    let yourUsername = yourParticipant.name;
     // get the message as string
-    var input = msg.a.trim();
+    let input = msg.a.trim();
 
     // check if ping
     if (pinging && input == PRE_PING) {
@@ -1312,26 +1307,24 @@ MPP.client.on('a', function (msg) {
         mppChatSend("Pong! [" + pingTime + "ms]", 0 );
     }
 
-    var participant = msg.p;
-    var username = participant.name;
-    var userId = participant._id;
+    let participant = msg.p;
+    let username = participant.name;
+    let userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the bot
-        var bannedPlayers = BANNED_PLAYERS.length;
+        let bannedPlayers = BANNED_PLAYERS.length;
         if (bannedPlayers > 0) {
-            var i;
-            for(i = 0; i < BANNED_PLAYERS.length; ++i) {
+            for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
                 if (BANNED_PLAYERS[i] == userId) {
                     playerLimited(username);
                     return;
                 }
             }
         }
-        var limitedPlayers = LIMITED_PLAYERS.length;
+        let limitedPlayers = LIMITED_PLAYERS.length;
         if (limitedPlayers > 0) {
-            var j;
-            for(j = 0; j < LIMITED_PLAYERS.length; ++j) {
+            for (let j = 0; j < LIMITED_PLAYERS.length; ++j) {
                 if (LIMITED_PLAYERS[j] == userId) {
                     playerLimited(username);
                     return;
@@ -1339,14 +1332,14 @@ MPP.client.on('a', function (msg) {
             }
         }
         // evaluate input into command and possible arguments
-        var message = input.substring(PREFIX_LENGTH).trim();
-        var hasArgs = message.indexOf(' ');
-        var command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
-        var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
-        var arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
+        let message = input.substring(PREFIX_LENGTH).trim();
+        let hasArgs = message.indexOf(' ');
+        let command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
+        let argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
+        let arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        var isBotOwner = userId == yourId;
-        var preventsPlaying = MPP.client.preventsPlaying();
+        let isBotOwner = userId == yourId;
+        let preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
             case "help": case "h": if ((isBotOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
             case "about": case "ab": if ((isBotOwner || publicOption) && !preventsPlaying) about(); break;
@@ -1374,7 +1367,7 @@ MPP.client.on("ch", function(msg) {
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
     // update current room info
-    var newRoom = mppGetRoom();
+    let newRoom = mppGetRoom();
     if (currentRoom != newRoom) {
         currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
@@ -1382,13 +1375,12 @@ MPP.client.on("ch", function(msg) {
     }
 });
 MPP.client.on('p', function(msg) {
-    var userId = msg._id;
+    let userId = msg._id;
     // kick ban all the banned players
-    var bannedPlayers = BANNED_PLAYERS.length;
+    let bannedPlayers = BANNED_PLAYERS.length;
     if (bannedPlayers > 0) {
-        var i;
-        for(i = 0; i < BANNED_PLAYERS.length; ++i) {
-            var bannedPlayer = BANNED_PLAYERS[i];
+        for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
+            let bannedPlayer = BANNED_PLAYERS[i];
             if (userId == bannedPlayer) MPP.client.sendArray([{m: "kickban", _id: bannedPlayer, ms: 3600000}]);
         }
     }
@@ -1397,11 +1389,11 @@ MPP.client.on('p', function(msg) {
 // =============================================== INTERVALS
 
 // Stuff that needs to be done by intervals (e.g. autoplay/repeat)
-var repeatingTasks = setInterval(function() {
+let repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
     // display song progression status and end/done status
     if (exists(currentSongName) && currentSongName != "") {
-        var tempCurrentSongProgress0to10 = getElapsedProgressInt0to10(currentSongEventsPlayed, currentSongTotalEvents);
+        let tempCurrentSongProgress0to10 = getElapsedProgressInt0to10(currentSongEventsPlayed, currentSongTotalEvents);
         if (tempCurrentSongProgress0to10 != currentSongProgress0to10) {
             currentSongProgress0to10 = tempCurrentSongProgress0to10;
             song();
@@ -1420,21 +1412,21 @@ var repeatingTasks = setInterval(function() {
         setTimeout(function() {Player.play()}, REPEAT_DELAY);
     }
 }, 1);
-var slowRepeatingTasks = setInterval(function() {
+let slowRepeatingTasks = setInterval(function() {
     // do background tab fix
     if (!pageVisible) {
-        var note = MPP.piano.keys["a-1"].note;
-        var participantId = MPP.client.getOwnParticipant().id;
+        let note = MPP.piano.keys["a-1"].note;
+        let participantId = MPP.client.getOwnParticipant().id;
         MPP.piano.audio.play(note, 0.001, 0, participantId);
         MPP.piano.audio.stop(note, 0, participantId);
     }
 }, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
-var playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
-var playButtonCheckCounter = 0;
-var clearSoundWarning = setInterval(function() {
-    var playButton = document.querySelector("#sound-warning button");
+let playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
+let playButtonCheckCounter = 0;
+let clearSoundWarning = setInterval(function() {
+    let playButton = document.querySelector("#sound-warning button");
     if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
         clearInterval(clearSoundWarning);
 
@@ -1442,8 +1434,8 @@ var clearSoundWarning = setInterval(function() {
         if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
 
         // wait for the client to come online
-        var waitForMPP = setInterval(function() {
-            var MPP_Client_Loaded = exists(MPP) && exists(MPP.client);
+        let waitForMPP = setInterval(function() {
+            let MPP_Client_Loaded = exists(MPP) && exists(MPP.client);
             if (MPP_Client_Loaded && mppGetRoom()) {
                 clearInterval(waitForMPP);
 
