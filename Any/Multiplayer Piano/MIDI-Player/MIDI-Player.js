@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "2.9.1";
+const VERSION = "3.0.0";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -172,6 +172,7 @@ const BAR_STILL_PAUSED = BAR_LEFT + "  Still paused   " + BAR_RIGHT;
 const BAR_RESUMED = BAR_LEFT + "     Resumed     " + BAR_RIGHT;
 const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
+const ABORTED_DOWNLOAD = "Stopped download.";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
 const NOT_OWNER = "The bot isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
@@ -315,6 +316,9 @@ let repeatOption = false; // allows for repeat of one song
 let sustainOption = true; // makes notes end according to the midi file
 let percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
 
+let fetchAbortController = new AbortController();
+let fetchAbortSignal = fetchAbortController.signal;
+let downloading = null; // used to check for and abort fetch
 
 // =============================================== PAGE VISIBILITY
 
@@ -362,8 +366,9 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 let useCorsUrl = function(url) {
     let newUrl = null; // send null back if it's already a cors url
     let cors_api_url = 'https://corsproxy.io/?';
+    let cors_api_url_p2 = 'https://api.allorigins.win/get?url=';
     // prevents proxying an already corsproxy link
-    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + url;
+    if (url.indexOf(cors_api_url) == -1) newUrl = cors_api_url + encodeURIComponent(cors_api_url_p2 + url);
     return newUrl;
 }
 
@@ -513,64 +518,92 @@ let quoteString = function(string) {
     return newString
 }
 
+// Converts base64 data URIs to blob
+// code modified (removed comments) via https://stackoverflow.com/a/12300351/7312536
+function dataURItoBlob(dataURI) {
+  var byteString = atob(dataURI.split(',')[1]);
+  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+  var ab = new ArrayBuffer(byteString.length);
+  var ia = new Uint8Array(ab);
+  for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+  }
+  var blob = new Blob([ab], {type: mimeString});
+  return blob;
+}
+
 // Gets file as a blob (data URI)
 let urlToBlob = function(url, callback) {
     // show file download progress
-    let downloading = null;
     mppChatSend(PRE_DOWNLOADING + ' ' + url);
     if (loadingOption) startLoadingMusic();
     else {
         let progress = 0;
         downloading = setInterval(function() {
-            mppChatSend(PRE_DOWNLOADING + ' ' + getLoadingProgress(progress));
+            mppChatSend(PRE_DOWNLOADING + ' `' + getLoadingProgress(progress) + '`');
             progress++;
         }, chatDelay);
     }
 
-    fetch(url, {
+    fetch (url, {
         headers: {
             "Content-Disposition": "attachment" // this might not be doing anything
-        }
+        },
+        signal: fetchAbortSignal
     }).then(response => {
-        stopLoadingMusic();
-        clearInterval(downloading);
         if (!response.ok) {
             throw new Error("Network response was not ok");
         }
         return response.blob();
     }).then(blob => {
-        stopLoadingMusic();
-        clearInterval(downloading);
-        callback(blob);
-    }).catch(error => {
-        console.error("Normal fetch couldn't get the file:", error);
-        let corsUrl = useCorsUrl(url);
-        if (corsUrl != null) {
-            if (loadingOption) startLoadingMusic();
-
-            fetch(corsUrl, {
-                headers: {
-                    "Content-Disposition": "attachment" // this might not be doing anything
-                }
-            }).then(response => {
-                stopLoadingMusic();
-                clearInterval(downloading);
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.blob();
-            }).then(blob => {
-                stopLoadingMusic();
-                clearInterval(downloading);
-                callback(blob);
-            }).catch(error => {
-                console.error("CORS Anywhere API fetch couldn't get the file:", error);
-                stopLoadingMusic();
-                clearInterval(downloading);
-                callback(null);
-            });
+        if (blob) {
+            stopLoadingMusic();
+            clearInterval(downloading);
+            downloading = null;
+            callback(blob);
+        } else {
+            throw new Error("BLOB wasn't retrieved");
         }
-        // callback(null); // disabled since the second fetch already should call the call back
+    }).catch(error => {
+        console.error("Normal fetch couldn't get the file:", error.message);
+        let corsUrl = useCorsUrl(url);
+        if (loadingOption) startLoadingMusic();
+
+        fetch (corsUrl, {
+            headers: {
+                "Content-Disposition": "attachment" // this might not be doing anything
+            },
+            signal: fetchAbortSignal
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        }).then(blob => {
+            if (blob) {
+                if (blob.contents || json.contents == '') {
+                    if (blob.contents.indexOf('base64') == -1) {
+                        throw new Error("Content wasn't base64");
+                    } else {
+                        let newBlob = dataURItoBlob(blob.contents);
+                        stopLoadingMusic();
+                        clearInterval(downloading);
+                        downloading = null;
+                        callback(newBlob);
+                    }
+                } else {
+                    throw new Error("JSON content was empty");
+                }
+            } else {
+                throw new Error("BLOB wasn't retrieved");
+            }
+        }).catch(error => {
+            console.error("CORS Anywhere API fetch couldn't get the file:", error.message);
+            stopLoadingMusic();
+            clearInterval(downloading);
+            downloading = null;
+            callback(error);
+        });
     });
 }
 
@@ -601,6 +634,7 @@ let isMidi = function(raw) {
             case "application/x-mid": case "application/x-midi":
             case "audio/mid": case "audio/midi":
             case "audio/x-mid": case "audio/x-midi":
+            case "audio/sp-mid": case "audio/sp-midi":
             case "music/crescendo":
             case "x-music/mid": case "x-music/midi":
             case "x-music/x-mid": case "x-music/x-midi": return true; break;
@@ -984,16 +1018,18 @@ let play = function(url) {
     } else {
         // downloads file if possible and then plays it if it's a MIDI
         urlToBlob(url, function(blob) {
-            if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
+            if (blob instanceof Error && blob.message == "The user aborted a request.") {
+                mppChatSend(PRE_MSG + ' ' + ABORTED_DOWNLOAD)
+            } else if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
             else if (isMidi(blob) || isOctetStream(blob)) {
                 // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
                 if (blob.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
                     fileOrBlobToBase64(blob, function(base64data) {
                         // play song only if we got data
                         if (exists(base64data)) {
-                            if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                                base64data = base64data.replace("application/octet-stream", "audio/midi");
-                            }
+                            //if (isOctetStream(blob)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                            //    base64data = base64data.replace("application/octet-stream", "audio/midi");
+                            //}
                             playURL(url, base64data);
                         } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
                     });
@@ -1003,9 +1039,12 @@ let play = function(url) {
     }
 }
 let stop = function() {
-    // stops the current song
-    if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
+    if (downloading) {
+        // stops the current download
+        fetchAbortController.abort();
+    } else if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
+        // stops the current song
         let tempSongName = currentSongName;
         stopSong();
         currentFileLocation = null;

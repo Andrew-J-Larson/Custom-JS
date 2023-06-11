@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.9.1
+// @version      3.0.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1159,9 +1159,9 @@ let skip = function() {
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
 }
 let stop = function() {
-    // stops the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
+        // stops the current song
         let tempSongName = currentSongName;
         stopSong();
         currentSongIndex = null;
