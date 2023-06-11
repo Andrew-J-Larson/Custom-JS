@@ -1,18 +1,24 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      2.8.4
+// @version      2.8.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://www.multiplayerpiano.org/*
-// @match        https://multiplayerpiano.com/*
 // @match        https://www.multiplayerpiano.dev/*
+// @match        https://www.multiplayerpiano.net/*
 // @match        https://piano.ourworldofpixels.com/* 
 // @match        https://beta-mpp.csys64.com/*
 // @match        https://mpp.hri7566.info/*
 // @match        https://mpp.autoplayer.xyz/*
 // @match        https://mpp.lapishusky.dev/*
+// @match        https://mppfork.netlify.app/*
+// @match        https://mpp.yourfriend.lv/*
+// @match        https://mpp.l3m0ncao.live/*
+// @match        https://mppkinda.com/*
+// @match        https://fleetway-mpp.glitch.me/*
+// @match        https://multiplayerpiano.com/*
 // @match        https://mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js
