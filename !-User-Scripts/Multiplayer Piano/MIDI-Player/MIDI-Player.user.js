@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.1.1
+// @version      3.1.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://www.multiplayerpiano.org/*
 // @match        https://www.multiplayerpiano.dev/*
 // @match        https://www.multiplayerpiano.net/*
-// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://piano.ourworldofpixels.com/*
 // @match        https://beta-mpp.csys64.com/*
 // @match        https://mpp.hri7566.info/*
 // @match        https://mpp.autoplayer.xyz/*
@@ -368,7 +368,14 @@ let useCorsUrl = function(url, useAlt = false) {
 }
 
 // When using CORS proxies, sometimes a filename isn't available as content-disposition
+// will return URL if it has redirects it needs to go through
 let getContentDispositionFilename = function(url, blob, callback) {
+    // can't do anything without the URL
+    if (!url) {
+        callback(blob, null);
+        return null;
+    }
+
     fetch("https://api.httpstatus.io/v1/status", {
         "method": "POST",
         "headers": {
@@ -379,21 +386,33 @@ let getContentDispositionFilename = function(url, blob, callback) {
     .then((res) => res.json())
     .then((data) => {
         let attachmentFilename = null;
+        let responseHeaders = null;
         try {
-            let contentDisposition = data.response.chain[0].responseHeaders['content-disposition'];
-            attachmentFilename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9);
-            let lastCharacter = attachmentFilename.length - 1;
-            // if there's additional metadata, that also needs to be taken care of
-            let moreMetadata = attachmentFilename.indexOf('; filename*=');
-            if (moreMetadata != -1) {
-                attachmentFilename = attachmentFilename.substring(0, moreMetadata)
-            }
-            // if filename was encased in double quotes, they need to be removed
-            if (attachmentFilename[0] == attachmentFilename[lastCharacter] && attachmentFilename[0] == '"') {
-                attachmentFilename = attachmentFilename.substring(1, lastCharacter);
-            }
+            responseHeaders = data.response.chain[0].responseHeaders;
         } catch {
-            attachmentFilename = null;
+            responseHeaders = null;
+        }
+        if (responseHeaders) {
+            let locationURL = responseHeaders.location;
+            let contentDisposition = responseHeaders['content-disposition'];
+            if (contentDisposition) {
+                attachmentFilename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9);
+                // if there's additional metadata, that also needs to be taken care of
+                let moreMetadata = attachmentFilename.indexOf('; filename*=');
+                if (moreMetadata != -1) {
+                    attachmentFilename = attachmentFilename.substring(0, moreMetadata)
+                }
+                let lastCharacter = attachmentFilename.length - 1;
+                // if filename was encased in double quotes, they need to be removed
+                if (attachmentFilename[0] == attachmentFilename[lastCharacter] && attachmentFilename[0] == '"') {
+                    attachmentFilename = attachmentFilename.substring(1, lastCharacter);
+                }
+            }
+
+            // sometimes it has a redirect it needs to go through to get the right URL with the filename metadata
+            if (!attachmentFilename && locationURL && locationURL != '') {
+                attachmentFilename = locationURL;
+            }
         }
         return attachmentFilename;
     })
@@ -567,7 +586,7 @@ let urlToBlob = function(url, callback) {
     let urlLowerCase = url.toLowerCase();
     let isHTTP = urlLowerCase.indexOf('http://') == 0;
     let isHTTPS = urlLowerCase.indexOf('https://') == 0;
-    
+
     let invalidProtocol = !isHTTP && !isHTTPS && url.indexOf('://') != -1;
     if (invalidProtocol) {
         callback(null);
@@ -1153,19 +1172,29 @@ let play = function(url) {
             else if (isMidi(blob) || isOctetStream(blob)) {
                 // if there is a remote filename, use it instead
                 getContentDispositionFilename(url, blob, function(blobFile, remoteFileName) {
-                    // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
-                    if (blobFile.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
-                        fileOrBlobToBase64(blobFile, function(base64data) {
-                            // play song only if we got data
-                            if (exists(base64data)) {
-                                if (isOctetStream(blobFile)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                                    base64data = base64data.replace("application/octet-stream", "audio/midi");
-                                }
-                                if (remoteFileName) playSong(remoteFileName, base64data);
-                                else playURL(url, base64data);
-                            } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
-                        });
-                    } else mppChatSend(error + " The file choosen, \"" + (remoteFileName ? remoteFileName : decodeURIComponent(url.substring(url.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+                    // needs to be ran a second time to be sure there's no redirects to the file
+                    getContentDispositionFilename(remoteFileName, blob, function(blobFileFinal, remoteFileNameFinal) {
+                        let urlFinal = remoteFileName;
+                        if (!remoteFileNameFinal) {
+                            remoteFileNameFinal = remoteFileName;
+                            urlFinal = url;
+                        }
+                        // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
+                        if (blobFileFinal.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+                            fileOrBlobToBase64(blobFileFinal, function(base64data) {
+                                // play song only if we got data
+                                if (exists(base64data)) {
+                                    if (isOctetStream(blobFileFinal)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                                        base64data = base64data.replace("application/octet-stream", "audio/midi");
+                                    }
+                                    if (remoteFileNameFinal) playSong(remoteFileNameFinal, base64data);
+                                    else playURL(urlFinal, base64data);
+                                } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
+                            });
+                        } else {
+                            mppChatSend(error + " The file choosen, \"" + (remoteFileNameFinal ? remoteFileNameFinal : decodeURIComponent(urlFinal.substring(urlFinal.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+                        }
+                    });
                 });
             } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
         });
