@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.0";
+const VERSION = "3.1.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -389,6 +389,11 @@ let getContentDispositionFilename = function(url, blob, callback) {
             let contentDisposition = data.response.chain[0].responseHeaders['content-disposition'];
             attachmentFilename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9);
             let lastCharacter = attachmentFilename.length - 1;
+            // if there's additional metadata, that also needs to be taken care of
+            let moreMetadata = attachmentFilename.indexOf('; filename*=');
+            if (moreMetadata != -1) {
+                attachmentFilename = attachmentFilename.substring(0, moreMetadata)
+            }
             // if filename was encased in double quotes, they need to be removed
             if (attachmentFilename[0] == attachmentFilename[lastCharacter] && attachmentFilename[0] == '"') {
                 attachmentFilename = attachmentFilename.substring(1, lastCharacter);
