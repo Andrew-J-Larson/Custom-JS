@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.2";
+const VERSION = "3.1.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -99,7 +99,7 @@ const TENTH_OF_SECOND = 100; // mainly for repeating loops
 const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
-const REPEAT_DELAY = 2 * TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
+const REPEAT_DELAY = 5 * TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
 const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
 
 // URLs
@@ -353,8 +353,10 @@ const Player = new MidiPlayer.Player(function(event) {
         ended = true;
         paused = false;
         if (!stopped) finishedSongName = currentSongName;
-        currentSongData = null;
-        currentSongName = null;
+        if (!repeatOption) {
+            currentSongData = null;
+            currentSongName = null;
+        }
     } else currentSongEventsPlayed = Player.eventsPlayed();
 });
 // see https://github.com/grimmdude/MidiPlayerJS/issues/25
