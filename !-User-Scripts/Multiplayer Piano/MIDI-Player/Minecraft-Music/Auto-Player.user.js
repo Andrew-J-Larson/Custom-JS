@@ -1038,11 +1038,11 @@ let cmdNotFound = function(cmd) {
 let help = function(command, userId, yourId) {
     let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        let publicCommands = formattedCommands(BOT_COMMANDS, PREFIX, true);
+        let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
                              + (publicOption ? ', ' + publicCommands : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
-                             + formattedCommands(BOT_OWNER_COMMANDS, PREFIX, true) : ''));
+                             + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
         let commandIndex = null;
@@ -1056,17 +1056,17 @@ let help = function(command, userId, yourId) {
                 commandIndex = i;
             }
         }
-        for (let j = 0; j < BOT_COMMANDS.length; j++) {
-            if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
+        for (let j = 0; j < MOD_COMMANDS.length; j++) {
+            if (MOD_COMMANDS[j][0].indexOf(command) == 0) {
                 valid = command;
-                commandArray = BOT_COMMANDS;
+                commandArray = MOD_COMMANDS;
                 commandIndex = j;
             }
         }
-        for (let k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
-            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+        for (let k = 0; k < MOD_OWNER_COMMANDS.length; k++) {
+            if (MOD_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
                 valid = command;
-                commandArray = BOT_OWNER_COMMANDS;
+                commandArray = MOD_OWNER_COMMANDS;
                 commandIndex = k;
             }
         }
@@ -1076,7 +1076,7 @@ let help = function(command, userId, yourId) {
     }
 }
 let about = function() {
-    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
+    mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
@@ -1361,7 +1361,7 @@ MPP.client.on('a', function (msg) {
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
-            case BOT_ACTIVATOR: publicCommands(userId, yourId); break;
+            case MOD_ACTIVATOR: publicCommands(userId, yourId); break;
         }
     }
 });
@@ -1374,7 +1374,7 @@ MPP.client.on("ch", function(msg) {
     if (currentRoom != newRoom) {
         currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
-        if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) == -1) stopSong();
+        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) == -1) stopSong();
     }
 });
 MPP.client.on('p', function(msg) {
@@ -1448,10 +1448,10 @@ let clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = mppGetRoom();
-                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
+                if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
                     publicOption = true;
                     autoplayOption = AUTOPLAY_RANDOM;
-                    if (BOT_SOLO_PLAY) setOwnerOnlyPlay(BOT_SOLO_PLAY);
+                    if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");
                 }
             }
