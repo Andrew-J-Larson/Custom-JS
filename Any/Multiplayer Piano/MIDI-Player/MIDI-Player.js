@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.5";
+const VERSION = "3.1.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -118,18 +118,18 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
 
 // Bot constant settings
-const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
+const MOD_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
-const BOT_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
-const BOT_ACTIVATOR = BOT_KEYWORD.toLowerCase();
-const BOT_NAME = "MIDI Player";
-const BOT_USERNAME = BOT_NAME + " [" + PREFIX + "help]";
-const BOT_NAMESPACE = '( ' + NAMESPACE + ' )';
-const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
-const BOT_AUTHOR = "Created by " + AUTHOR + '.';
+const MOD_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
+const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
+const MOD_DISPLAYNAME = "MIDI Player";
+const MOD_USERNAME = MOD_DISPLAYNAME + " [" + PREFIX + "help]";
+const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
+const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
+const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
@@ -137,7 +137,7 @@ const BASE_COMMANDS = [
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["ping", "gets the milliseconds response time"]
 ];
-const BOT_COMMANDS = [
+const MOD_COMMANDS = [
     ["play [MIDI URL]", "plays a specific song (URL must be a direct link to a MIDI file)"],
     ["stop", "stops all music from playing"],
     ["pause", "pauses the music at that moment in the song"],
@@ -147,11 +147,11 @@ const BOT_COMMANDS = [
     ["sustain", "toggles how sustain is controlled via either MIDI or by MPP"],
     ["percussion", "toggles the percussion instruments on or off (off by default since it makes most MIDIs sound bad)"]
 ];
-const BOT_OWNER_COMMANDS = [
+const MOD_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
-    [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
+    [MOD_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
-const PRE_MSG = BOT_NAME + " (v" + VERSION + "):";
+const PRE_MSG = MOD_DISPLAYNAME + " (v" + VERSION + "):";
 const PRE_HELP = PRE_MSG + " [Help]";
 const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
@@ -1047,7 +1047,7 @@ let createButtons = function() {
     // PUBLIC
     nextLocationX++;
     let publicDiv = document.createElement("div");
-    publicDiv.id = PRE_ELEMENT_ID + '-' + BOT_ACTIVATOR;
+    publicDiv.id = PRE_ELEMENT_ID + '-' + MOD_ACTIVATOR;
     publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     publicDiv.classList.add("ugly-button");
     publicDiv.onclick = function() { publicCommands(true, true) }
@@ -1087,7 +1087,7 @@ let createButtons = function() {
             buttonsOn = true;
         }
     }
-    let togglerTxt = document.createTextNode(BOT_NAME);
+    let togglerTxt = document.createTextNode(MOD_DISPLAYNAME);
     togglerDiv.appendChild(togglerTxt);
     buttonContainer.appendChild(togglerDiv);
 }
@@ -1109,11 +1109,11 @@ let cmdNotFound = function(cmd) {
 let help = function(command, userId, yourId) {
     let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
-        let publicCommands = formattedCommands(BOT_COMMANDS, PREFIX, true);
+        let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
                              + (publicOption ? ', ' + publicCommands : '')
                              + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
-                             + formattedCommands(BOT_OWNER_COMMANDS, PREFIX, true) : ''));
+                             + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
         let commandIndex = null;
@@ -1127,17 +1127,17 @@ let help = function(command, userId, yourId) {
                 commandIndex = i;
             }
         }
-        for (let j = 0; j < BOT_COMMANDS.length; j++) {
-            if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
+        for (let j = 0; j < MOD_COMMANDS.length; j++) {
+            if (MOD_COMMANDS[j][0].indexOf(command) == 0) {
                 valid = command;
-                commandArray = BOT_COMMANDS;
+                commandArray = MOD_COMMANDS;
                 commandIndex = j;
             }
         }
-        for (let k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
-            if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
+        for (let k = 0; k < MOD_OWNER_COMMANDS.length; k++) {
+            if (MOD_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
                 valid = command;
-                commandArray = BOT_OWNER_COMMANDS;
+                commandArray = MOD_OWNER_COMMANDS;
                 commandIndex = k;
             }
         }
@@ -1147,7 +1147,7 @@ let help = function(command, userId, yourId) {
     }
 }
 let about = function() {
-    mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
+    mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
@@ -1371,7 +1371,7 @@ MPP.client.on('a', function (msg) {
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
             case "loading": case "lo": loading(userId, yourId); break;
-            case BOT_ACTIVATOR: publicCommands(userId, yourId); break;
+            case MOD_ACTIVATOR: publicCommands(userId, yourId); break;
         }
     }
 });
@@ -1384,7 +1384,7 @@ MPP.client.on("ch", function(msg) {
     if (currentRoom != newRoom) {
         currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
-        if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) == -1) stopSong();
+        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) == -1) stopSong();
     }
 });
 MPP.client.on('p', function(msg) {
@@ -1508,7 +1508,7 @@ let clearSoundWarning = setInterval(function() {
                 clearInterval(waitForMPP);
 
                 currentRoom = mppGetRoom();
-                if (currentRoom.toUpperCase().indexOf(BOT_KEYWORD) >= 0) {
+                if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
                     loadingOption = publicOption = true;
                 }
                 createButtons();

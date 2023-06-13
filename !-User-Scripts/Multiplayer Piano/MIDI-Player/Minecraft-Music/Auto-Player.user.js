@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.1.5
+// @version      3.1.6
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -115,23 +115,23 @@ const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
-const BOT_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
-const BOT_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
+const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
+const MOD_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
 
 // Bot custom constants
 const PREFIX = "/";
 const PREFIX_LENGTH = PREFIX.length;
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
 const ADDITIONAL_FEEDBACK_INFO = ", including links to other Minecraft songs as MIDIs or sheet music"; // must keep the comma
-const BOT_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
-const BOT_ACTIVATOR = BOT_KEYWORD.toLowerCase();
-const BOT_NAME = "Minecraft Music Auto Player";
-const BOT_USERNAME = BOT_NAME + " [" + PREFIX + "help]";
-const BOT_NAMESPACE = '( ' + NAMESPACE + ' )';
-const BOT_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
-const BOT_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
-const BOT_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
-const BOT_AUTHOR = "Created by " + AUTHOR + '.';
+const MOD_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
+const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
+const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
+const MOD_USERNAME = MOD_DISPLAYNAME + " [" + PREFIX + "help]";
+const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
+const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
+const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
+const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
+const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this bot"],
@@ -139,7 +139,7 @@ const BASE_COMMANDS = [
     ["feedback", "shows link to send feedback about the bot to the developer"],
     ["ping", "gets the milliseconds response time"]
 ];
-const BOT_COMMANDS = [
+const MOD_COMMANDS = [
     ["play (song)", "plays a specific song by name or number, no entry plays a random song"],
     ["skip", "skips the current song (if autoplay is on)"],
     ["stop", "stops all music from playing (this stops autoplay too)"],
@@ -153,10 +153,10 @@ const BOT_COMMANDS = [
     ["album", "shows the list of available songs"],
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
-const BOT_OWNER_COMMANDS = [
-    [BOT_ACTIVATOR, "toggles the public bot commands on or off"]
+const MOD_OWNER_COMMANDS = [
+    [MOD_ACTIVATOR, "toggles the public bot commands on or off"]
 ];
-const PRE_MSG = NAME + " (v" + VERSION + "):";
+const PRE_MSG = MOD_DISPLAYNAME + " (v" + VERSION + "):";
 const PRE_HELP = PRE_MSG + " [Help]";
 const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
@@ -215,8 +215,8 @@ const SONG_NAMES = ["01 - Key",
                     "" // 24 - Droopy Likes Your Face (NOT INCLUDED)
                    ];
 const SONG_MIDIS = ["", // 01 - Key (DATAURI REMOVED FOR GITHUB)
-                    "", // 02 - Door (DATAURI REMOVED FOR GITHUB)
                     "", // 03 - Subwoofer Lullaby (DATAURI REMOVED FOR GITHUB)
+                    "", // 02 - Door (DATAURI REMOVED FOR GITHUB)
                     "", // 04 - Death (DATAURI REMOVED FOR GITHUB)
                     "", // 05 - Living Mice (DATAURI REMOVED FOR GITHUB)
                     "", // 06 - Moog City (DATAURI REMOVED FOR GITHUB)
