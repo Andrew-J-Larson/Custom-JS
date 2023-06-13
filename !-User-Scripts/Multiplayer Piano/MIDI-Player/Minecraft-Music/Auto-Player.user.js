@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.1.4
+// @version      3.1.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1171,7 +1171,7 @@ let stop = function() {
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(tempSongName) + '`');
     }
 }
-let pause = function() {
+let pause = function(exceedsNoteQuota) {
     // pauses the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
@@ -1182,7 +1182,8 @@ let pause = function() {
             paused = true;
             title += BAR_PAUSED;
         }
-        mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
+        let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
+        mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`' + reason);
     }
 }
 let resume = function() {
@@ -1393,12 +1394,17 @@ MPP.client.on('p', function(msg) {
 // Stuff that needs to be done by intervals (e.g. autoplay/repeat)
 let repeatingTasks = setInterval(function() {
     if (MPP.client.preventsPlaying()) return;
-    // display song progression status and end/done status
-    if (exists(currentSongName) && currentSongName != "") {
+    // what to do while a song is playing
+    if (!ended && exists(currentSongName) && currentSongName != "") {
+        // display song progression status and end/done status
         let tempCurrentSongProgress0to10 = getElapsedProgressInt0to10(currentSongEventsPlayed, currentSongTotalEvents);
         if (tempCurrentSongProgress0to10 != currentSongProgress0to10) {
             currentSongProgress0to10 = tempCurrentSongProgress0to10;
             song();
+        }
+        // pause if exceeds noteQuota
+        if (!paused && !MPP.noteQuota.history[0]) {
+            pause(true);
         }
     }
     if (finishedSongName) {
