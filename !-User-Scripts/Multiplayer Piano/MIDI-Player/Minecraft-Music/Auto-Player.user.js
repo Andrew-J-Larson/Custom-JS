@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.1.3
+// @version      3.1.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://www.multiplayerpiano.org/*
-// @match        https://www.multiplayerpiano.dev/*
-// @match        https://www.multiplayerpiano.net/*
-// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://*.multiplayerpiano.org/*
+// @match        https://*.multiplayerpiano.dev/*
+// @match        https://*.multiplayerpiano.net/*
+// @match        https://piano.ourworldofpixels.com/*
 // @match        https://beta-mpp.csys64.com/*
 // @match        https://mpp.hri7566.info/*
 // @match        https://mpp.autoplayer.xyz/*
@@ -16,10 +16,10 @@
 // @match        https://mppfork.netlify.app/*
 // @match        https://mpp.yourfriend.lv/*
 // @match        https://mpp.l3m0ncao.live/*
-// @match        https://mppkinda.com/*
+// @match        https://*.mppkinda.com/*
 // @match        https://fleetway-mpp.glitch.me/*
-// @match        https://multiplayerpiano.com/*
-// @match        https://mppclone.com/*
+// @match        https://*.multiplayerpiano.com/*
+// @match        https://*.mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/favicon.png

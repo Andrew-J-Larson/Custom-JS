@@ -1,11 +1,11 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.3";
+const VERSION = "3.1.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
-const INCLUDE = [/^https?:\/\/(www\.)?multiplayerpiano\.(org|dev|net|com)*/g,
+const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com)*/g,
                  /^https?:\/\/piano\.ourworldofpixels\.com*/g,
                  /^https?:\/\/beta\-mpp\.csys64\.com*/g,
                  /^https?:\/\/mpp\.hri7566\.info*/g,
@@ -14,9 +14,9 @@ const INCLUDE = [/^https?:\/\/(www\.)?multiplayerpiano\.(org|dev|net|com)*/g,
                  /^https?:\/\/mppfork\.netlify\.app*/g,
                  /^https?:\/\/mpp\.yourfriend\.lv*/g,
                  /^https?:\/\/mpp\.l3m0ncao\.live*/g,
-                 /^https?:\/\/mppkinda\.com*/g,
+                 /^https?:\/\/([^/.]+\.)?mppkinda\.com*/g,
                  /^https?:\/\/fleetway-mpp\.glitch\.me*/g,
-                 /^https?:\/\/mppclone\.com*/g];
+                 /^https?:\/\/([^/.]+\.)?mppclone\.com*/g];
 const DOWNLOAD_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/Any/Multiplayer%20Piano/MIDI-Player/MIDI-Player.js";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";
 // ==/JavaScript==
