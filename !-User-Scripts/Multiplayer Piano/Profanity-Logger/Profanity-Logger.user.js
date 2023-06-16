@@ -1,19 +1,27 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Profanity Logger
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://www.multiplayerpiano.org/*
-// @match        https://www.multiplayerpiano.com/*
-// @match        https://www.multiplayerpiano.dev/*
-// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://*.multiplayerpiano.org/*
+// @match        https://*.multiplayerpiano.dev/*
+// @match        https://*.multiplayerpiano.net/*
+// @match        https://piano.ourworldofpixels.com/*
 // @match        https://beta-mpp.csys64.com/*
 // @match        https://mpp.hri7566.info/*
 // @match        https://mpp.autoplayer.xyz/*
 // @match        https://mpp.lapishusky.dev/*
-// @match        https://mppclone.com/*
+// @match        https://mppfork.netlify.app/*
+// @match        https://mpp.yourfriend.lv/*
+// @match        https://mpp.l3m0ncao.live/*
+// @match        https://mpp.terrium.net/*
+// @match        https://*.mppkinda.com/*
+// @match        https://*.augustberchelmann.com/piano/*
+// @match        https://fleetway-mpp.glitch.me/*
+// @match        https://*.multiplayerpiano.com/*
+// @match        https://*.mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Profanity-Logger/Profanity-Logger.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Profanity-Logger/Profanity-Logger.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Profanity-Logger/dreamstime.com/no-swearing-red-rubber-stamp-over-white-background-87995409.png

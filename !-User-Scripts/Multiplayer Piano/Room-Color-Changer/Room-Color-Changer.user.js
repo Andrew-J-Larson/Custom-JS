@@ -1,19 +1,27 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Room Color Changer
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.1
+// @version      0.2.2
 // @description  Advanced room color changing!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://www.multiplayerpiano.org/*
-// @match        https://www.multiplayerpiano.com/*
-// @match        https://www.multiplayerpiano.dev/*
-// @match        https://piano.ourworldofpixels.com/* 
+// @match        https://*.multiplayerpiano.org/*
+// @match        https://*.multiplayerpiano.dev/*
+// @match        https://*.multiplayerpiano.net/*
+// @match        https://piano.ourworldofpixels.com/*
 // @match        https://beta-mpp.csys64.com/*
 // @match        https://mpp.hri7566.info/*
 // @match        https://mpp.autoplayer.xyz/*
 // @match        https://mpp.lapishusky.dev/*
-// @match        https://mppclone.com/*
+// @match        https://mppfork.netlify.app/*
+// @match        https://mpp.yourfriend.lv/*
+// @match        https://mpp.l3m0ncao.live/*
+// @match        https://mpp.terrium.net/*
+// @match        https://*.mppkinda.com/*
+// @match        https://*.augustberchelmann.com/piano/*
+// @match        https://fleetway-mpp.glitch.me/*
+// @match        https://*.multiplayerpiano.com/*
+// @match        https://*.mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/iconarchive.com/color-palette-icon.png
