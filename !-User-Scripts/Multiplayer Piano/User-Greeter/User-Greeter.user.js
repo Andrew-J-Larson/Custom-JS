@@ -1,27 +1,28 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.9
+// @version      0.4.0
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @match        https://*.multiplayerpiano.org/*
-// @match        https://*.multiplayerpiano.dev/*
-// @match        https://*.multiplayerpiano.net/*
-// @match        https://piano.ourworldofpixels.com/*
-// @match        https://beta-mpp.csys64.com/*
-// @match        https://mpp.hri7566.info/*
-// @match        https://mpp.autoplayer.xyz/*
-// @match        https://mpp.lapishusky.dev/*
-// @match        https://mppfork.netlify.app/*
-// @match        https://mpp.yourfriend.lv/*
-// @match        https://mpp.l3m0ncao.live/*
-// @match        https://mpp.terrium.net/*
-// @match        https://*.mppkinda.com/*
-// @match        https://*.augustberchelmann.com/piano/*
-// @match        https://fleetway-mpp.glitch.me/*
-// @match        https://*.multiplayerpiano.com/*
-// @match        https://*.mppclone.com/*
+// @match        *://*.multiplayerpiano.org/*
+// @match        *://*.multiplayerpiano.dev/*
+// @match        *://*.multiplayerpiano.net/*
+// @match        *://mpp.hri7566.info/*
+// @match        *://mpp.autoplayer.xyz/*
+// @match        *://mpp.lapishusky.dev/*
+// @match        *://mpp.yourfriend.lv/*
+// @match        *://mpp.l3m0ncao.live/*
+// @match        *://mpp.terrium.net/*
+// @match        *://mpp.hyye.tk/*
+// @match        *://mppfork.netlify.app/*
+// @match        *://*.mppkinda.com/*
+// @match        *://*.augustberchelmann.com/piano/*
+// @match        *://piano.ourworldofpixels.com/*
+// @match        *://beta-mpp.csys64.com/*
+// @match        *://fleetway-mpp.glitch.me/*
+// @match        *://*.multiplayerpiano.com/*
+// @match        *://*.mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/pixabay.com/chat-1873543_960_720.png
