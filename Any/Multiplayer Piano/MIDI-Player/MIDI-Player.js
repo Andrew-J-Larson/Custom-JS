@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.8";
+const VERSION = "3.1.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -166,7 +166,7 @@ const PRE_LIMITED = PRE_MSG + " Limited!";
 const PRE_ERROR = PRE_MSG + " Error!";
 const BAR_LEFT = '「';
 const BAR_RIGHT = '」';
-const BAR_ARROW_RIGHT = '⚊➤';
+const BAR_ARROW_RIGHT = '━▶';
 const BAR_NOW_PLAYING = BAR_LEFT + "   Now playing   " + BAR_RIGHT;
 const BAR_PLAYING = BAR_LEFT + "     Playing     " + BAR_RIGHT;
 const BAR_DONE_PLAYING = BAR_LEFT + "  Done playing   " + BAR_RIGHT;
