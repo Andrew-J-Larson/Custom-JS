@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.1.9";
+const VERSION = "3.2.0";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -121,7 +121,7 @@ const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
 
 // Bot constant settings
-const MOD_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
+const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
 
 // Bot custom constants
 const PREFIX = "/";
@@ -135,9 +135,9 @@ const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thank
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
-    ["about", "get information about this bot"],
-    ["link", "get the download link for this bot"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
+    ["about", "get information about this mod"],
+    ["link", "get the download link for this mod"],
+    ["feedback", "shows link to send feedback about the mod to the developer"],
     ["ping", "gets the milliseconds response time"]
 ];
 const MOD_COMMANDS = [
@@ -152,7 +152,7 @@ const MOD_COMMANDS = [
 ];
 const MOD_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
-    [MOD_ACTIVATOR, "toggles the public bot commands on or off"]
+    [MOD_ACTIVATOR, "toggles the public mod commands on or off"]
 ];
 const PRE_MSG = MOD_DISPLAYNAME + " (v" + VERSION + "):";
 const PRE_HELP = PRE_MSG + " [Help]";
@@ -177,7 +177,7 @@ const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
 const ABORTED_DOWNLOAD = "Stopped download.";
 const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ and https://midiworld.com/, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
-const NOT_OWNER = "The bot isn't the owner of the room";
+const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
@@ -189,7 +189,7 @@ const CSS_VARIABLE_Y_DISPLACEMENT = "--yDisplacement";
 const CSS_VARIABLE_X_INITIAL = "--xInitial";
 const CSS_VARIABLE_Y_INITIAL = "--yInitial";
 const CSS_VARIABLE_Y_TOGGLE_INITIAL = "--yToggleInitial"; // helps special case of determining toggle button placement
-const PRE_ELEMENT_ID = "aliendrew-midi-player-bot";
+const PRE_ELEMENT_ID = "aliendrew-midi-player-mod";
 const QUERY_BOTTOM_UGLY_BTNS = `#bottom > div > .ugly-button:not([id^=${PRE_ELEMENT_ID}])`;
 // buttons have some constant styles/classes
 const ELEM_ON = "display:block;";
@@ -291,7 +291,7 @@ const MIDIPlayerToMPPNote = {
 
 // =============================================== VARIABLES
 
-let publicOption = false; // turn off the public bot commands if needed
+let publicOption = false; // turn off the public mod commands if needed
 let pinging = false; // helps aid in getting response time
 let pingTime = 0; // changes after each ping
 let currentRoom = null; // updates when it connects to room
@@ -925,7 +925,7 @@ let playFile = function(songFile) {
     } else mppChatSend(error + " MIDI file not found");
 }
 
-// Creates the play, pause, resume, and stop button for the bot
+// Creates the play, pause, resume, and stop button for the mod
 let createButtons = function() {
     // need the bottom area to append buttons to
     let buttonContainer = document.querySelector("#bottom div");
@@ -1098,7 +1098,7 @@ let createButtons = function() {
 // Shows limited message for user
 let playerLimited = function(username) {
     // displays message with their name about being limited
-    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot");
+    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
 }
 
 // When there is an incorrect command, show this error
@@ -1153,7 +1153,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+    mppChatSend(PRE_LINK + " You can download this mod from " + DOWNLOAD_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1287,16 +1287,16 @@ let percussion = function() {
     mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
 }
 let loading = function(userId, yourId) {
-    // only let the bot owner set if loading music should be on or not
+    // only let the mod owner set if loading music should be on or not
     if (userId != yourId) return;
     loadingOption = !loadingOption;
     mppChatSend(PRE_SETTINGS + " The MIDI loading progress is now set to " + (loadingOption ? "audio" : "text"));
 }
 let publicCommands = function(userId, yourId) {
-    // only let the bot owner set if public bot commands should be on or not
+    // only let the mod owner set if public mod commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
-    mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+    mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
 }
 let mppGetRoom = function() {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
@@ -1332,7 +1332,7 @@ MPP.client.on('a', function (msg) {
 
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
-        // don't allow banned or limited users to use the bot
+        // don't allow banned or limited users to use the mod
         let bannedPlayers = BANNED_PLAYERS.length;
         if (bannedPlayers > 0) {
             for (let i = 0; i < BANNED_PLAYERS.length; ++i) {

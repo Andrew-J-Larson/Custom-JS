@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.1.9
+// @version      3.2.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -118,8 +118,8 @@ const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
 
 // Bot constant settings
-const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the bot will set the room to by default
-const MOD_SOLO_PLAY = true; // sets what play mode when the bot boots up on an owned room
+const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the mod will set the room to by default
+const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
 
 // Bot custom constants
 const PREFIX = "/";
@@ -137,9 +137,9 @@ const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcri
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
-    ["about", "get information about this bot"],
-    ["link", "get the download link for this bot"],
-    ["feedback", "shows link to send feedback about the bot to the developer"],
+    ["about", "get information about this mod"],
+    ["link", "get the download link for this mod"],
+    ["feedback", "shows link to send feedback about the mod to the developer"],
     ["ping", "gets the milliseconds response time"]
 ];
 const MOD_COMMANDS = [
@@ -157,7 +157,7 @@ const MOD_COMMANDS = [
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
 const MOD_OWNER_COMMANDS = [
-    [MOD_ACTIVATOR, "toggles the public bot commands on or off"]
+    [MOD_ACTIVATOR, "toggles the public mod commands on or off"]
 ];
 const PRE_MSG = MOD_DISPLAYNAME + " (v" + VERSION + "):";
 const PRE_HELP = PRE_MSG + " [Help]";
@@ -182,7 +182,7 @@ const BAR_STILL_PAUSED = BAR_LEFT + "  Still paused   " + BAR_RIGHT;
 const BAR_RESUMED = BAR_LEFT + "     Resumed     " + BAR_RIGHT;
 const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
-const NOT_OWNER = "The bot isn't the owner of the room";
+const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const AUTOPLAY_OFF = 0;
 const AUTOPLAY_RANDOM = 1;
@@ -688,7 +688,7 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
-let publicOption = false; // turn off the public bot commands if needed
+let publicOption = false; // turn off the public mod commands if needed
 let pinging = false; // helps aid in getting response time
 let pingTime = 0; // changes after each ping
 let currentRoom = null; // updates when it connects to room
@@ -1009,7 +1009,7 @@ let toggleAutoplay = function(choice) {
     autoplayOption = choice;
 }
 
-// Makes the bot the only one to play or turns it off
+// Makes the mod the only one to play or turns it off
 let setOwnerOnlyPlay = function(choice) {
     let isOwner = MPP.client.isOwner();
     if (isOwner && exists(choice) && (choice == true || choice == false)) {
@@ -1027,7 +1027,7 @@ let setOwnerOnlyPlay = function(choice) {
 // Shows limited message for user
 let playerLimited = function(username) {
     // displays message with their name about being limited
-    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the bot");
+    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
 }
 
 // When there is an incorrect command, show this error
@@ -1082,7 +1082,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
+    mppChatSend(PRE_LINK + " You can download this mod from " + DOWNLOAD_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1283,10 +1283,10 @@ let art = function(name, yourParticipant) {
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
 }
 let publicCommands = function(userId, yourId) {
-    // only let the bot owner set if public bot commands should be on or not
+    // only let the mod owner set if public mod commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
-    mppChatSend(PRE_SETTINGS + " Public bot commands were turned " + (publicOption ? "on" : "off"));
+    mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
 }
 let mppGetRoom = function() {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
@@ -1318,7 +1318,7 @@ MPP.client.on('a', function (msg) {
     let userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
-        // don't allow banned or limited users to use the bot
+        // don't allow banned or limited users to use the mod
         let bannedPlayers = BANNED_PLAYERS.length;
         if (bannedPlayers > 0) {
             for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
