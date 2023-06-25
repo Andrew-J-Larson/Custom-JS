@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.3
+// @version      0.3.4
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -80,7 +80,7 @@ const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for
 const PING_PREFIX = '@';
 const PING_START = '<';
 const PING_END = '>';
-const PRE_NAME = "User Greeter"
+const PRE_NAME = "User Ping"
 const PRE_MSG = PRE_NAME + " (v" + VERSION + "): ";
 const PRE_HELP = PRE_MSG + "[Help]";
 const PRE_LINK = PRE_MSG + "[Link]";
