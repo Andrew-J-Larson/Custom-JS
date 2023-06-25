@@ -5,9 +5,24 @@
 // @description  Fishes for new colors!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
-// @include      /^https?://www\.multiplayerpiano\.com*/
-// @include      /^https?://multiplayerpiano\.(com|net)*/
-// @include      /^https?://mppclone\.com*/
+// @match        *://*.multiplayerpiano.org/*
+// @match        *://*.multiplayerpiano.dev/*
+// @match        *://*.multiplayerpiano.net/*
+// @match        *://mpp.hri7566.info/*
+// @match        *://mpp.autoplayer.xyz/*
+// @match        *://mpp.lapishusky.dev/*
+// @match        *://mpp.yourfriend.lv/*
+// @match        *://mpp.l3m0ncao.wtf/*
+// @match        *://mpp.terrium.net/*
+// @match        *://mpp.hyye.tk/*
+// @match        *://mppfork.netlify.app/*
+// @match        *://*.mppkinda.com/*
+// @match        *://*.augustberchelmann.com/piano/*
+// @match        *://piano.ourworldofpixels.com/*
+// @match        *://beta-mpp.csys64.com/*
+// @match        *://fleetway-mpp.glitch.me/*
+// @match        *://*.multiplayerpiano.com/*
+// @match        *://*.mppclone.com/*
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
 // @icon         https://icons.iconarchive.com/icons/fasticon/fish-toys/256/Green-Fish-icon.png
