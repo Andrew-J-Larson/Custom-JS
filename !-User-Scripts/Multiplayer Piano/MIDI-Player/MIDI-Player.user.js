@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.4.0
+// @version      3.4.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -831,6 +831,7 @@ let isMidi = function(raw) {
             case "music/crescendo":
             case "x-music/mid": case "x-music/midi":
             case "x-music/x-mid": case "x-music/x-midi": return true; break;
+            // no need for default, is caught at end of function
         }
     }
     return false;
@@ -1006,7 +1007,21 @@ let createWebpageElements = function() {
             debouncer = 0;
             if (dragAndDropMIDI.style.display != "none") dragAndDropMIDI.style.display = "none";
             let draggedData = e.dataTransfer;
-            playFile(draggedData.files);
+            let droppedFiles = draggedData.files;
+            let oneOrMoreFilesInvalid = false;
+            Array.prototype.forEach.call(droppedFiles, function(file) {
+                if (!file.type || !isMidi(file)) oneOrMoreFilesInvalid = true;
+            });
+            if (oneOrMoreFilesInvalid) {
+                let error = PRE_ERROR + " (play)";
+                if (droppedFiles.length > 1) {
+                    mppChatSend(error + " One or more files choosen aren't MIDI");
+                } else {
+                    let songFileName = (droppedFiles[0]).name.split(/(\\|\/)/g).pop();
+                    mppChatSend(error + " The file choosen, \"" + songFileName + "\", is either corrupted, or it's not really a MIDI file");
+                }
+            }
+            else playFile(droppedFiles);
         },
         false
     );

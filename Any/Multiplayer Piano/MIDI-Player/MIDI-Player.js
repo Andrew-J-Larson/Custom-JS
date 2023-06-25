@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.0";
+const VERSION = "3.4.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -844,6 +844,7 @@ let isMidi = function(raw) {
             case "music/crescendo":
             case "x-music/mid": case "x-music/midi":
             case "x-music/x-mid": case "x-music/x-midi": return true; break;
+            // no need for default, is caught at end of function
         }
     }
     return false;
@@ -1019,7 +1020,21 @@ let createWebpageElements = function() {
             debouncer = 0;
             if (dragAndDropMIDI.style.display != "none") dragAndDropMIDI.style.display = "none";
             let draggedData = e.dataTransfer;
-            playFile(draggedData.files);
+            let droppedFiles = draggedData.files;
+            let oneOrMoreFilesInvalid = false;
+            Array.prototype.forEach.call(droppedFiles, function(file) {
+                if (!file.type || !isMidi(file)) oneOrMoreFilesInvalid = true;
+            });
+            if (oneOrMoreFilesInvalid) {
+                let error = PRE_ERROR + " (play)";
+                if (droppedFiles.length > 1) {
+                    mppChatSend(error + " One or more files choosen aren't MIDI");
+                } else {
+                    let songFileName = (droppedFiles[0]).name.split(/(\\|\/)/g).pop();
+                    mppChatSend(error + " The file choosen, \"" + songFileName + "\", is either corrupted, or it's not really a MIDI file");
+                }
+            }
+            else playFile(droppedFiles);
         },
         false
     );
