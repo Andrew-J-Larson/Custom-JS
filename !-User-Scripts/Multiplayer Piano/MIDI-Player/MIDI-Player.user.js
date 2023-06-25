@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.3.0
+// @version      3.4.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -349,6 +349,8 @@ let percussionOption = false; // turning on percussion makes a lot of MIDIs soun
 let fetchAbortController = new AbortController();
 let fetchAbortSignal = fetchAbortController.signal;
 let downloading = null; // used to check for and abort fetch
+
+let debouncer = 0; // helps to fix drag & drop
 
 // =============================================== PAGE VISIBILITY
 
@@ -934,7 +936,11 @@ let playURL = function(songUrl, songData) {
 }
 
 // Plays the song from an uploaded file if it's a MIDI
-let playFile = function(songFile) {
+let playFile = function(songFiles) {
+    // for now, only checking for first file in array, may update this later to support a queue of midi files to play
+    let songFile = null;
+    if (songFiles && songFiles.length >= 1) songFile = songFiles[0];
+
     let songFileName = null;
 
     let error = PRE_ERROR + " (play)";
@@ -958,8 +964,54 @@ let playFile = function(songFile) {
     uploadButton.value = ""; // reset file input
 }
 
-// Creates the play, pause, resume, and stop button for the mod
+// Creates the drag & drop area, and the following buttons: open, pause, stop, resume, repeat, sustain, song, & public
 let createWebpageElements = function() {
+    // need to create an element that only shows up when dragging midi files into the window
+    let modelElement = document.getElementById("modal");
+    let zIndexTop = parseInt(getComputedStyle(modelElement).zIndex) + 1;
+    let dragAndDropMIDI = document.createElement("div");
+    dragAndDropMIDI.id = PRE_ELEMENT_ID + "-dragAndDropMIDI";
+    dragAndDropMIDI.style = `position: absolute; width: 100%; height: 100%; top: 0; display: none; place-items: center center; font-size: 2.2vw; color: white; background: rgba(0,0,0,0.75); z-index: ${zIndexTop}`;
+    dragAndDropMIDI.innerText = "Drop MIDI file here to start playing";
+    document.addEventListener(
+        "dragenter",
+        (e) => {
+            if (debouncer === 0) { if (dragAndDropMIDI.style.display != "grid") dragAndDropMIDI.style.display = "grid" }
+            debouncer++;
+        },
+        false
+    );
+
+    document.addEventListener(
+        "dragleave",
+        (e) => {
+            debouncer--;
+            if (debouncer === 0) { if (dragAndDropMIDI.style.display != "none") dragAndDropMIDI.style.display = "none" }
+        },
+        false
+    );
+
+    document.addEventListener(
+        "dragover",
+        (e) => {
+            e.preventDefault();
+        },
+        false
+    );
+    document.addEventListener(
+        "drop",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            debouncer = 0;
+            if (dragAndDropMIDI.style.display != "none") dragAndDropMIDI.style.display = "none";
+            let draggedData = e.dataTransfer;
+            playFile(draggedData.files);
+        },
+        false
+    );
+    document.body.prepend(dragAndDropMIDI);
+
     // need the bottom area to append buttons to
     let buttonContainer = document.querySelector("#bottom div");
     // we need to keep track of the next button locations
@@ -973,14 +1025,14 @@ let createWebpageElements = function() {
     document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, "0px");
     document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, "0px");
 
-    // play needs the div like all the other buttons
-    // PLAY
-    let playDiv = document.createElement("div");
-    playDiv.id = PRE_ELEMENT_ID + "-play";
-    playDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    playDiv.classList.add("ugly-button");
-    buttonContainer.appendChild(playDiv);
-    // since we need upload files, there also needs to be an input element inside the play div
+    // OPEN
+    // needs an internal div for the upload button, this is the only special button (for now)
+    let openDiv = document.createElement("div");
+    openDiv.id = PRE_ELEMENT_ID + "-open";
+    openDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+    openDiv.classList.add("ugly-button");
+    buttonContainer.appendChild(openDiv);
+    // since we need upload files, there also needs to be an input element inside the open div
     let uploadBtn = document.createElement("input");
     let uploadBtnId = PRE_ELEMENT_ID + "-upload";
     uploadBtn.id = uploadBtnId;
@@ -989,7 +1041,7 @@ let createWebpageElements = function() {
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function() {
-        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files[0]);
+        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files);
         else console.log("No MIDI file selected");
     }
     // fix cursor on upload file button
@@ -999,14 +1051,13 @@ let createWebpageElements = function() {
     uploadFileBtnFix.setAttribute('type', 'text/css');
     uploadFileBtnFix.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent('#' + uploadBtnId + ", #" + uploadBtnId + "::-webkit-file-upload-button {cursor:pointer}"));
     head.appendChild(uploadFileBtnFix);
-    // continue with other html for play button
-    let playTxt = document.createTextNode("Play");
-    playDiv.appendChild(uploadBtn);
-    playDiv.appendChild(playTxt);
+    // continue with other html for open button
+    let openTxt = document.createTextNode("Open");
+    openDiv.appendChild(uploadBtn);
+    openDiv.appendChild(openTxt);
     // then we need to let the rest of the script know it so it can reset it after loading files
     uploadButton = uploadBtn;
 
-    // other buttons can work fine without major adjustments
     // STOP
     nextLocationX++;
     let stopDiv = document.createElement("div");
@@ -1102,7 +1153,7 @@ let createWebpageElements = function() {
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function() {
         if (buttonsOn) { // if on, then turn off, else turn on
-            playDiv.style.display =
+            openDiv.style.display =
             stopDiv.style.display =
             repeatDiv.style.display =
             songDiv.style.display =
@@ -1112,7 +1163,7 @@ let createWebpageElements = function() {
             publicDiv.style.display = "none";
             buttonsOn = false;
         } else {
-            playDiv.style.display =
+            openDiv.style.display =
             stopDiv.style.display =
             repeatDiv.style.display =
             songDiv.style.display =
