@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.3
+// @version      3.2.4
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -29,6 +29,8 @@
 // @grant        GM_info
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
+// @resource     LatestUserScriptJS https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js
+// @resource     UserScriptSource https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
 // @resource     LatestMIDIPlayerJS https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest
 // @run-at       document-end
 // ==/UserScript==
@@ -50,6 +52,18 @@
  */
 
 /* globals MPP, MidiPlayer */
+
+// =============================================== SCRIPT CONSTANTS
+
+// Script constants
+const SCRIPT = GM_info.script;
+const NAME = SCRIPT.name;
+const NAMESPACE = SCRIPT.namespace;
+const VERSION = SCRIPT.version;
+const DESCRIPTION = SCRIPT.description;
+const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
+const SOURCE_URL = GM_getResourceText("UserScriptSource");
 
 // =============================================== FILES
 
@@ -77,17 +91,29 @@ if (requestMPJS.status === 200) {
 } else {
     throw new Error(GM_info.script + " failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
 }
+let latestVersion = null;
+let stringUserScriptJS = GM_getResourceText("LatestUserScriptJS");
+if (stringUserScriptJS) {
+    let linesUserScriptJS = stringUserScriptJS.split('\n');
+    let currentLineUserScriptJS = 0;
+    let findLatestVersion = setInterval(function () {
+        if (latestVersion) clearInterval(findLatestVersion);
+        else {
+            let line = linesUserScriptJS[currentLineUserScriptJS];
+            if (line.startsWith("// @version")) {
+                let lineSplitSpaces = line.split(' ');
+                latestVersion = lineSplitSpaces[lineSplitSpaces.length - 1];
+            }
+            currentLineUserScriptJS++;
+        }
+    }, 1);
+} else {
+    latestVersion = -1;
+    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + SOURCE_URL);
+    console.warning('[' + NAME + "] skipping version check");
+}
 
 // =============================================== CONSTANTS
-
-// Script constants
-const SCRIPT = GM_info.script;
-const NAME = SCRIPT.name;
-const NAMESPACE = SCRIPT.namespace;
-const VERSION = SCRIPT.version;
-const DESCRIPTION = SCRIPT.description;
-const AUTHOR = SCRIPT.author;
-const DOWNLOAD_URL = SCRIPT.downloadURL;
 
 // NOTE: Pure JS version code is the same from here down
 
@@ -112,7 +138,14 @@ const LIMITED_PLAYERS = []; // empty for now
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PERCUSSION_CHANNEL = 10; // (DON'T CHANGE)
-const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880; // Maximum is roughly somewhere around 150 MB, but only black midi's get to that point
+//const QUOTA_SIZE_STANDARD_MAX_LOBBY = 240;
+//const QUOTA_SIZE_STANDARD_MAX_ROOM_UNOWNED = 1200;
+const QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED = 1800; // used to determine users that can play black midi
+//const QUOTA_SIZE_PRIVILEGED_MAX_LOBBY = 10 * QUOTA_SIZE_STANDARD_MAX_LOBBY;
+//const QUOTA_SIZE_PRIVILEGED_MAX_ROOM_UNOWNED = 10 * QUOTA_SIZE_STANDARD_MAX_ROOM_UNOWNED;
+//const QUOTA_SIZE_PRIVILEGED_MAX_ROOM_OWNED = 10 * QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED;
+const MIDI_FILE_SIZE_LIMIT_BYTES = 5242880 // 5 MB, most files beyond this size are black midi's which don't work well with standard quota size
+const MIDI_FILE_SIZE_MAX_LIMIT_BYTES = 10 * MIDI_FILE_SIZE_LIMIT_BYTES; // 50 MB, roughly somewhere around 150 MB, but depends on how much memory is available to browser tab
 
 // Bot constant settings
 const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
@@ -288,6 +321,7 @@ const MIDIPlayerToMPPNote = {
 let publicOption = false; // turn off the public mod commands if needed
 let pinging = false; // helps aid in getting response time
 let pingTime = 0; // changes after each ping
+let fileSizeLimitBytes = MIDI_FILE_SIZE_LIMIT_BYTES; // updates if user has more than the highest standard quota, to allow playing black midi
 let currentRoom = null; // updates when it connects to room
 let chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 let endDelay; // used in multiline chats send commands
@@ -776,6 +810,11 @@ let fileOrBlobToBase64 = function(raw, callback) {
     }
 }
 
+// Returns the max file size you can have
+let getMaxFileSize = function(lowestSizeBytes, maxSizeBytes) {
+    return ((MPP.noteQuota.max > QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED) ? maxSizeBytes : lowestSizeBytes);
+}
+
 // Validates file or blob is a MIDI
 let isMidi = function(raw) {
     if (exists(raw)) {
@@ -904,23 +943,24 @@ let playFile = function(songFile) {
     if (exists(songFile)) {
         // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
         songFileName = songFile.name.split(/(\\|\/)/g).pop();
-        if (songFile.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+        fileSizeLimitBytes = getMaxFileSize(MIDI_FILE_SIZE_LIMIT_BYTES, MIDI_FILE_SIZE_MAX_LIMIT_BYTES);
+        if (songFile.size <= fileSizeLimitBytes) {
             if (isMidi(songFile)) {
                 fileOrBlobToBase64(songFile, function(base64data) {
                     // play song only if we got data
                     if (exists(base64data)) {
                         currentFileLocation = songFile.name;
                         playSong(songFileName, base64data);
-                        uploadButton.value = ""; // reset file input
                     } else mppChatSend(error + " Unexpected result, MIDI file couldn't load");
                 });
             } else mppChatSend(error + " The file choosen, \"" + songFileName + "\", is either corrupted, or it's not really a MIDI file");
-        } else mppChatSend(error + " The file choosen, \"" + songFileName + "\",  is too big (larger than " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+        } else mppChatSend(error + " The file choosen, \"" + songFileName + "\",  is too big (larger than " + fileSizeLimitBytes + " bytes), please choose a file with a smaller size");
     } else mppChatSend(error + " MIDI file not found");
+    uploadButton.value = ""; // reset file input
 }
 
 // Creates the play, pause, resume, and stop button for the mod
-let createButtons = function() {
+let createWebpageElements = function() {
     // need the bottom area to append buttons to
     let buttonContainer = document.querySelector("#bottom div");
     // we need to keep track of the next button locations
@@ -1147,7 +1187,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can download this mod from " + DOWNLOAD_URL);
+    mppChatSend(PRE_LINK + " You can get this mod from " + SOURCE_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1185,7 +1225,7 @@ let play = function(url) {
                             urlFinal = url;
                         }
                         // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
-                        if (blobFileFinal.size <= MIDI_FILE_SIZE_LIMIT_BYTES) {
+                        if (blobFileFinal.size <= fileSizeLimitBytes) {
                             fileOrBlobToBase64(blobFileFinal, function(base64data) {
                                 // play song only if we got data
                                 if (exists(base64data)) {
@@ -1197,7 +1237,7 @@ let play = function(url) {
                                 } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
                             });
                         } else {
-                            mppChatSend(error + " The file choosen, \"" + (remoteFileNameFinal ? remoteFileNameFinal : decodeURIComponent(urlFinal.substring(urlFinal.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + MIDI_FILE_SIZE_LIMIT_BYTES + " bytes), please choose a file with a smaller size");
+                            mppChatSend(error + " The file choosen, \"" + (remoteFileNameFinal ? remoteFileNameFinal : decodeURIComponent(urlFinal.substring(urlFinal.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + fileSizeLimitBytes + " bytes), please choose a file with a smaller size");
                         }
                     });
                 });
@@ -1508,8 +1548,21 @@ let clearSoundWarning = setInterval(function() {
                 if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
                     loadingOption = true;
                 }
-                createButtons();
+                createWebpageElements();
                 console.log(PRE_MSG + " Online!");
+
+                // check if there's an update available
+                let latestVersionFound = setInterval(function () {
+                    if (latestVersion) {
+                        clearInterval(latestVersionFound);
+
+                        if (latestVersion != -1) {
+                            if (latestVersion != VERSION) {
+                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SOURCE_URL);
+                            }
+                        }
+                    }
+                }, TENTH_OF_SECOND);
             }
         }, TENTH_OF_SECOND);
     }

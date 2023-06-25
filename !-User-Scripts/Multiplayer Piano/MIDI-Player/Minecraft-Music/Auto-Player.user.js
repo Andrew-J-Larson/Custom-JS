@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.3
+// @version      3.2.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -29,6 +29,8 @@
 // @grant        GM_info
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
+// @resource     LatestUserScriptJS https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
+// @resource     UserScriptSource https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music
 // @resource     LatestMIDIPlayerJS https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest
 // @run-at       document-end
 // ==/UserScript==
@@ -54,6 +56,17 @@
 // ============================================================================================================== https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal
 
 /* globals MPP, MidiPlayer */
+
+// =============================================== SCRIPT CONSTANTS
+
+const SCRIPT = GM_info.script;
+const NAME = SCRIPT.name;
+const NAMESPACE = SCRIPT.namespace;
+const VERSION = SCRIPT.version;
+const DESCRIPTION = SCRIPT.description;
+const AUTHOR = SCRIPT.author;
+const DOWNLOAD_URL = SCRIPT.downloadURL;
+const SOURCE_URL = GM_getResourceText("UserScriptSource");
 
 // =============================================== FILES
 
@@ -81,17 +94,29 @@ if (requestMPJS.status === 200) {
 } else {
     throw new Error(GM_info.script + " failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
 }
+let latestVersion = null;
+let stringUserScriptJS = GM_getResourceText("LatestUserScriptJS");
+if (stringUserScriptJS) {
+    let linesUserScriptJS = stringUserScriptJS.split('\n');
+    let currentLineUserScriptJS = 0;
+    let findLatestVersion = setInterval(function () {
+        if (latestVersion) clearInterval(findLatestVersion);
+        else {
+            let line = linesUserScriptJS[currentLineUserScriptJS];
+            if (line.startsWith("// @version")) {
+                let lineSplitSpaces = line.split(' ');
+                latestVersion = lineSplitSpaces[lineSplitSpaces.length - 1];
+            }
+            currentLineUserScriptJS++;
+        }
+    }, 1);
+} else {
+    latestVersion = -1;
+    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + SOURCE_URL);
+    console.warning('[' + NAME + "] skipping version check");
+}
 
 // =============================================== CONSTANTS
-
-// Script constants
-const SCRIPT = GM_info.script;
-const NAME = SCRIPT.name;
-const NAMESPACE = SCRIPT.namespace;
-const VERSION = SCRIPT.version;
-const DESCRIPTION = SCRIPT.description;
-const AUTHOR = SCRIPT.author;
-const DOWNLOAD_URL = "(there is no download, only source code at ...) " + SCRIPT.downloadURL;
 
 // Time constants (in milliseconds)
 const TENTH_OF_SECOND = 100; // mainly for repeating loops
@@ -1082,7 +1107,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can download this mod from " + DOWNLOAD_URL);
+    mppChatSend(PRE_LINK + " You can get this mod from " + SOURCE_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1456,6 +1481,19 @@ let clearSoundWarning = setInterval(function() {
                     autoplayOption = AUTOPLAY_RANDOM;
                     if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");
+
+                    // check if there's an update available
+                    let latestVersionFound = setInterval(function () {
+                        if (latestVersion) {
+                            clearInterval(latestVersionFound);
+
+                            if (latestVersion != -1) {
+                                if (latestVersion != VERSION) {
+                                    mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SOURCE_URL);
+                                }
+                            }
+                        }
+                    }, TENTH_OF_SECOND);
                 }
             }
         }, TENTH_OF_SECOND);
