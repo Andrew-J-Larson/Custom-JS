@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.6
+// @version      3.2.7
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1209,40 +1209,45 @@ let play = function(url) {
         stopLoadingMusic();
         mppChatSend(error + " No MIDI url entered... " + WHERE_TO_FIND_MIDIS);
     } else {
-        // downloads file if possible and then plays it if it's a MIDI
-        urlToBlob(url, function(blob) {
-            if (blob instanceof Error && blob.message == "The user aborted a request.") {
-                mppChatSend(PRE_MSG + ' ' + ABORTED_DOWNLOAD)
-            } else if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
-            else if (isMidi(blob) || isOctetStream(blob)) {
-                // if there is a remote filename, use it instead
-                getContentDispositionFilename(url, blob, function(blobFile, remoteFileName) {
-                    // needs to be ran a second time to be sure there's no redirects to the file
-                    getContentDispositionFilename(remoteFileName, blob, function(blobFileFinal, remoteFileNameFinal) {
-                        let urlFinal = remoteFileName;
-                        if (!remoteFileNameFinal) {
-                            remoteFileNameFinal = remoteFileName;
-                            urlFinal = url;
-                        }
-                        // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
-                        if (blobFileFinal.size <= fileSizeLimitBytes) {
-                            fileOrBlobToBase64(blobFileFinal, function(base64data) {
-                                // play song only if we got data
-                                if (exists(base64data)) {
-                                    if (isOctetStream(blobFileFinal)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
-                                        base64data = base64data.replace("application/octet-stream", "audio/midi");
-                                    }
-                                    if (remoteFileNameFinal) playSong(remoteFileNameFinal, base64data);
-                                    else playURL(urlFinal, base64data);
-                                } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
-                            });
-                        } else {
-                            mppChatSend(error + " The file choosen, \"" + (remoteFileNameFinal ? remoteFileNameFinal : decodeURIComponent(urlFinal.substring(urlFinal.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + fileSizeLimitBytes + " bytes), please choose a file with a smaller size");
-                        }
+        // make sure we are not at the root of a website
+        let testURL = (url.startsWith('http://') || url.startsWith('https://')) ? url : (url.indexOf('://') == -1 ? null : ('http://' + url));
+        let testURI = testURL ? new URL(testURL) : null;
+        if (testURI) {
+            // downloads file if possible and then plays it if it's a MIDI
+            urlToBlob(url, function(blob) {
+                if (blob instanceof Error && blob.message == "The user aborted a request.") {
+                    mppChatSend(PRE_MSG + ' ' + ABORTED_DOWNLOAD)
+                } else if (blob == null) mppChatSend(error + " Invalid URL, this is not a MIDI file, or the file requires a manual download from " + quoteString(' ' + url + ' ') + "... " + WHERE_TO_FIND_MIDIS);
+                else if (isMidi(blob) || isOctetStream(blob)) {
+                    // if there is a remote filename, use it instead
+                    getContentDispositionFilename(url, blob, function(blobFile, remoteFileName) {
+                        // needs to be ran a second time to be sure there's no redirects to the file
+                        getContentDispositionFilename(remoteFileName, blob, function(blobFileFinal, remoteFileNameFinal) {
+                            let urlFinal = remoteFileName;
+                            if (!remoteFileNameFinal) {
+                                remoteFileNameFinal = remoteFileName;
+                                urlFinal = url;
+                            }
+                            // check and limit file size, mainly to prevent browser tab crashing (not enough RAM to load) and deter black midi
+                            if (blobFileFinal.size <= fileSizeLimitBytes) {
+                                fileOrBlobToBase64(blobFileFinal, function(base64data) {
+                                    // play song only if we got data
+                                    if (exists(base64data)) {
+                                        if (isOctetStream(blobFileFinal)) { // when download with CORS, need to replace mimetype, but it doesn't guarantee it's a MIDI file
+                                            base64data = base64data.replace("application/octet-stream", "audio/midi");
+                                        }
+                                        if (remoteFileNameFinal) playSong(remoteFileNameFinal, base64data);
+                                        else playURL(urlFinal, base64data);
+                                    } else mppChatSend(error + " Unexpected result, MIDI file couldn't load... " + WHERE_TO_FIND_MIDIS);
+                                });
+                            } else {
+                                mppChatSend(error + " The file choosen, \"" + (remoteFileNameFinal ? remoteFileNameFinal : decodeURIComponent(urlFinal.substring(urlFinal.lastIndexOf('/') + 1))) + "\",  is too big (larger than the limit of " + fileSizeLimitBytes + " bytes), please choose a file with a smaller size");
+                            }
+                        });
                     });
-                });
-            } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
-        });
+                } else mppChatSend(error + " Invalid URL, this is not a MIDI file... " + WHERE_TO_FIND_MIDIS);
+            });
+        } else mppChatSend(error + " Invalid URL, must be a web link to a file... " + WHERE_TO_FIND_MIDIS);
     }
 }
 let stop = function() {
