@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.3";
+const VERSION = "3.4.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -910,8 +910,9 @@ let stopSong = function(fullStop) {
 
 // Gets song from data URI and plays it
 let playSong = function(songFileName, songData) {
-    // stop any current songs from playing
+    // stop any current songs from playing, and reset states
     if (!ended) stopSong(true);
+    if (paused) paused = false;
     // play song if it loaded correctly
     try {
         // load song
