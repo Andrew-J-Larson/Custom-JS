@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.4
+// @version      3.2.5
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -63,7 +63,7 @@ const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
 const DOWNLOAD_URL = SCRIPT.downloadURL;
-const SOURCE_URL = GM_getResourceText("UserScriptSource");
+const SOURCE_URL = GM_getResourceUrl("UserScriptSource");
 
 // =============================================== FILES
 
