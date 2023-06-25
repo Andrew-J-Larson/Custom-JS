@@ -1,7 +1,8 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.2.8";
+const HOMEPAGE = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
+const VERSION = "3.2.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -21,7 +22,6 @@ const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g
                  /^https?:\/\/fleetway-mpp\.glitch\.me.*/g,
                  /^https?:\/\/([^/.]+\.)?mppclone\.com.*/g];
 const LatestUserScriptJS_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
-const UserScriptSource_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";
 // ==/JavaScript==
 
@@ -57,9 +57,11 @@ if (!validWebsite) {
     throw "Not on the Multiplayer Piano website, or compatible clone.";
 }
 
+// should be global: MPP, MidiPlayer
+
 // =============================================== SCRIPT CONSTANTS
 
-const SOURCE_URL = UserScriptSource_URL;
+/* HANDLED AT TOP */
 
 // =============================================== FILES
 
@@ -122,8 +124,6 @@ if (requestUSJS.status === 200) {
     console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + LatestUserScriptJS_URL);
     console.warning('[' + NAME + "] skipping version check");
 }
-
-// should be global: MPP, MidiPlayer
 
 // =============================================== CONSTANTS
 
@@ -1199,7 +1199,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can get this mod from " + SOURCE_URL);
+    mppChatSend(PRE_LINK + " You can get this mod from " + HOMEPAGE);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1575,11 +1575,11 @@ let clearSoundWarning = setInterval(function() {
 
                         if (latestVersion != -1) {
                             if (latestVersion != VERSION) {
-                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SOURCE_URL);
+                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + HOMEPAGE);
                             }
                         }
                     }
-                }, TENTH_OF_SECOND);
+                }, SLOW_CHAT_DELAY);
             }
         }, TENTH_OF_SECOND);
     }

@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.8
+// @homepage     https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music
+// @version      3.2.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -30,7 +31,6 @@
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @resource     LatestUserScriptJS https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
-// @resource     UserScriptSource https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music
 // @resource     LatestMIDIPlayerJS https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest
 // @run-at       document-end
 // ==/UserScript==
@@ -62,11 +62,10 @@
 const SCRIPT = GM_info.script;
 const NAME = SCRIPT.name;
 const NAMESPACE = SCRIPT.namespace;
+const HOMEPAGE = SCRIPT.homepage;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
-const DOWNLOAD_URL = SCRIPT.downloadURL;
-const SOURCE_URL = GM_getResourceText("UserScriptSource");
 
 // =============================================== FILES
 
@@ -112,7 +111,7 @@ if (stringUserScriptJS) {
     }, 1);
 } else {
     latestVersion = -1;
-    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + SOURCE_URL);
+    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + HOMEPAGE);
     console.warning('[' + NAME + "] skipping version check");
 }
 
@@ -1107,7 +1106,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can get this mod from " + SOURCE_URL);
+    mppChatSend(PRE_LINK + " You can get this mod from " + HOMEPAGE);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1489,11 +1488,11 @@ let clearSoundWarning = setInterval(function() {
 
                             if (latestVersion != -1) {
                                 if (latestVersion != VERSION) {
-                                    mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SOURCE_URL);
+                                    mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + HOMEPAGE);
                                 }
                             }
                         }
-                    }, TENTH_OF_SECOND);
+                    }, SLOW_CHAT_DELAY);
                 }
             }
         }, TENTH_OF_SECOND);
