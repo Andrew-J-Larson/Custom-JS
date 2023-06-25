@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.4.2
+// @version      3.4.3
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -23,7 +23,7 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @supportURL   https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
+// @supportURL   https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/favicon.png
@@ -123,6 +123,7 @@ const SECOND = 10 * TENTH_OF_SECOND;
 const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 const REPEAT_DELAY = 5 * TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
+const SLOW_DELAY = 5 * TENTH_OF_SECOND; // keeps midi playing in background, preventing scrambled notes
 const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
 
 // URLs
@@ -188,7 +189,7 @@ const PRE_HELP = PRE_MSG + " [Help]";
 const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
 const PRE_FEEDBACK = PRE_MSG + " [Feedback]";
-const PRE_PING = PRE_MSG + " [Ping]";
+const PRE_PING = PRE_MSG + " Pong!";
 const PRE_SKIP = PRE_MSG + " [Skip]";
 const PRE_SETTINGS = PRE_MSG + " [Settings]";
 const PRE_ALBUM = PRE_MSG + " [Album]";
@@ -197,10 +198,12 @@ const PRE_LIMITED = PRE_MSG + " Limited!";
 const PRE_ERROR = PRE_MSG + " Error!";
 const BAR_LEFT = '「';
 const BAR_RIGHT = '」';
+const BAR_BLOCK_FILL = '▩';
+const BAR_BLOCK_EMPTY = '▢';
 const BAR_ARROW_RIGHT = '━▶';
 const BAR_NOW_PLAYING = BAR_LEFT + "   Now playing   " + BAR_RIGHT;
 const BAR_PLAYING = BAR_LEFT + "     Playing     " + BAR_RIGHT;
-const BAR_DONE_PLAYING = BAR_LEFT + "  Done playing   " + BAR_RIGHT;
+const BAR_DONE_PLAYING = BAR_LEFT + BAR_BLOCK_FILL + " Done playing " + BAR_BLOCK_FILL + BAR_RIGHT;
 const BAR_PAUSED = BAR_LEFT + "     Paused      " + BAR_RIGHT;
 const BAR_STILL_PAUSED = BAR_LEFT + "  Still paused   " + BAR_RIGHT;
 const BAR_RESUMED = BAR_LEFT + "     Resumed     " + BAR_RIGHT;
@@ -208,6 +211,7 @@ const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
 const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
+const PROGRESS_BAR_BLOCK_SIZE = 11; // seems more reasonable to make an odd number
 const AUTOPLAY_OFF = 0;
 const AUTOPLAY_RANDOM = 1;
 const AUTOPLAY_ORDERED = 2;
@@ -723,7 +727,7 @@ let finishedSongName = null; // only checked when not on repeat, for end/done pl
 let ended = true;
 let stopped = false;
 let paused = false;
-let currentSongProgress0to10 = -1; // gets updated while a song plays
+let currentSongProgress = -1; // gets updated while a song plays
 let currentSongEventsPlayed = 0; // gets updated while a song plays
 let currentSongTotalEvents = 0; // gets updated as soon as a song is loaded
 let currentSongIndex = null;
@@ -764,8 +768,11 @@ const Player = new MidiPlayer.Player(function(event) {
             if (!sustainOption) MPP.release(currentNote);
         } else if (sustainOption && (currentEvent == "Note off" || event.velocity == 0)) MPP.release(currentNote); // end note
     }
-    if (!ended && !Player.isPlaying()) {
-        currentSongProgress0to10 = -1;
+    currentSongEventsPlayed = Player.eventsPlayed();
+    // can't use !Player.isPlaying() alone because sometimes the last note has no off event
+    if (!ended && (stopped || !Player.isPlaying() || (currentSongEventsPlayed == currentSongTotalEvents - 1))) {
+        currentSongEventsPlayed = 0;
+        currentSongProgress = -1;
         ended = true;
         paused = false;
         if (!stopped) finishedSongName = currentSongName;
@@ -773,33 +780,27 @@ const Player = new MidiPlayer.Player(function(event) {
             currentSongIndex = null;
             currentSongName = null;
         }
-    } else currentSongEventsPlayed = Player.eventsPlayed();
+    }
 });
 // see https://github.com/grimmdude/MidiPlayerJS/issues/25
 Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
 
-// Get visual elapsing progress, first argument would elapsed amount while second argument would be total amount
-let getElapsedProgressInt0to10 = function(intElapsed, intTotal) {
-    return Math.round((intElapsed / intTotal) * 10);
+// Get visual elapsing progress (e.g. numBlocks = size of loading bar, think of it like a loading screen bar)
+let getElapsedProgressInt = function(numBlocks, intElapsed, intTotal) {
+    return Math.round((intElapsed / intTotal) * numBlocks);
 }
-let getElapsingProgress = function(intElapsed, intTotal) {
-    let elapsedProgress = getElapsedProgressInt0to10(intElapsed, intTotal);
-    switch(elapsedProgress) {
-        case 0: return BAR_LEFT + "▩▢▢▢▢▢▢▢▢▢▢" + BAR_RIGHT; break;
-        case 1: return BAR_LEFT + "▩▩▢▢▢▢▢▢▢▢▢" + BAR_RIGHT; break;
-        case 2: return BAR_LEFT + "▩▩▩▢▢▢▢▢▢▢▢" + BAR_RIGHT; break;
-        case 3: return BAR_LEFT + "▩▩▩▩▢▢▢▢▢▢▢" + BAR_RIGHT; break;
-        case 4: return BAR_LEFT + "▩▩▩▩▩▢▢▢▢▢▢" + BAR_RIGHT; break;
-        case 5: return BAR_LEFT + "▩▩▩▩▩▩▢▢▢▢▢" + BAR_RIGHT; break;
-        case 6: return BAR_LEFT + "▩▩▩▩▩▩▩▢▢▢▢" + BAR_RIGHT; break;
-        case 7: return BAR_LEFT + "▩▩▩▩▩▩▩▩▢▢▢" + BAR_RIGHT; break;
-        case 8: return BAR_LEFT + "▩▩▩▩▩▩▩▩▩▢▢" + BAR_RIGHT; break;
-        case 9: return BAR_LEFT + "▩▩▩▩▩▩▩▩▩▩▢" + BAR_RIGHT; break;
-        case 10: return BAR_LEFT + "▩▩▩▩▩▩▩▩▩▩▩" + BAR_RIGHT; break;
-        default: return BAR_LEFT + "▢▢▢▢▢▢▢▢▢▢▢" + BAR_RIGHT; // should never end up here unless negative numbers were introduced
+let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
+    let elapsedProgress = getElapsedProgressInt(numBlocks, intElapsed, intTotal);
+    let progressMade = "";
+    for (let i = 0; i < elapsedProgress; i++) {
+        progressMade += BAR_BLOCK_FILL;
     }
+    for (let j = 0; j < (numBlocks - elapsedProgress); j++) {
+        progressMade += BAR_BLOCK_EMPTY;
+    }
+    return (BAR_LEFT + progressMade + BAR_RIGHT);
 }
 
 // Check to make sure variable is initialized with something
@@ -937,29 +938,27 @@ let mppArtSend = function(strArray, initialDelay) {
     setTimeout(function() {artDisplaying = false}, newDelay);
 }
 
-// Stops the current song if any are playing
-let stopSong = function() {
-    stopped = true;
-    if (!ended) {
-        Player.stop();
-        currentSongProgress0to10 = -1;
-        currentSongEventsPlayed = 0;
-        currentSongName = null;
-        ended = true;
-    }
-    if (paused) paused = false;
+// Stops the current song and/or notes if any are playing
+let stopSong = function(fullStop) {
+    if (fullStop) Player.stop();
+    // need to release all keys that are playing at the moment
+    Object.values(MIDIPlayerToMPPNote).forEach(note => {
+        MPP.release(note);
+    });
 }
+
 
 // Gets song from array and plays it
 let playSong = function(songIndex) {
     // stop any current songs from playing
-    stopSong();
+    if (!ended) stopSong(true);
     // play song if it loaded correctly
     try {
         // load song
         Player.loadDataUri(SONG_MIDIS[songIndex]);
         // nice delay before next song
         setTimeout(function() {
+            // play song
             Player.play();
             ended = false;
             stopped = false;
@@ -1116,10 +1115,6 @@ let ping = function() {
     pinging = true;
     pingTime = Date.now();
     mppChatSend(PRE_PING);
-    setTimeout(function() {
-        if (pinging) mppChatSend("Pong! [within 1 second]");
-        pinging = false;
-    }, SECOND);
 }
 let play = function(args, argsString) {
     let error = PRE_ERROR + " (play)";
@@ -1182,7 +1177,7 @@ let skip = function() {
         if (ended) mppChatSend(NO_SONG);
         else {
             mppChatSend("Skipped song");
-            Player.stop();
+            stopSong(true);
             ended = true;
         }
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
@@ -1192,9 +1187,10 @@ let stop = function() {
     else {
         // stops the current song
         let tempSongName = currentSongName;
-        stopSong();
-        currentSongIndex = null;
+        stopped = true;
         paused = false;
+        currentSongIndex = null;
+        stopSong(true);
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(tempSongName) + '`');
     }
 }
@@ -1205,8 +1201,9 @@ let pause = function(exceedsNoteQuota) {
         let title = PRE_MSG + ' `';
         if (paused) title += BAR_STILL_PAUSED;
         else {
-            Player.pause();
             paused = true;
+            Player.pause();
+            stopSong();
             title += BAR_PAUSED;
         }
         let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
@@ -1219,8 +1216,8 @@ let resume = function() {
     else {
         let title = PRE_MSG + ' `';
         if (paused) {
-            Player.play();
             paused = false;
+            Player.play();
             title += BAR_RESUMED;
         } else title += BAR_STILL_RESUMED;
         mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
@@ -1237,7 +1234,7 @@ let song = function(showStatusText) {
                 title += BAR_PLAYING;
             }
         }
-        else title += getElapsingProgress(currentSongEventsPlayed, currentSongTotalEvents);
+        else title += getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
         mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
@@ -1334,7 +1331,7 @@ MPP.client.on('a', function (msg) {
     if (pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
-        mppChatSend("Pong! [" + pingTime + "ms]", 0 );
+        mppChatSend(PRE_MSG + ' ' + pingTime + "ms", chatDelay);
     }
 
     let participant = msg.p;
@@ -1401,7 +1398,7 @@ MPP.client.on("ch", function(msg) {
     if (currentRoom != newRoom) {
         currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
-        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) == -1) stopSong();
+        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) == -1 && !ended) stopSong(true);
     }
 });
 MPP.client.on('p', function(msg) {
@@ -1424,10 +1421,10 @@ let repeatingTasks = setInterval(function() {
     // what to do while a song is playing
     if (!ended && exists(currentSongName) && currentSongName != "") {
         // display song progression status and end/done status
-        let tempCurrentSongProgress0to10 = getElapsedProgressInt0to10(currentSongEventsPlayed, currentSongTotalEvents);
-        if (tempCurrentSongProgress0to10 != currentSongProgress0to10) {
-            currentSongProgress0to10 = tempCurrentSongProgress0to10;
-            song();
+        let tempCurrentSongProgress = getElapsedProgressInt(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
+        if (tempCurrentSongProgress != currentSongProgress) {
+            currentSongProgress = tempCurrentSongProgress;
+            if (currentSongProgress > 0 && currentSongProgress < PROGRESS_BAR_BLOCK_SIZE) song();
         }
         // pause if exceeds noteQuota
         if (!paused && !MPP.noteQuota.history[0]) {
@@ -1439,12 +1436,17 @@ let repeatingTasks = setInterval(function() {
         finishedSongName = null;
     }
     // do autoplay
-    if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) playRandom();
+    if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) {
+        ended = false;
+        // nice delay before playing next song
+        setTimeout(function() {playRandom()}, REPEAT_DELAY);
+    }
     // do repeat
     else if (repeatOption && ended && !stopped && exists(currentSongIndex)) {
         ended = false;
         // nice delay before playing song again
-        setTimeout(function() {Player.play()}, REPEAT_DELAY);
+        playSong(currentSongName, currentSongData);
+        setTimeout(function() {playSong(currentSongIndex)}, REPEAT_DELAY);
     }
 }, 1);
 let slowRepeatingTasks = setInterval(function() {
@@ -1455,7 +1457,7 @@ let slowRepeatingTasks = setInterval(function() {
         MPP.piano.audio.play(note, 0.001, 0, participantId);
         MPP.piano.audio.stop(note, 0, participantId);
     }
-}, SECOND);
+}, SLOW_DELAY);
 
 // Automatically turns off the sound warning (mainly for autoplay)
 let playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
