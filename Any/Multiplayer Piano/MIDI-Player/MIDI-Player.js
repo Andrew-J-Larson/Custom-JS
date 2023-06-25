@@ -1,8 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const HOMEPAGE = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
-const VERSION = "3.2.9";
+const VERSION = "3.3.0";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -21,6 +20,7 @@ const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g
                  /^https?:\/\/beta\-mpp\.csys64\.com.*/g,
                  /^https?:\/\/fleetway-mpp\.glitch\.me.*/g,
                  /^https?:\/\/([^/.]+\.)?mppclone\.com.*/g];
+const SUPPORT_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
 const LatestUserScriptJS_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";
 // ==/JavaScript==
@@ -1199,7 +1199,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can get this mod from " + HOMEPAGE);
+    mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1575,7 +1575,7 @@ let clearSoundWarning = setInterval(function() {
 
                         if (latestVersion != -1) {
                             if (latestVersion != VERSION) {
-                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + HOMEPAGE);
+                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SUPPORT_URL);
                             }
                         }
                     }

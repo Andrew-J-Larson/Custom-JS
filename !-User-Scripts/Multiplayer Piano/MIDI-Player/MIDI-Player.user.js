@@ -1,8 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @homepage     https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
-// @version      3.2.9
+// @version      3.3.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -24,6 +23,7 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
+// @supportURL   https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/favicon.png
@@ -59,10 +59,10 @@
 const SCRIPT = GM_info.script;
 const NAME = SCRIPT.name;
 const NAMESPACE = SCRIPT.namespace;
-const HOMEPAGE = SCRIPT.homepage;
 const VERSION = SCRIPT.version;
 const DESCRIPTION = SCRIPT.description;
 const AUTHOR = SCRIPT.author;
+const SUPPORT_URL = SCRIPT.supportURL;
 
 // =============================================== FILES
 
@@ -108,7 +108,7 @@ if (stringUserScriptJS) {
     }, 1);
 } else {
     latestVersion = -1;
-    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + HOMEPAGE);
+    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + SUPPORT_URL);
     console.warning('[' + NAME + "] skipping version check");
 }
 
@@ -1186,7 +1186,7 @@ let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
 }
 let link = function() {
-    mppChatSend(PRE_LINK + " You can get this mod from " + HOMEPAGE);
+    mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
 }
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
@@ -1562,7 +1562,7 @@ let clearSoundWarning = setInterval(function() {
 
                         if (latestVersion != -1) {
                             if (latestVersion != VERSION) {
-                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + HOMEPAGE);
+                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SUPPORT_URL);
                             }
                         }
                     }
