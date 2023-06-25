@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.2.2";
+const VERSION = "3.2.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1512,7 +1512,7 @@ let clearSoundWarning = setInterval(function() {
 
                 currentRoom = mppGetRoom();
                 if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
-                    loadingOption = publicOption = true;
+                    loadingOption = true;
                 }
                 createButtons();
                 console.log(PRE_MSG + " Online!");

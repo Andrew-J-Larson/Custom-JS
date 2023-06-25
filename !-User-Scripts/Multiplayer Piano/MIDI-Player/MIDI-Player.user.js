@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.2.2
+// @version      3.2.3
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1506,7 +1506,7 @@ let clearSoundWarning = setInterval(function() {
 
                 currentRoom = mppGetRoom();
                 if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
-                    loadingOption = publicOption = true;
+                    loadingOption = true;
                 }
                 createButtons();
                 console.log(PRE_MSG + " Online!");
