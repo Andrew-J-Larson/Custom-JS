@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.5";
+const VERSION = "3.4.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -218,7 +218,7 @@ const BAR_RESUMED = BAR_LEFT + "     Resumed     " + BAR_RIG
 const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
 const ABORTED_DOWNLOAD = "Stopped download.";
-const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ , https://midiworld.com/ , https://www.midis101.com/ , https://www.vgmusic.com/ , https://hamienet.com/ , and supports even more sites now, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
+const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ , https://midiworld.com/ , https://www.midis101.com/ , https://www.vgmusic.com/ , https://moviethemes.net/ , https://hamienet.com/ , and supports even more sites now, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
 const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const PROGRESS_BAR_BLOCK_SIZE = 11; // seems more reasonable to make an odd number
