@@ -1,6 +1,6 @@
 // Contents of a notification
 //
-// var defaultsAre = {
+// let defaultsAre = {
 //   id: "Notification-" + Math.random(),
 //   title: "",
 //   text: "",
@@ -17,7 +17,7 @@
 // * all notification ids are prefixed with "Notification-" even if you give it one
 // * it's better to use single quotes around entire html
 // * id, target, duration, and class is optional, while text or html must be used
-var notificationSetup = {
+let notificationSetup = {
   m: "notification", // CONSTANT ... may not need this after all
   title: "Title",
   text: "Text.",
@@ -25,7 +25,7 @@ var notificationSetup = {
 };
 
 // Execute notification
-var exampleNotification = new MPP.Notification(exampleNotification);
+let exampleNotification = new MPP.Notification(notificationSetup);
 
 // Close notification (prematurely or when it's sticky)
 // exampleNotification.close();
