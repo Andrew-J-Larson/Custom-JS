@@ -18,10 +18,9 @@
 // * it's better to use single quotes around entire html
 // * id, target, duration, and class is optional, while text or html must be used
 let notificationSetup = {
-  m: "notification", // CONSTANT ... may not need this after all
   title: "Title",
   text: "Text.",
-  duration: 5000
+  duration: 5000 // 5 seconds
 };
 
 // Execute notification
