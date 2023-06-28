@@ -12,7 +12,7 @@
 //
 // NOTES
 // * the text property takes precedence over html
-// * the "short" class value shows only the text/html
+// * the "short" class value shows only the text/html (removes title line separator too)
 // * using a value of "-1" on duration causes the notification to be sticky
 // * all notification ids are prefixed with "Notification-" even if you give it one
 // * it's better to use single quotes around entire html
