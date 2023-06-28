@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.3";
+const VERSION = "3.5.4";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -172,9 +172,9 @@ const PREFIX_LENGTH = PREFIX.length;
 const MOD_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
 const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
 const MOD_DISPLAYNAME = "MIDI Player";
-const MOD_USERNAME = MOD_DISPLAYNAME + " (v" + VERSION + ") [" + PREFIX + "help]";
+const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
-const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
+const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help (command)", "displays info about command, but no command entered shows the commands"],
@@ -1685,7 +1685,7 @@ let clearSoundWarning = setInterval(function() {
 
                 // send notification with basic instructions
                 let starterNotification = {
-                    title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ")",
+                    title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ") [v" + VERSION + "]",
                     html: `Thanks for using my mod!<br><br>Try dragging a MIDI onto the screen or using the <b>Open</b> button below to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
                     duration: NOTIFICATION_DURATION
                 }

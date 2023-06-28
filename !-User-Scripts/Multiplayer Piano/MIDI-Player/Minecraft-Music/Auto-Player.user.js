@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.5.3
+// @version      3.5.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -157,9 +157,9 @@ const ADDITIONAL_FEEDBACK_INFO = ", including links to other Minecraft songs as 
 const MOD_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
 const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
 const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
-const MOD_USERNAME = MOD_DISPLAYNAME + " (v" + VERSION + ") [" + PREFIX + "help]";
+const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
-const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
+const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
 const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
@@ -1531,7 +1531,7 @@ let clearSoundWarning = setInterval(function() {
 
                     // send notification with basic instructions
                     let starterNotification = {
-                        title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ")",
+                        title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ") [v" + VERSION + "]",
                         html: `Thanks for using my mod!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
                         duration: NOTIFICATION_DURATION
                     }
