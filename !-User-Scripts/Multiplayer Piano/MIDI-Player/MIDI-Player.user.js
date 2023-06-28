@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.5.8
+// @version      3.5.9
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -198,7 +198,7 @@ const BAR_LEFT = '「';
 const BAR_RIGHT = '」';
 const BAR_BLOCK_FILL = '▩';
 const BAR_BLOCK_EMPTY = '▢';
-const BAR_ARROW_RIGHT = '━▶';
+const BAR_ARROW_RIGHT = '—➤';
 const BAR_NOW_PLAYING = BAR_LEFT + "   Now playing   " + BAR_RIGHT;
 const BAR_PLAYING = BAR_LEFT + "     Playing     " + BAR_RIGHT;
 const BAR_DONE_PLAYING = BAR_LEFT + BAR_BLOCK_FILL + " Done playing " + BAR_BLOCK_FILL + BAR_RIGHT;
@@ -968,7 +968,7 @@ let playSong = function(songFileName, songData) {
                 currentSongEventsPlayed = Player.eventsPlayed();
                 currentSongTotalEvents = Player.getTotalEvents();
 
-                mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
+                mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
             } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                 clearInterval(showSongName);
             } else timeoutRecorder++;
@@ -1380,7 +1380,7 @@ let stop = function() {
         paused = false;
         currentSongIndex = null;
         stopSong(true);
-        mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(tempSongName) + '`');
+        mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(tempSongName) + '`');
     }
 }
 let pause = function(exceedsNoteQuota) {
@@ -1396,7 +1396,7 @@ let pause = function(exceedsNoteQuota) {
             title += BAR_PAUSED;
         }
         let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
-        mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`' + reason);
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`' + reason);
     }
 }
 let resume = function() {
@@ -1409,7 +1409,7 @@ let resume = function() {
             Player.play();
             title += BAR_RESUMED;
         } else title += BAR_STILL_RESUMED;
-        mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
     }
 }
 let song = function(showStatusText) {
@@ -1424,7 +1424,7 @@ let song = function(showStatusText) {
             }
         }
         else title += getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
-        mppChatSend(title + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(currentSongName) + '`');
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
 let repeat = function() {
@@ -1580,7 +1580,7 @@ let repeatingTasks = setInterval(function() {
         }
     }
     if (finishedSongName) {
-        mppChatSend(PRE_MSG + ' `' + BAR_DONE_PLAYING + ' ' + BAR_ARROW_RIGHT + ' ' + quoteString(finishedSongName) + '`');
+        mppChatSend(PRE_MSG + ' `' + BAR_DONE_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(finishedSongName) + '`');
         finishedSongName = null;
     }
     // do repeat
