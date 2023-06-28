@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.5.4
+// @version      3.5.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -164,7 +164,7 @@ const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album
 const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
-    ["help (command)", "displays info about command, but no command entered shows the commands"],
+    ["help [command]", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this mod"],
     ["link", "get the download link for this mod"],
     ["feedback", "shows link to send feedback about the mod to the developer"],

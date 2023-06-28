@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.4";
+const VERSION = "3.5.5";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -177,7 +177,7 @@ const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
 const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
-    ["help (command)", "displays info about command, but no command entered shows the commands"],
+    ["help [command]", "displays info about command, but no command entered shows the commands"],
     ["about", "get information about this mod"],
     ["link", "get the download link for this mod"],
     ["feedback", "shows link to send feedback about the mod to the developer"],
