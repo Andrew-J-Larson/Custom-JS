@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.8";
+const VERSION = "3.4.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -131,13 +131,15 @@ if (requestUSJS.status === 200) {
 // NOTE: User script version code is the same from here down
 
 // Time constants (in milliseconds)
-const TENTH_OF_SECOND = 100; // mainly for repeating loops
-const SECOND = 10 * TENTH_OF_SECOND;
-const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 10 messages within less delay
-const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
-const REPEAT_DELAY = 5 * TENTH_OF_SECOND; // makes transitioning songs in repeat feel better
-const SLOW_DELAY = 5 * TENTH_OF_SECOND; // keeps midi playing in background, preventing scrambled notes
-const SONG_NAME_TIMEOUT = 10 * SECOND; // if a file doesn't play, then forget about showing the song name it after this time
+const SECOND = 1000;
+const HALF_SECOND = SECOND / 2;
+const TENTH_OF_SECOND = SECOND / 10; // mainly for repeating loops
+const CHAT_DELAY = HALF_SECOND; // needed since the chat is limited to 10 messages within less delay
+const SLOW_CHAT_DELAY = SECOND * 2; // when you are not the owner, your chat quota is lowered
+const REPEAT_DELAY = HALF_SECOND; // makes transitioning songs in repeat feel better
+const SLOW_DELAY = HALF_SECOND; // keeps midi playing in background, preventing scrambled notes
+const SONG_NAME_TIMEOUT = SECOND * 10; // if a file doesn't play, then forget about showing the song name it after this time
+const NOTIFICATION_DURATION = SECOND * 15; // how long it takes for notifications to disappear
 
 // URLs
 const githubRepo = 'https://github.com/TheAlienDrew/Custom-JS/';
@@ -1674,7 +1676,7 @@ let clearSoundWarning = setInterval(function() {
                     <br>\
                     If you need any help using the mod, try using the command:<br>\
                      ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
-                    duration: 10000 // ms, or 10 seconds
+                    duration: NOTIFICATION_DURATION
                 }
                 mppNotificationSend(starterNotification);
 
