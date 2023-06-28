@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.1";
+const VERSION = "3.5.2";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -934,11 +934,12 @@ let mppNotificationSend = function (notificationObject) {
     if (notificationObject.title) console.log(notificationObject.title);
     if (notificationObject.text) console.log(notificationObject.text);
     else if (notificationObject.html) {
-        let htmlObject = document.createElement('div');
-        htmlObject.innerHTML = notificationObject.html;
-        [].forEach.call(htmlObject.children, function(child) {
-           console.log(child);
-        });
+        // TODO: need a better way to convert HTML to console output
+        let htmlObject = document.createElement("div");
+        htmlObject.innerHTML = notificationObject.html ? (notificationObject.html).replaceAll('<br>', '\n') : '';
+        let htmlToText = (htmlObject.textContent || htmlObject.innerText);
+        if (htmlToText) console.log(htmlToText);
+        // else, no text in html to display???
     }
     return message;
 }
@@ -1685,12 +1686,7 @@ let clearSoundWarning = setInterval(function() {
                 // send notification with basic instructions
                 let starterNotification = {
                     title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ")",
-                    html: `Thanks for using my mod!<br>\
-                    <br>\
-                    Try dragging a MIDI onto the screen or using the <b>Open</b> button below to start playing MIDI files!<br>\
-                    <br>\
-                    If you need any help using the mod, try using the command:<br>\
-                     ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                    html: `Thanks for using my mod!<br><br>Try dragging a MIDI onto the screen or using the <b>Open</b> button below to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
                     duration: NOTIFICATION_DURATION
                 }
                 mppNotificationSend(starterNotification);
