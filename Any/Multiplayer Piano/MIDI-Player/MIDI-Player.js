@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.0";
+const VERSION = "3.5.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -172,7 +172,7 @@ const PREFIX_LENGTH = PREFIX.length;
 const MOD_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
 const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
 const MOD_DISPLAYNAME = "MIDI Player";
-const MOD_USERNAME = MOD_DISPLAYNAME + " [" + PREFIX + "help]";
+const MOD_USERNAME = MOD_DISPLAYNAME + " (v" + VERSION + ") [" + PREFIX + "help]";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
 const MOD_DESCRIPTION = DESCRIPTION + " Made with JS via Tampermonkey, and thanks to grimmdude for the MIDIPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
@@ -197,7 +197,7 @@ const MOD_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
     [MOD_ACTIVATOR, "toggles the public mod commands on or off"]
 ];
-const PRE_MSG = MOD_DISPLAYNAME + " (v" + VERSION + "):";
+const PRE_MSG = MOD_USERNAME;
 const PRE_HELP = PRE_MSG + " [Help]";
 const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
@@ -926,10 +926,10 @@ let mppNotificationSend = function (notificationObject) {
      - all properties are technically optional
     */
     let message = null;
-    if (MPP.Notification) {
+    if (exists(MPP.Notification)) {
         message = new MPP.Notification(notificationObject);
     } else {
-        mppChatSend("This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
+        mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
     }
     if (notificationObject.title) console.log(notificationObject.title);
     if (notificationObject.text) console.log(notificationObject.text);
