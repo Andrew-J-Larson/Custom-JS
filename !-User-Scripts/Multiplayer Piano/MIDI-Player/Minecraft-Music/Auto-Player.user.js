@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.4.6
+// @version      3.4.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,6 +15,7 @@
 // @match        *://mpp.l3m0ncao.wtf/*
 // @match        *://mpp.terrium.net/*
 // @match        *://mpp.hyye.tk/*
+// @match        *://mpp.totalh.net/*
 // @match        *://mppfork.netlify.app/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*

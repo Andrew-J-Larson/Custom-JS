@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.6";
+const VERSION = "3.4.7";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -13,6 +13,7 @@ const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g
                  /^https?:\/\/mpp\.l3m0ncao\.wtf.*/g,
                  /^https?:\/\/mpp\.terrium\.net.*/g,
                  /^https?:\/\/mpp\.hyye\.tk.*/g,
+                 /^https?:\/\/mpp\.totalh\.net.*/g,
                  /^https?:\/\/mppfork\.netlify\.app.*/g,
                  /^https?:\/\/([^/.]+\.)?mppkinda\.com.*/g,
                  /^https?:\/\/([^/.]+\.)?augustberchelmann\.com\/piano\/.*/g,
