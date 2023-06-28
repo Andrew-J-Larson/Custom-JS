@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.4.9
+// @version      3.5.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -405,32 +405,6 @@ const Player = new MidiPlayer.Player(function(event) {
 Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
-
-// Sends MPP a notification
-let mppNotificationSend = function (notificationObject) {
-    // Contents of a notification
-    /*
-      let notificationObject = {
-          id: "Notification-" + Math.random(),
-          title: "",
-          text: "",
-          html: "",
-          target: "#piano",
-          duration: 30000, // ms, or 30 seconds
-          class: "classic"
-      };
-    */
-    // Behaviors of a notification
-    /*
-     - the text property (if present) overrides the html property
-     - the "short" class value shows only the text/html (removes title line separator too)
-     - using a value of "-1" on duration causes the notification to be sticky (never disappears)
-     - all notification ids are prefixed with "Notification-" even if you give it one
-     - it's better to use single quotes around entire html
-     - all properties are technically optional
-    */
-    return new MPP.Notification(notificationObject);
-}
 
 // CORS Proxy (allows downloading files where JS can't)
 let useCorsUrl = function(url, useAlt = false) {
@@ -913,6 +887,47 @@ let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
         }
     }
     return chatDelay * newDelay;
+}
+
+// Sends MPP a notification
+let mppNotificationSend = function (notificationObject) {
+    // Contents of a notification
+    /*
+      let notificationObject = {
+          id: "Notification-" + Math.random(),
+          title: "",
+          text: "",
+          html: "",
+          target: "#piano",
+          duration: 30000, // ms, or 30 seconds
+          class: "classic"
+      };
+    */
+    // Behaviors of a notification
+    /*
+     - the text property (if present) overrides the html property
+     - the "short" class value shows only the text/html (removes title line separator too)
+     - using a value of "-1" on duration causes the notification to be sticky (never disappears)
+     - all notification ids are prefixed with "Notification-" even if you give it one
+     - it's better to use single quotes around entire html
+     - all properties are technically optional
+    */
+    let message = null;
+    if (MPP.Notification) {
+        message = new MPP.Notification(notificationObject);
+    } else {
+        mppChatSend("This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
+    }
+    if (notificationObject.title) console.log(notificationObject.title);
+    if (notificationObject.text) console.log(notificationObject.text);
+    else if (notificationObject.html) {
+        let htmlObject = document.createElement('div');
+        htmlObject.innerHTML = notificationObject.html;
+        [].forEach.call(htmlObject.children, function(child) {
+           console.log(child);
+        });
+    }
+    return message;
 }
 
 // Stops the current song and/or notes if any are playing
