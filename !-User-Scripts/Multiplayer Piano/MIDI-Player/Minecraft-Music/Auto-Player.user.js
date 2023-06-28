@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.4.7
+// @version      3.4.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -788,6 +788,32 @@ Player.sampleRate = 0; // this allows sequential notes that are supposed to play
 
 // =============================================== FUNCTIONS
 
+// Sends MPP a notification
+let mppNotificationSend = function (notificationObject) {
+    // Contents of a notification
+    /*
+      let notificationObject = {
+          id: "Notification-" + Math.random(),
+          title: "",
+          text: "",
+          html: "",
+          target: "#piano",
+          duration: 30000, // ms, or 30 seconds
+          class: "classic"
+      };
+    */
+    // Behaviors of a notification
+    /*
+     - the text property (if present) overrides the html property
+     - the "short" class value shows only the text/html (removes title line separator too)
+     - using a value of "-1" on duration causes the notification to be sticky (never disappears)
+     - all notification ids are prefixed with "Notification-" even if you give it one
+     - it's better to use single quotes around entire html
+     - all properties are technically optional
+    */
+    return new MPP.Notification(notificationObject);
+}
+
 // Get visual elapsing progress (e.g. numBlocks = size of loading bar, think of it like a loading screen bar)
 let getElapsedProgressInt = function(numBlocks, intElapsed, intTotal) {
     return Math.round((intElapsed / intTotal) * numBlocks);
@@ -1447,7 +1473,7 @@ let repeatingTasks = setInterval(function() {
     else if (repeatOption && ended && !stopped && exists(currentSongIndex)) {
         ended = false;
         // nice delay before playing song again
-        playSong(currentSongName, currentSongData);
+        playSong(currentSongIndex);
         setTimeout(function() {playSong(currentSongIndex)}, REPEAT_DELAY);
     }
 }, 1);
@@ -1484,6 +1510,17 @@ let clearSoundWarning = setInterval(function() {
                     autoplayOption = AUTOPLAY_RANDOM;
                     if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");
+
+                    // send notification with basic instructions
+                    let starterNotification = {
+                        title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ")",
+                        html: `Thanks for using my mod!<br>\
+                        <br>\
+                        If you need any help using the mod, try using the command:<br>\
+                         ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                        duration: 10000 // ms, or 10 seconds
+                    }
+                    mppNotificationSend(starterNotification);
 
                     // check if there's an update available
                     let latestVersionFound = setInterval(function () {

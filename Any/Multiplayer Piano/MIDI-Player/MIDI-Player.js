@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.4.7";
+const VERSION = "3.4.8";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -416,6 +416,32 @@ const Player = new MidiPlayer.Player(function(event) {
 Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
 
 // =============================================== FUNCTIONS
+
+// Sends MPP a notification
+let mppNotificationSend = function (notificationObject) {
+    // Contents of a notification
+    /*
+      let notificationObject = {
+          id: "Notification-" + Math.random(),
+          title: "",
+          text: "",
+          html: "",
+          target: "#piano",
+          duration: 30000, // ms, or 30 seconds
+          class: "classic"
+      };
+    */
+    // Behaviors of a notification
+    /*
+     - the text property (if present) overrides the html property
+     - the "short" class value shows only the text/html (removes title line separator too)
+     - using a value of "-1" on duration causes the notification to be sticky (never disappears)
+     - all notification ids are prefixed with "Notification-" even if you give it one
+     - it's better to use single quotes around entire html
+     - all properties are technically optional
+    */
+    return new MPP.Notification(notificationObject);
+}
 
 // CORS Proxy (allows downloading files where JS can't)
 let useCorsUrl = function(url, useAlt = false) {
@@ -1638,6 +1664,19 @@ let clearSoundWarning = setInterval(function() {
                 }
                 createWebpageElements();
                 console.log(PRE_MSG + " Online!");
+
+                // send notification with basic instructions
+                let starterNotification = {
+                    title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ")",
+                    html: `Thanks for using my mod!<br>\
+                    <br>\
+                    Try dragging a MIDI onto the screen or using the <b>Open</b> button below to start playing MIDI files!<br>\
+                    <br>\
+                    If you need any help using the mod, try using the command:<br>\
+                     ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                    duration: 10000 // ms, or 10 seconds
+                }
+                mppNotificationSend(starterNotification);
 
                 // check if there's an update available
                 let latestVersionFound = setInterval(function () {

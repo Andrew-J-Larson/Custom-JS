@@ -1,30 +1,34 @@
 // Contents of a notification
-//
-// let defaultsAre = {
-//   id: "Notification-" + Math.random(),
-//   title: "",
-//   text: "",
-//   html: "",
-//   target: "#piano",
-//   duration: 30000,
-//   class: "classic"
-// };
-//
-// NOTES
-// * the text property takes precedence over html
-// * the "short" class value shows only the text/html (removes title line separator too)
-// * using a value of "-1" on duration causes the notification to be sticky
-// * all notification ids are prefixed with "Notification-" even if you give it one
-// * it's better to use single quotes around entire html
-// * all properties are technically optional
+/*
+  let notificationObject = {
+      id: "Notification-" + Math.random(),
+      title: "",
+      text: "",
+      html: "",
+      target: "#piano",
+      duration: 30000, // ms, or 30 seconds
+      class: "classic"
+  };
+*/
+// Behaviors of a notification
+/*
+ - the text property (if present) overrides the html property
+ - the "short" class value shows only the text/html (removes title line separator too)
+ - using a value of "-1" on duration causes the notification to be sticky (never disappears)
+ - all notification ids are prefixed with "Notification-" even if you give it one
+ - it's better to use single quotes around entire html
+ - all properties are technically optional
+*/
+
+// setup the object
 let notificationSetup = {
   title: "Title",
   text: "Text.",
   duration: 5000 // 5 seconds
 };
 
-// Execute notification
+// execute the notification
 let exampleNotification = new MPP.Notification(notificationSetup);
 
-// Close notification (prematurely or when it's sticky)
+// close the notification (prematurely or when it's sticky)
 // exampleNotification.close();
