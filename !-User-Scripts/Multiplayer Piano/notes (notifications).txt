@@ -16,7 +16,7 @@
 // * using a value of "-1" on duration causes the notification to be sticky
 // * all notification ids are prefixed with "Notification-" even if you give it one
 // * it's better to use single quotes around entire html
-// * id, target, duration, and class is optional, while text or html must be used
+// * all properties are technically optional
 let notificationSetup = {
   title: "Title",
   text: "Text.",
