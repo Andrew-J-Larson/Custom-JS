@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.2";
+const VERSION = "3.5.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1698,7 +1698,13 @@ let clearSoundWarning = setInterval(function() {
 
                         if (latestVersion != -1) {
                             if (latestVersion != VERSION) {
-                                mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SUPPORT_URL);
+                                // make sure latestVersion is newer (prevent old updates from sending out false message about an update available)
+                                let versionRegex = /[0-9.]+/g; // this will not display a notification if a beta was to ever be published
+                                let latestVersionInt = parseInt((latestVersion.match(versionRegex))[0].replaceAll('.',''));
+                                let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.',''));
+                                if (latestVersionInt > currentVersionInt) {
+                                    mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SUPPORT_URL);
+                                }
                             }
                         }
                     }
