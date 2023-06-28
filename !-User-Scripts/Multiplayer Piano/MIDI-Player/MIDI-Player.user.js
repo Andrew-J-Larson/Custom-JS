@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.5.7
+// @version      3.5.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -223,6 +223,7 @@ const CSS_VARIABLE_X_INITIAL = "--xInitial";
 const CSS_VARIABLE_Y_INITIAL = "--yInitial";
 const CSS_VARIABLE_Y_TOGGLE_INITIAL = "--yToggleInitial"; // helps special case of determining toggle button placement
 const PRE_ELEMENT_ID = "aliendrew-midi-player-mod";
+const PRE_TOGGLER_ID = PRE_ELEMENT_ID + "-toggler";
 const QUERY_BOTTOM_UGLY_BTNS = `#bottom > div > .ugly-button:not([id^=${PRE_ELEMENT_ID}])`;
 // buttons have some constant styles/classes
 const ELEM_ON = "display:block;";
@@ -1219,7 +1220,7 @@ let createWebpageElements = function() {
     let buttonsOn = false;
     let togglerDiv = document.createElement("div");
     togglerDiv.title = 'Use `'+PREFIX+'help` for more commands'
-    togglerDiv.id = PRE_ELEMENT_ID + "-toggler";
+    togglerDiv.id = PRE_TOGGLER_ID;
     togglerDiv.style = ELEM_POS + ELEM_ON + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_TOGGLE_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function() {
@@ -1675,13 +1676,17 @@ let clearSoundWarning = setInterval(function() {
                 createWebpageElements();
                 console.log(PRE_MSG + " Online!");
 
-                // send notification with basic instructions
-                let starterNotification = {
-                    title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ") [v" + VERSION + "]",
-                    html: `Thanks for using my mod!<br><br>Try dragging a MIDI onto the screen or using the <b>Open</b> button below to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
-                    duration: NOTIFICATION_DURATION
-                }
-                mppNotificationSend(starterNotification);
+                // need a little delay to wait for button to position itself
+                setTimeout(function() {
+                    // send notification with basic instructions
+                    let starterNotification = {
+                        target: "#" + PRE_TOGGLER_ID,
+                        title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ") [v" + VERSION + "]",
+                        html: `Thanks for using my mod!<br><br>Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                        duration: NOTIFICATION_DURATION
+                    }
+                    mppNotificationSend(starterNotification);
+                }, TENTH_OF_SECOND);
 
                 // check if there's an update available
                 let latestVersionFound = setInterval(function () {
