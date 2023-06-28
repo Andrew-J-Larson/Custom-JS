@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.5.6";
+const VERSION = "3.5.7";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1093,6 +1093,11 @@ let createWebpageElements = function() {
 
     // need the bottom area to append buttons to
     let buttonContainer = document.querySelector("#bottom div");
+    // need the first button to setup upload button size correctly
+    let buttonStyle = getComputedStyle(document.querySelector('.ugly-button'));
+    let buttonWidth = parseInt(buttonStyle.width);
+    let buttonHeight = parseInt(buttonStyle.height);
+    let buttonBorderRadius = parseInt(buttonStyle.borderRadius);
     // we need to keep track of the next button locations
     let nextLocationX = 1;
     let nextLocationY = 0;
@@ -1115,7 +1120,7 @@ let createWebpageElements = function() {
     let uploadBtn = document.createElement("input");
     let uploadBtnId = PRE_ELEMENT_ID + "-upload";
     uploadBtn.id = uploadBtnId;
-    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:110px;height:22px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;";
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:" + (buttonWidth + 10) + "px;height:" + (buttonHeight + 10) + "px;border-radius:" + (buttonBorderRadius + 1) + "px;-webkit-border-radius:" + (buttonBorderRadius + 1) + "px;-moz-border-radius:" + (buttonBorderRadius + 1) + "px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
