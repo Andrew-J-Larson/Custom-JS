@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.5.9
+// @version      3.6.0
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -934,7 +934,15 @@ let mppNotificationSend = function (notificationObject) {
 
 // Stops the current song and/or notes if any are playing
 let stopSong = function(fullStop) {
-    if (fullStop) Player.stop();
+    if (fullStop) {
+        // these might feel redundant, but they aren't
+        ended = true;
+        stopped = true;
+        paused = false;
+        currentSongName = null;
+        currentSongData = null;
+        Player.stop();
+    }
     // need to release all keys that are playing at the moment
     Object.values(MIDIPlayerToMPPNote).forEach(note => {
         MPP.release(note);
@@ -945,7 +953,6 @@ let stopSong = function(fullStop) {
 let playSong = function(songFileName, songData) {
     // stop any current songs from playing, and reset states
     if (!ended) stopSong(true);
-    if (paused) paused = false;
     // play song if it loaded correctly
     try {
         // load song
@@ -1376,9 +1383,6 @@ let stop = function() {
     else {
         // stops the current song
         let tempSongName = currentSongName;
-        stopped = true;
-        paused = false;
-        currentSongIndex = null;
         stopSong(true);
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(tempSongName) + '`');
     }
