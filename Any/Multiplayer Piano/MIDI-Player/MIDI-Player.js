@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.6.0";
+const VERSION = "3.6.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -839,7 +839,8 @@ let fileOrBlobToBase64 = function(raw, callback) {
 
 // Returns the max file size you can have
 let getMaxFileSize = function(lowestSizeBytes, maxSizeBytes) {
-    return ((MPP.noteQuota.max > QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED) ? maxSizeBytes : lowestSizeBytes);
+    let getQuotaMax = (MPP && MPP.noteQuota && MPP.noteQuota.max) ? MPP.noteQuota.max : 0;
+    return ((getQuotaMax > QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED) ? maxSizeBytes : lowestSizeBytes);
 }
 
 // Validates file or blob is a MIDI
