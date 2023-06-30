@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.2
+// @version      3.6.3
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -999,7 +999,7 @@ let playSong = function(songFileName, songData) {
                 currentSongEventsPlayed = Player.eventsPlayed();
                 currentSongTotalEvents = Player.getTotalEvents();
 
-                mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
+                mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
             } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
                 clearInterval(showSongName);
             } else timeoutRecorder++;
@@ -1419,7 +1419,7 @@ let pause = function(exceedsNoteQuota) {
             title += BAR_PAUSED;
         }
         let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
-        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`' + reason);
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`' + reason);
     }
 }
 let resume = function() {
@@ -1432,14 +1432,14 @@ let resume = function() {
             playerPlay();
             title += BAR_RESUMED;
         } else title += BAR_STILL_RESUMED;
-        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     }
 }
 let song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
         let title = PRE_MSG + ' `' + (paused ? BAR_PAUSED : BAR_PLAYING);
-        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
+        mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
 let repeat = function() {
