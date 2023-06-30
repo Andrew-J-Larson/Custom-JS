@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.3
+// @version      3.6.4
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -208,7 +208,7 @@ const BAR_RESUMED = BAR_LEFT + "    Resumed    " + BAR_RIGHT;
 const BAR_STILL_RESUMED = BAR_LEFT + " Still resumed " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "    Stopped    " + BAR_RIGHT;
 const ABORTED_DOWNLOAD = "Stopped download.";
-const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ , https://midiworld.com/ , https://www.midis101.com/ , https://www.vgmusic.com/ , https://moviethemes.net/ , https://hamienet.com/ , and supports even more sites now, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
+const WHERE_TO_FIND_MIDIS = "You can find some good MIDIs to upload from https://bitmidi.com/ , https://midiworld.com/ , https://www.midis101.com/ , https://www.midishrine.com/ , https://www.vgmusic.com/ , https://moviethemes.net/ , https://hamienet.com/ , and supports even more sites now, or you can use your own MIDI files via Google Drive/Dropbox/etc. with a direct download link";
 const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
 const PROGRESS_BAR_BLOCK_SIZE = 26;
