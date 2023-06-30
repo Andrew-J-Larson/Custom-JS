@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.1
+// @version      3.6.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -150,7 +150,7 @@ const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the mod 
 const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
 
 // Bot custom constants
-const PREFIX = "/";
+const PREFIX = "mc!";
 const PREFIX_LENGTH = PREFIX.length;
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
 const ADDITIONAL_FEEDBACK_INFO = ", including links to other Minecraft songs as MIDIs or sheet music"; // must keep the comma
@@ -206,7 +206,7 @@ const BAR_BLOCK_EMPTY = '▢';
 const BAR_ARROW_RIGHT = '—➤';
 const BAR_NOW_PLAYING = BAR_LEFT + "   Now playing   " + BAR_RIGHT;
 const BAR_PLAYING = BAR_LEFT + "     Playing     " + BAR_RIGHT;
-const BAR_DONE_PLAYING = BAR_LEFT + BAR_BLOCK_FILL + " Done playing " + BAR_BLOCK_FILL + BAR_RIGHT;
+const BAR_DONE_PLAYING = BAR_LEFT + "  Done playing   " + BAR_RIGHT;
 const BAR_PAUSED = BAR_LEFT + "     Paused      " + BAR_RIGHT;
 const BAR_STILL_PAUSED = BAR_LEFT + "  Still paused   " + BAR_RIGHT;
 const BAR_RESUMED = BAR_LEFT + "     Resumed     " + BAR_RIGHT;
@@ -214,7 +214,7 @@ const BAR_STILL_RESUMED = BAR_LEFT + "  Still resumed  " + BAR_RIGHT;
 const BAR_STOPPED = BAR_LEFT + "     Stopped     " + BAR_RIGHT;
 const NOT_OWNER = "The mod isn't the owner of the room";
 const NO_SONG = "Not currently playing anything";
-const PROGRESS_BAR_BLOCK_SIZE = 11; // seems more reasonable to make an odd number
+const PROGRESS_BAR_BLOCK_SIZE = 26;
 const AUTOPLAY_OFF = 0;
 const AUTOPLAY_RANDOM = 1;
 const AUTOPLAY_ORDERED = 2;
@@ -743,6 +743,8 @@ let sustainOption = true; // makes notes end according to the midi file
 let percussionOption = false; // turning on percussion makes a lot of MIDIs sound bad
 let artDisplaying = false;
 
+let elapsingProgressNotification = null; // used for closing elapsing notification sooner
+
 // =============================================== PAGE VISIBILITY
 
 let pageVisible = true;
@@ -757,36 +759,7 @@ document.addEventListener('visibilitychange', function () {
 // =============================================== OBJECTS
 
 // The MIDIPlayer
-const Player = new MidiPlayer.Player(function(event) {
-    if (MPP.client.preventsPlaying()) {
-        if (Player.isPlaying()) pause();
-        return;
-    }
-    let currentEvent = event.name;
-    if (!exists(currentEvent) || currentEvent == "") return;
-    if (currentEvent.indexOf("Note") == 0 && (percussionOption || event.channel != PERCUSSION_CHANNEL)) {
-        let currentNote = (exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null);
-        if (currentEvent == "Note on" && event.velocity > 0) { // start note
-            MPP.press(currentNote, (event.velocity/100));
-            if (!sustainOption) MPP.release(currentNote);
-        } else if (sustainOption && (currentEvent == "Note off" || event.velocity == 0)) MPP.release(currentNote); // end note
-    }
-    currentSongEventsPlayed = Player.eventsPlayed();
-    // can't use !Player.isPlaying() alone because sometimes the last note has no off event
-    if (!ended && (stopped || !Player.isPlaying() || (currentSongEventsPlayed == currentSongTotalEvents - 1))) {
-        currentSongEventsPlayed = 0;
-        currentSongProgress = -1;
-        ended = true;
-        paused = false;
-        if (!stopped) finishedSongName = currentSongName;
-        if (!repeatOption) {
-            currentSongIndex = null;
-            currentSongName = null;
-        }
-    }
-});
-// see https://github.com/grimmdude/MidiPlayerJS/issues/25
-Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
+const Player = new MidiPlayer.Player();
 
 // =============================================== FUNCTIONS
 
@@ -803,7 +776,7 @@ let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
     for (let j = 0; j < (numBlocks - elapsedProgress); j++) {
         progressMade += BAR_BLOCK_EMPTY;
     }
-    return (BAR_LEFT + progressMade + BAR_RIGHT);
+    return progressMade;
 }
 
 // Check to make sure variable is initialized with something
@@ -964,11 +937,8 @@ let mppNotificationSend = function (notificationObject) {
      - it's better to use single quotes around entire html
      - all properties are technically optional
     */
-    let message = null;
     if (exists(MPP.Notification)) {
-        message = new MPP.Notification(notificationObject);
-    } else {
-        mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
+        return new MPP.Notification(notificationObject);
     }
     if (notificationObject.title) console.log(notificationObject.title);
     if (notificationObject.text) console.log(notificationObject.text);
@@ -980,18 +950,46 @@ let mppNotificationSend = function (notificationObject) {
         if (htmlToText) console.log(htmlToText);
         // else, no text in html to display???
     }
-    return message;
+    return null;
 }
 
-// Stops the current song and/or notes if any are playing
+let playerStop = function(manualStop = false) {
+    ended = true; // TODO: temporary, until a real play button is implemented
+    paused = false;
+    stopped = manualStop ? manualStop : stopped;
+    if (!stopped) finishedSongName = currentSongName;
+    if (!repeatOption) {
+        currentSongIndex = null;
+        currentSongName = null;
+    }
+    currentSongEventsPlayed = 0;
+    currentSongProgress = -1;
+}
+
+let playerPlay = function(loop = false) {
+    if (loop) {
+        // Need to do something???
+    }
+    ended = stopped = paused = false;
+}
+
+let playerPause = function() {
+    if (ended || stopped) {
+        // Need to do something???
+        return;
+    }
+    paused = true;
+}
+
+// Stops song in player, or at least stops all notes
 let stopSong = function(fullStop) {
     if (fullStop) {
-        // these might feel redundant, but they aren't
-        ended = true;
-        stopped = true;
-        paused = false;
-        currentSongIndex = null;
+        if (elapsingProgressNotification) {
+            elapsingProgressNotification.close();
+            elapsingProgressNotification = null;
+        }
         Player.stop();
+        playerStop(true);
     }
     // need to release all keys that are playing at the moment
     Object.values(MIDIPlayerToMPPNote).forEach(note => {
@@ -999,21 +997,28 @@ let stopSong = function(fullStop) {
     });
 }
 
-
-// Gets song from array and plays it
-let playSong = function(songIndex) {
-    // stop any current songs from playing, and reset states
-    if (!ended) stopSong(true);
-    // play song if it loaded correctly
+// Opens song in player
+let openSong = function(songIndex) {
+    if (!ended) stopSong(true); // MUST STAY HERE, or else can cause browser to crash
     try {
-        // load song
         Player.loadDataUri(SONG_MIDIS[songIndex]);
+    } catch (error) {
+        // reload the previous working file if there is one
+        if (previousSongIndex != null) Player.loadDataUri(previousSongIndex);
+        mppChatSend(PRE_ERROR + " (open) " + error);
+        return false;
+    }
+    return true;
+}
+
+// Plays song in player
+let playSong = function(songIndex) {
+    if (openSong(songIndex)) {
         // nice delay before next song
         setTimeout(function() {
             // play song
             Player.play();
-            ended = false;
-            stopped = false;
+            playerPlay();
             let timeoutRecorder = 0;
             let showSongName = setInterval(function() {
                 if (Player.isPlaying()) {
@@ -1032,14 +1037,10 @@ let playSong = function(songIndex) {
                 } else timeoutRecorder++;
             }, 1);
         }, (autoplayOption != AUTOPLAY_OFF) ? REPEAT_DELAY : 0);
-    } catch(error) {
-        // reload the previous working file if there is one
-        if (previousSongIndex != null) Player.loadDataUri(SONG_MIDIS[previousSongIndex]);
-        mppChatSend(PRE_ERROR + " (play) " + error);
     }
 }
 
-// plays a random song, but not the same song twice in a row
+// Plays a random song, but not the same song twice in a row
 let playRandom = function() {
     let newSongIndex = currentSongIndex;
     // ignore empty elements
@@ -1095,7 +1096,7 @@ let setOwnerOnlyPlay = function(choice) {
     } else {
         if (!isOwner) console.log(NOT_OWNER);
         else console.log("Invalid choice was entered. Solo play wasn't set.");
-        return false
+        return false;
     }
 }
 
@@ -1249,8 +1250,8 @@ let pause = function(exceedsNoteQuota) {
         let title = PRE_MSG + ' `';
         if (paused) title += BAR_STILL_PAUSED;
         else {
-            paused = true;
             Player.pause();
+            playerPause();
             stopSong();
             title += BAR_PAUSED;
         }
@@ -1264,25 +1265,17 @@ let resume = function() {
     else {
         let title = PRE_MSG + ' `';
         if (paused) {
-            paused = false;
             Player.play();
+            playerPlay();
             title += BAR_RESUMED;
         } else title += BAR_STILL_RESUMED;
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
     }
 }
-let song = function(showStatusText) {
+let song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
-        let title = PRE_MSG + ' `';
-        if (showStatusText) {
-            if (paused) {
-                title += BAR_PAUSED;
-            } else {
-                title += BAR_PLAYING;
-            }
-        }
-        else title += getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
+        let title = PRE_MSG + ' `' + (paused ? BAR_PAUSED : BAR_PLAYING);
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(currentSongName) + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
 }
@@ -1367,6 +1360,49 @@ let mppGetRoom = function() {
 
 // =============================================== MAIN
 
+// bug fix: see https://github.com/grimmdude/MidiPlayerJS/issues/25
+Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
+
+Player.on('fileLoaded', function() {
+    // Do something when file is loaded
+});
+
+Player.on('playing', function(currentTick) {
+    // Do something while player is playing
+    // (this is repeatedly triggered within the play loop)
+    currentSongEventsPlayed = Player.eventsPlayed();
+    if (paused || stopped) return;
+    if (MPP.client.preventsPlaying()) pause();
+});
+
+Player.on('midiEvent', function(event) {
+    // Do something when a MIDI event is fired.
+    // (this is the same as passing a function to MidiPlayer.Player() when instantiating.
+    if (!percussionOption && event.channel == PERCUSSION_CHANNEL) return;
+    let currentEvent = event.name;
+/* MAY NOT NEED */ // if (!exists(currentEvent) || currentEvent == "") return;
+if (!currentEvent || currentEvent == '') console.log('FOUND NO NAME EVENT');
+//console.log(event.noteName);
+    let currentNote = (currentEvent.indexOf("Note") == 0) ? (
+/* MAY NOT NEED */ //exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null
+        MIDIPlayerToMPPNote[event.noteName]
+    ) : null;
+    if (currentEvent == "Note on") {
+        let mppNoteVelocity = (event.velocity ? event.velocity/100 : 0);
+        MPP.press(currentNote, mppNoteVelocity);
+        if (!sustainOption) MPP.release(currentNote);
+    }
+    if (sustainOption && (currentEvent == "Note off" || event.velocity == 0)) {
+        MPP.release(currentNote);
+    }
+});
+
+Player.on('endOfFile', function() {
+    // Do something when end of the file has been reached.
+    ended = true;
+    playerStop();
+});
+
 MPP.client.on('a', function (msg) {
     // if user switches to VPN, these need to update
     let yourParticipant = MPP.client.getOwnParticipant();
@@ -1426,7 +1462,7 @@ MPP.client.on('a', function (msg) {
             case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
             case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
             case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(true); break;
+            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
             case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
@@ -1472,7 +1508,26 @@ let repeatingTasks = setInterval(function() {
         let tempCurrentSongProgress = getElapsedProgressInt(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
         if (tempCurrentSongProgress != currentSongProgress) {
             currentSongProgress = tempCurrentSongProgress;
-            if (currentSongProgress > 0 && currentSongProgress < PROGRESS_BAR_BLOCK_SIZE) song();
+            if (currentSongProgress >= 0 && currentSongProgress <= PROGRESS_BAR_BLOCK_SIZE) {
+                if (elapsingProgressNotification) {
+                    elapsingProgressNotification.close();
+                    elapsingProgressNotification = null;
+                }
+                let textColor = (MPP.client.user.color) ? MPP.client.user.color : '#0F0'; // fall back color just in case
+                let textStyle = 'style="color: ' + textColor + ' !important"'
+                let barProgress = getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
+                let elapsingProgressNotificationSetup = {
+                    html: '<div class="title" style="display: block !important">' +
+                            '[<span ' + textStyle + '>' + barProgress + '</span>]<span </span>' +
+                          '</div>' +
+                          '<div class="text">' +
+                            'Song: <code class="markdown" ' + textStyle + '>' + currentSongName + '</code>' +
+                          '</div>',
+                    duration: -1,
+                    class: 'short'
+                }
+                elapsingProgressNotification = mppNotificationSend(elapsingProgressNotificationSetup);
+            }
         }
         // pause if exceeds noteQuota
         if (!paused && !MPP.noteQuota.history[0]) {
@@ -1480,6 +1535,10 @@ let repeatingTasks = setInterval(function() {
         }
     }
     if (finishedSongName) {
+        if (elapsingProgressNotification) {
+            elapsingProgressNotification.close();
+            elapsingProgressNotification = null;
+        }
         mppChatSend(PRE_MSG + ' `' + BAR_DONE_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + quoteString(finishedSongName) + '`');
         finishedSongName = null;
     }
@@ -1530,6 +1589,11 @@ let clearSoundWarning = setInterval(function() {
                     autoplayOption = AUTOPLAY_RANDOM;
                     if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
                     console.log(PRE_MSG + " Online!");
+
+                    // let user know if they won't be able to see notifications
+                    if (!exists(MPP.Notification)) {
+                        mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
+                    }
 
                     // send notification with basic instructions
                     let starterNotification = {
