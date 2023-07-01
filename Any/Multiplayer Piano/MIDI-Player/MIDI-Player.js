@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.6.6";
+const VERSION = "3.6.7";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -830,7 +830,8 @@ let fileOrBlobToBase64 = function(raw, callback) {
 
 // Returns the max file size you can have
 let getMaxFileSize = function(lowestSizeBytes, maxSizeBytes) {
-    let getQuotaMax = (MPP && MPP.noteQuota && MPP.noteQuota.max) ? MPP.noteQuota.max : 0;
+    // if noteQuota is undefined, assume we have infinite quota
+    let getQuotaMax = MPP && (MPP.noteQuota ? (MPP.noteQuota.max ? MPP.noteQuota.max : 0) : QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED + 1);
     return ((getQuotaMax > QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED) ? maxSizeBytes : lowestSizeBytes);
 }
 
@@ -1663,7 +1664,7 @@ let repeatingTasks = setInterval(function() {
             }
         }
         // pause if exceeds noteQuota
-        if (!paused && !MPP.noteQuota.history[0]) {
+        if (!paused && exists(MPP.noteQuota) && exists(MPP.noteQuota.history) && !MPP.noteQuota.history[0]) {
             pause(true);
         }
     }

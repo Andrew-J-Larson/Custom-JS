@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.6
+// @version      3.6.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1531,7 +1531,7 @@ let repeatingTasks = setInterval(function() {
             }
         }
         // pause if exceeds noteQuota
-        if (!paused && !MPP.noteQuota.history[0]) {
+        if (!paused && exists(MPP.noteQuota) && exists(MPP.noteQuota.history) && !MPP.noteQuota.history[0]) {
             pause(true);
         }
     }
