@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.7
+// @version      3.6.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -155,7 +155,6 @@ const PREFIX_LENGTH = PREFIX.length;
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
 const ADDITIONAL_FEEDBACK_INFO = ", including links to other Minecraft songs as MIDIs or sheet music"; // must keep the comma
 const MOD_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
-const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
 const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
@@ -185,7 +184,7 @@ const MOD_COMMANDS = [
     ["art (choice)", "displays ascii art, no choice shows the choices"]
 ];
 const MOD_OWNER_COMMANDS = [
-    [MOD_ACTIVATOR, "toggles the public mod commands on or off"]
+    ["public", "toggles the public mod commands on or off"]
 ];
 const PRE_MSG = MOD_USERNAME;
 const PRE_HELP = PRE_MSG + " [Help]";
@@ -1470,7 +1469,7 @@ MPP.client.on('a', function (msg) {
             case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
             case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
             case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
-            case MOD_ACTIVATOR: publicCommands(userId, yourId); break;
+            case "public": publicCommands(userId, yourId); break;
         }
     }
 });

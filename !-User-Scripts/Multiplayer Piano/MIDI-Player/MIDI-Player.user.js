@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.7
+// @version      3.6.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -157,7 +157,6 @@ const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an o
 const PREFIX = "mp!";
 const PREFIX_LENGTH = PREFIX.length;
 const MOD_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
-const MOD_ACTIVATOR = MOD_KEYWORD.toLowerCase();
 const MOD_DISPLAYNAME = "MIDI Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
@@ -182,7 +181,7 @@ const MOD_COMMANDS = [
 ];
 const MOD_OWNER_COMMANDS = [
     ["loading", "toggles the MIDI loading progress audio, or text, on or off"],
-    [MOD_ACTIVATOR, "toggles the public mod commands on or off"]
+    ["public", "toggles the public mod commands on or off"]
 ];
 const PRE_MSG = MOD_USERNAME;
 const PRE_HELP = PRE_MSG + " [Help]";
@@ -1233,7 +1232,7 @@ let createWebpageElements = function() {
     // PUBLIC
     nextLocationX++;
     let publicDiv = document.createElement("div");
-    publicDiv.id = PRE_ELEMENT_ID + '-' + MOD_ACTIVATOR;
+    publicDiv.id = PRE_ELEMENT_ID + '-public';
     publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     publicDiv.classList.add("ugly-button");
     publicDiv.onclick = function() { publicCommands(true, true) }
@@ -1590,7 +1589,7 @@ MPP.client.on('a', function (msg) {
             case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
             case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
             case "loading": case "lo": loading(userId, yourId); break;
-            case MOD_ACTIVATOR: publicCommands(userId, yourId); break;
+            case "public": publicCommands(userId, yourId); break;
         }
     }
 });
