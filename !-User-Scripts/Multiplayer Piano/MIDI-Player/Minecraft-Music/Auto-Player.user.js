@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.9
+// @version      3.7.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -936,6 +936,10 @@ let mppNotificationSend = function (notificationObject) {
      - it's better to use single quotes around entire html
      - all properties are technically optional
     */
+    if (!exists(MPP.Notification) && exists(Notification)) {
+        // fix for older versions of MPP
+        MPP.Notification = Notification;
+    }
     if (exists(MPP.Notification)) {
         return new MPP.Notification(notificationObject);
     }
@@ -1591,7 +1595,7 @@ let clearSoundWarning = setInterval(function() {
                     console.log(PRE_MSG + " Online!");
 
                     // let user know if they won't be able to see notifications
-                    if (!exists(MPP.Notification)) {
+                    if (!exists(MPP.Notification) && !exists(Notification)) {
                         mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
                     }
 

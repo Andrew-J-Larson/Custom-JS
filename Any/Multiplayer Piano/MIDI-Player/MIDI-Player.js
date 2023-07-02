@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.6.9";
+const VERSION = "3.7.0";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -918,6 +918,10 @@ let mppNotificationSend = function (notificationObject) {
      - it's better to use single quotes around entire html
      - all properties are technically optional
     */
+    if (!exists(MPP.Notification) && exists(Notification)) {
+        // fix for older versions of MPP
+        MPP.Notification = Notification;
+    }
     if (exists(MPP.Notification)) {
         return new MPP.Notification(notificationObject);
     }
@@ -1769,7 +1773,7 @@ let clearSoundWarning = setInterval(function() {
                 console.log(PRE_MSG + " Online!");
 
                 // let user know if they won't be able to see notifications
-                if (!exists(MPP.Notification)) {
+                    if (!exists(MPP.Notification) && !exists(Notification)) {
                     mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
                 }
 
