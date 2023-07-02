@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.7.2";
+const VERSION = "3.7.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -22,7 +22,7 @@ const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g
                  /^https?:\/\/fleetway-mpp\.glitch\.me.*/g,
                  /^https?:\/\/([^/.]+\.)?mppclone\.com.*/g];
 const SUPPORT_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
-const LatestUserScriptJS_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
+const UPDATE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";
 // ==/JavaScript==
 
@@ -99,30 +99,31 @@ if (requestMPJS.status === 200) {
     throw new Error('[' + NAME + "] failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
 }
 let latestVersion = null;
-let requestUSJS = new XMLHttpRequest();
-requestUSJS.open('GET', LatestUserScriptJS_URL, false);
-requestUSJS.send(null);
-if (requestUSJS.status === 200) {
-    let type = requestUSJS.getResponseHeader('Content-Type');
+let updateURL = UPDATE_URL + '?' + Date.now();
+let requestVersion = new XMLHttpRequest();
+requestVersion.open('GET', updateURL, false);
+requestVersion.send(null);
+if (requestVersion.status === 200) {
+    let type = requestVersion.getResponseHeader('Content-Type');
     if (type.indexOf("text") !== 1) {
-        let stringUserScriptJS = requestUSJS.responseText;
-        let linesUserScriptJS = stringUserScriptJS.split('\n');
-        let currentLineUserScriptJS = 0;
+        let responseTextVersion = requestVersion.responseText;
+        let textLineVersion = responseTextVersion.split('\n');
+        let currentTextLineVersion = 0;
         let findLatestVersion = setInterval(function () {
             if (latestVersion) clearInterval(findLatestVersion);
             else {
-                let line = linesUserScriptJS[currentLineUserScriptJS];
+                let line = textLineVersion[currentTextLineVersion];
                 if (line.startsWith("// @version")) {
                     let lineSplitSpaces = line.split(' ');
                     latestVersion = lineSplitSpaces[lineSplitSpaces.length - 1];
                 }
-                currentLineUserScriptJS++;
+                currentTextLineVersion++;
             }
         }, 1);
     }
 } else {
     latestVersion = -1;
-    console.warning('[' + NAME + "] failed to load LatestUserScriptJS from " + LatestUserScriptJS_URL);
+    console.warning('[' + NAME + "] failed to find latest script version from " + UPDATE_URL);
     console.warning('[' + NAME + "] skipping version check");
 }
 
@@ -1693,7 +1694,7 @@ let waitForMPP = setInterval(function() {
         if (!exists(MPP.pressSustain) && !exists(MPP.releaseSustain)) {
             compatitbilityError = "Looks like this version of Multiplayer Piano is incompatible with this mod.<br>" +
                                   "Things likely won't work as expected!<br>" +
-                                  "Ask the website owner if they can update their version of Muliplayer Piano.<br><br>";
+                                  "Ask the website owner if they can update their version of Multiplayer Piano.<br><br>";
         }
         // create any buttons or other web page elements for mod
         createWebpageElements();
