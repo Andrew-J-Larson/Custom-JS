@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.0
+// @version      3.7.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -230,98 +230,6 @@ const ELEM_OFF = "display:none;";
 const ELEM_POS = "position:absolute;";
 const BTN_STYLE = ELEM_POS + ELEM_OFF;
 
-// Gets the correct note from MIDIPlayer to play on MPP
-const MIDIPlayerToMPPNote = {
-    "A0": "a-1",
-    "Bb0": "as-1",
-    "B0": "b-1",
-    "C1": "c0",
-    "Db1": "cs0",
-    "D1": "d0",
-    "Eb1": "ds0",
-    "E1": "e0",
-    "F1": "f0",
-    "Gb1": "fs0",
-    "G1": "g0",
-    "Ab1": "gs0",
-    "A1": "a0",
-    "Bb1": "as0",
-    "B1": "b0",
-    "C2": "c1",
-    "Db2": "cs1",
-    "D2": "d1",
-    "Eb2": "ds1",
-    "E2": "e1",
-    "F2": "f1",
-    "Gb2": "fs1",
-    "G2": "g1",
-    "Ab2": "gs1",
-    "A2": "a1",
-    "Bb2": "as1",
-    "B2": "b1",
-    "C3": "c2",
-    "Db3": "cs2",
-    "D3": "d2",
-    "Eb3": "ds2",
-    "E3": "e2",
-    "F3": "f2",
-    "Gb3": "fs2",
-    "G3": "g2",
-    "Ab3": "gs2",
-    "A3": "a2",
-    "Bb3": "as2",
-    "B3": "b2",
-    "C4": "c3",
-    "Db4": "cs3",
-    "D4": "d3",
-    "Eb4": "ds3",
-    "E4": "e3",
-    "F4": "f3",
-    "Gb4": "fs3",
-    "G4": "g3",
-    "Ab4": "gs3",
-    "A4": "a3",
-    "Bb4": "as3",
-    "B4": "b3",
-    "C5": "c4",
-    "Db5": "cs4",
-    "D5": "d4",
-    "Eb5": "ds4",
-    "E5": "e4",
-    "F5": "f4",
-    "Gb5": "fs4",
-    "G5": "g4",
-    "Ab5": "gs4",
-    "A5": "a4",
-    "Bb5": "as4",
-    "B5": "b4",
-    "C6": "c5",
-    "Db6": "cs5",
-    "D6": "d5",
-    "Eb6": "ds5",
-    "E6": "e5",
-    "F6": "f5",
-    "Gb6": "fs5",
-    "G6": "g5",
-    "Ab6": "gs5",
-    "A6": "a5",
-    "Bb6": "as5",
-    "B6": "b5",
-    "C7": "c6",
-    "Db7": "cs6",
-    "D7": "d6",
-    "Eb7": "ds6",
-    "E7": "e6",
-    "F7": "f6",
-    "Gb7": "fs6",
-    "G7": "g6",
-    "Ab7": "gs6",
-    "A7": "a6",
-    "Bb7": "as6",
-    "B7": "b6",
-    "C8": "c7"
-}
-
 // =============================================== VARIABLES
 
 let publicOption = false; // turn off the public mod commands if needed
@@ -331,6 +239,8 @@ let fileSizeLimitBytes = MIDI_FILE_SIZE_LIMIT_BYTES; // updates if user has more
 let currentRoom = null; // updates when it connects to room
 let chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 let endDelay; // used in multiline chats send commands
+
+let mppPianoNotes = null; // will eventually become an array of the available notes, once MPP loads
 
 let loadingOption = false; // controls if loading music should be on or not
 let loadingProgress = 0; // updates when loading files
@@ -905,10 +815,8 @@ let mppNotificationSend = function (notificationObject) {
      - it's better to use single quotes around entire html
      - all properties are technically optional
     */
-    if (!exists(MPP.Notification) && exists(Notification)) {
-        // fix for older versions of MPP
-        MPP.Notification = Notification;
-    }
+
+    // send notification
     if (exists(MPP.Notification)) {
         return new MPP.Notification(notificationObject);
     }
@@ -964,7 +872,7 @@ let stopSong = function(fullStop) {
         playerStop(true);
     }
     // need to release all keys that are playing at the moment
-    Object.values(MIDIPlayerToMPPNote).forEach(note => {
+    Object.values(mppPianoNotes).forEach(note => {
         MPP.release(note);
     });
 }
@@ -1512,8 +1420,8 @@ Player.on('midiEvent', function(event) {
 if (!currentEvent || currentEvent == '') console.log('FOUND NO NAME EVENT');
 //console.log(event.noteName);
     let currentNote = (currentEvent.indexOf("Note") == 0) ? (
-/* MAY NOT NEED */ //exists(event.noteName) ? MIDIPlayerToMPPNote[event.noteName] : null
-        MIDIPlayerToMPPNote[event.noteName]
+/* MAY NOT NEED */ //exists(event.noteName) ? mppPianoNotes[event.noteName] : null
+        mppPianoNotes[event.noteName]
     ) : null;
     if (currentEvent == "Note on") {
         let mppNoteVelocity = (event.velocity ? event.velocity/100 : 0);
@@ -1735,67 +1643,87 @@ let slowRepeatingTasks = setInterval(function() {
     }
 }, SLOW_DELAY);
 
-// Automatically turns off the sound warning (mainly for autoplay)
-let playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
-let playButtonCheckCounter = 0;
-let clearSoundWarning = setInterval(function() {
-    let playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
-        clearInterval(clearSoundWarning);
+// wait for the client to come online, and piano keys to be fully loaded
+let waitForMPP = setInterval(function() {
+    let MPP_Fully_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.piano) && exists(MPP.piano.keys);
+    if (MPP_Fully_Loaded && mppGetRoom()) {
+        clearInterval(waitForMPP);
 
-        // only turn off sound warning if it hasn't already been turned off
-        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
+        // initialize mod settings and elements
+        currentRoom = mppGetRoom();
+        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
+            // loadingOption = true;
+        }
+        // attempt to create notification endpoint, if one doesn't already exist
+        if (!exists(MPP.Notification)) {
+            // 2023-07-02T06:45:05Z - code via https://github.com/LapisHusky/mppclone/blob/main/client/script.js
+            MPP.Notification=function(t){if(this instanceof MPP.Notification==!1)throw"yeet";EventEmitter.call(this);t=t||{};this.id="Notification-"+(t.id||Math.random()),this.title=t.title||"",this.text=t.text||"",this.html=t.html||"",this.target=$(t.target||"#piano"),this.duration=t.duration||3e4,this.class=t.class||"classic";var i=this,e=$("#"+this.id);return e.length>0&&e.remove(),this.domElement=$('<div class="notification"><div class="notification-body"><div class="title"></div><div class="text"></div></div><div class="x">X</div></div>'),this.domElement[0].id=this.id,this.domElement.addClass(this.class),this.domElement.find(".title").text(this.title),this.text.length>0?this.domElement.find(".text").text(this.text):this.html instanceof HTMLElement?this.domElement.find(".text")[0].appendChild(this.html):this.html.length>0&&this.domElement.find(".text").html(this.html),document.body.appendChild(this.domElement.get(0)),this.position(),this.onresize=function(){i.position()},window.addEventListener("resize",this.onresize),this.domElement.find(".x").click((function(){i.close()})),this.duration>0&&setTimeout((function(){i.close()}),this.duration),this},mixin(MPP.Notification.prototype,EventEmitter.prototype),MPP.Notification.prototype.constructor=MPP.Notification,MPP.Notification.prototype.position=function(){var t=this.target.offset(),i=t.left-this.domElement.width()/2+this.target.width()/4,e=t.top-this.domElement.height()-8,o=this.domElement.width();i+o>$("body").width()&&(i-=i+o-$("body").width()),i<0&&(i=0),this.domElement.offset({left:i,top:e})},MPP.Notification.prototype.close=function(){var t=this;window.removeEventListener("resize",this.onresize),this.domElement.fadeOut(500,(function(){t.domElement.remove(),t.emit("close")}))};
+        }
+        // let user know if they won't be able to see notifications
+        if (!exists(MPP.Notification)) {
+            mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
+        }
+        // setup midi player needs
+        mppPianoNotes = {A0:"a-1",Bb0:"as-1",B0:"b-1",C1:"c0",Db1:"cs0",D1:"d0",Eb1:"ds0",E1:"e0",F1:"f0",Gb1:"fs0",G1:"g0",Ab1:"gs0",A1:"a0",Bb1:"as0",B1:"b0",C2:"c1",Db2:"cs1",D2:"d1",Eb2:"ds1",E2:"e1",F2:"f1",Gb2:"fs1",G2:"g1",Ab2:"gs1",A2:"a1",Bb2:"as1",B2:"b1",C3:"c2",Db3:"cs2",D3:"d2",Eb3:"ds2",E3:"e2",F3:"f2",Gb3:"fs2",G3:"g2",Ab3:"gs2",A3:"a2",Bb3:"as2",B3:"b2",C4:"c3",Db4:"cs3",D4:"d3",Eb4:"ds3",E4:"e3",F4:"f3",Gb4:"fs3",G4:"g3",Ab4:"gs3",A4:"a3",Bb4:"as3",B4:"b3",C5:"c4",Db5:"cs4",D5:"d4",Eb5:"ds4",E5:"e4",F5:"f4",Gb5:"fs4",G5:"g4",Ab5:"gs4",A5:"a4",Bb5:"as4",B5:"b4",C6:"c5",Db6:"cs5",D6:"d5",Eb6:"ds5",E6:"e5",F6:"f5",Gb6:"fs5",G6:"g5",Ab6:"gs5",A6:"a5",Bb6:"as5",B6:"b5",C7:"c6",Db7:"cs6",D7:"d6",Eb7:"ds6",E7:"e6",F7:"f6",Gb7:"fs6",G7:"g6",Ab7:"gs6",A7:"a6",Bb7:"as6",B7:"b6",C8:"c7"};
+        //mppPianoNotes = Object.keys(MPP.piano.keys);
+        // won't work right if press/release sustain keys aren't available
+        let compatitbilityError = '';
+        if (!exists(MPP.pressSustain) && !exists(MPP.releaseSustain)) {
+            compatitbilityError = "Looks like this version of Multiplayer Piano is incompatible with this mod.<br>" + 
+                                  "Things likely won't work as expected!<br>" + 
+                                  "Ask the website owner if they can update their version of Muliplayer Piano.<br><br>";
+        }
+        // create any buttons or other web page elements for mod
+        createWebpageElements();
+        console.log(PRE_MSG + " Online!");
 
-        // wait for the client to come online
-        let waitForMPP = setInterval(function() {
-            let MPP_Client_Loaded = exists(MPP) && exists(MPP.client);
-            if (MPP_Client_Loaded && mppGetRoom()) {
-                clearInterval(waitForMPP);
+        // check if there's an update available
+        let latestVersionFound = setInterval(function () {
+            if (latestVersion) {
+                clearInterval(latestVersionFound);
 
-                currentRoom = mppGetRoom();
-                if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
-                    loadingOption = true;
-                }
-                createWebpageElements();
-                console.log(PRE_MSG + " Online!");
-
-                // let user know if they won't be able to see notifications
-                    if (!exists(MPP.Notification) && !exists(Notification)) {
-                    mppChatSend(PRE_MSG + " This version of Multiplayer Piano doesn't support notifications, please check console for the notification.");
-                }
-
-                // need a little delay to wait for button to position itself
-                setTimeout(function() {
-                    // send notification with basic instructions
-                    let starterNotification = {
-                        target: "#" + PRE_TOGGLER_ID,
-                        title: MOD_DISPLAYNAME + " (mod created by " + AUTHOR + ") [v" + VERSION + "]",
-                        html: `Thanks for using my mod!<br><br>Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
-                        duration: NOTIFICATION_DURATION
-                    }
-                    mppNotificationSend(starterNotification);
-                }, TENTH_OF_SECOND);
-
-                // check if there's an update available
-                let latestVersionFound = setInterval(function () {
-                    if (latestVersion) {
-                        clearInterval(latestVersionFound);
-
-                        if (latestVersion != -1) {
-                            if (latestVersion != VERSION) {
-                                // make sure latestVersion is newer (prevent old updates from sending out false message about an update available)
-                                let versionRegex = /[0-9.]+/g; // this will not display a notification if a beta was to ever be published
-                                let latestVersionInt = parseInt((latestVersion.match(versionRegex))[0].replaceAll('.',''));
-                                let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.',''));
-                                if (latestVersionInt > currentVersionInt) {
-                                    mppChatSend(PRE_MSG + ' New version available (v' + latestVersion + ')! Please check the website: ' + SUPPORT_URL);
-                                }
-                            }
+                let starterNotificationDuration = NOTIFICATION_DURATION;
+                let newVersionAvailable = '';
+                if (latestVersion != -1) {
+                    if (latestVersion != VERSION) {
+                        // make sure latestVersion is newer (prevent old updates from sending out false notification about an update available)
+                        let versionRegex = /[0-9.]+/g; // this will not display a notification if a beta was to ever be published
+                        let latestVersionInt = parseInt((latestVersion.match(versionRegex))[0].replaceAll('.',''));
+                        let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.',''));
+                        if (latestVersionInt > currentVersionInt) {
+                            starterNotificationDuration = -1; // making sticky so user will for sure know that there's a new update
+                            newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br><br>Please check the website!<br><a href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
                         }
                     }
-                }, SLOW_CHAT_DELAY);
+                }
+
+                // send notification with basic instructions, and if there's an update include info on that too
+                let starterNotificationSetup = {
+                    target: "#" + PRE_TOGGLER_ID,
+                    title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
+                    html: compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br><br>Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                    duration: starterNotificationDuration
+                };
+                let starterNotification = mppNotificationSend(starterNotificationSetup);
+                // need a little delay to wait for toggler button to position itself, to correctly position notifications with it
+                setTimeout(function() {
+                    starterNotification.position();
+                }, TENTH_OF_SECOND);
             }
         }, TENTH_OF_SECOND);
+
+        // Automatically turns off the sound warning (mainly for autoplay)
+        let playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
+        let playButtonCheckCounter = 0;
+        let clearSoundWarning = setInterval(function() {
+            let playButton = document.querySelector("#sound-warning button");
+            if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
+                clearInterval(clearSoundWarning);
+
+                // only turn off sound warning if it hasn't already been turned off
+                if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
+            }
+            playButtonCheckCounter++;
+        }, TENTH_OF_SECOND);
     }
-    playButtonCheckCounter++;
 }, TENTH_OF_SECOND);
