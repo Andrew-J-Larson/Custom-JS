@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.6.8
+// @version      3.6.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -143,7 +143,7 @@ const LIMITED_PLAYERS = []; // empty for now
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
 const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
-const PERCUSSION_CHANNELS = [10, 17]; // (DON'T CHANGE)
+const PERCUSSION_CHANNELS = [10, 11]; // (DON'T CHANGE)
 
 // Bot constant settings
 const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the mod will set the room to by default

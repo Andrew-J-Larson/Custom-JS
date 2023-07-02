@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.6.8";
+const VERSION = "3.6.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -153,7 +153,7 @@ const LIMITED_PLAYERS = []; // empty for now
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
-const PERCUSSION_CHANNELS = [10, 17]; // (DON'T CHANGE)
+const PERCUSSION_CHANNELS = [10, 11]; // (DON'T CHANGE)
 //const QUOTA_SIZE_STANDARD_MAX_LOBBY = 240;
 //const QUOTA_SIZE_STANDARD_MAX_ROOM_UNOWNED = 1200;
 const QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED = 1800; // used to determine users that can play black midi
