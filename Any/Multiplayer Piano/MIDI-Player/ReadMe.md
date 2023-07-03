@@ -12,7 +12,7 @@
    - Safari Keyboard Shortcut:
      - `Option + Command + C`
 2. Copy the code from this script:
-   - [MIDI-Player.js](https://github.com/TheAlienDrew/Custom-JS/blob/master/Any/Multiplayer%20Piano/MIDI-Player/MIDI-Player.js)
+   - [MIDI-Player.js](https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/Any/Multiplayer%20Piano/MIDI-Player/MIDI-Player.js)
 3. Paste the code into the browser's dev tools console, and press enter.
 
 You'll know it worked if you can see the `MIDI Player` button with the other buttons.
