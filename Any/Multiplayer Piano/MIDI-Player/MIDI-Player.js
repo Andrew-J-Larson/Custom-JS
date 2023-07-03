@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.7.4";
+const VERSION = "3.7.5";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -154,7 +154,7 @@ const LIMITED_PLAYERS = []; // empty for now
 
 // Bot constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
-const PERCUSSION_CHANNELS = [10, 11]; // (DON'T CHANGE)
+const PERCUSSION_CHANNELS = [10/*, 11*/]; // (DON'T CHANGE) TODO: figure out how General MIDI Level 2 works with channel 11
 //const QUOTA_SIZE_STANDARD_MAX_LOBBY = 240;
 //const QUOTA_SIZE_STANDARD_MAX_ROOM_UNOWNED = 1200;
 const QUOTA_SIZE_STANDARD_MAX_ROOM_OWNED = 1800; // used to determine users that can play black midi
@@ -1430,7 +1430,7 @@ Player.on('midiEvent', function(event) {
 
     // disable percussion instrument channels
     if (!percussionOption &&
-         (event.channel == PERCUSSION_CHANNELS[0] || event.channel == PERCUSSION_CHANNELS[1])) return;
+         (event.channel == PERCUSSION_CHANNELS[0] /*|| event.channel == PERCUSSION_CHANNELS[1]*/)) return;
 
     // check event for note on/off and controller changes (sustain)
     let currentEvent = event.name;
@@ -1692,8 +1692,8 @@ let waitForMPP = setInterval(function() {
         // won't work right if press/release sustain keys aren't available
         let compatitbilityError = '';
         if (!exists(MPP.pressSustain) && !exists(MPP.releaseSustain)) {
-            compatitbilityError = "Looks like this version of Multiplayer Piano is incompatible with this mod.<br>" + 
-                                  "Things likely won't work as expected!<br>" + 
+            compatitbilityError = "Looks like this version of Multiplayer Piano is incompatible with this mod.<br>" +
+                                  "Things likely won't work as expected!<br>" +
                                   "Ask the website owner if they can update their version of Multiplayer Piano.<br><br>";
         }
         // create any buttons or other web page elements for mod
@@ -1706,7 +1706,7 @@ let waitForMPP = setInterval(function() {
         let mppAdsWebsite = "multiplayerpiano.com";
         let mppAdsWebsiteNotice = '';
         if (window.location.hostname == mppAdsWebsite) {
-            mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" + 
+            mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" +
                                   ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
                                   ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
         }
