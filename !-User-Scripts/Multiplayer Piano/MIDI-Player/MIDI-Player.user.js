@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.3
+// @version      3.7.4
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1693,6 +1693,17 @@ let waitForMPP = setInterval(function() {
         createWebpageElements();
         console.log(PRE_MSG + " Online!");
 
+        // notice for those using the AD riddled website
+        let mppcloneOfficialMain = "mppclone.com";
+        let mppcloneOfficialMirror = "www.multiplayerpiano.org";
+        let mppAdsWebsite = "multiplayerpiano.com";
+        let mppAdsWebsiteNotice = '';
+        if (window.location.hostname == mppAdsWebsite) {
+            mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" +
+                                  ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
+                                  ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
+        }
+
         // check if there's an update available
         let latestVersionFound = setInterval(function () {
             if (latestVersion) {
@@ -1708,7 +1719,10 @@ let waitForMPP = setInterval(function() {
                         let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.',''));
                         if (latestVersionInt > currentVersionInt) {
                             starterNotificationDuration = -1; // making sticky so user will for sure know that there's a new update
-                            newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br><br>Please check the website!<br><a href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
+                            newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br>` +
+                                                  `<br>` +
+                                                  `Please check the website!<br>` +
+                                                  `<a href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
                         }
                     }
                 }
@@ -1717,7 +1731,12 @@ let waitForMPP = setInterval(function() {
                 let starterNotificationSetup = {
                     target: "#" + PRE_TOGGLER_ID,
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
-                    html: compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br><br>Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br><br>If you need any help using the mod, try using the command:<br> ${LIST_BULLET}<code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                    html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
+                          `<br>` +
+                          `Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br>` +
+                          `<br>` +
+                          `If you need any help using the mod, try using the command:<br>` +
+                          ` ${LIST_BULLET} <code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
                     duration: starterNotificationDuration
                 };
                 let starterNotification = mppNotificationSend(starterNotificationSetup);
