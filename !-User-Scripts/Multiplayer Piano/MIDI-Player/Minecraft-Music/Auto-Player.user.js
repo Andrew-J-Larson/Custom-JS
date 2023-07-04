@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.8.0
+// @version      3.8.1
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -166,8 +166,10 @@ const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
 const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made by a nerd in javascript. Special thanks to grimmdude for https://github.com/grimmdude/MidiPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
-const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album ( https://c418.bandcamp.com/album/minecraft-volume-alpha ).";
-const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book ( https://www.google.com/books/edition/_/ywHUngEACAAJ ).";
+const MOD_MUSIC_CREDIT_URL = "https://c418.bandcamp.com/album/minecraft-volume-alpha";
+const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album: ";
+const MOD_MIDI_CREDIT_URL = "https://www.google.com/books/edition/_/ywHUngEACAAJ";
+const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book: ";
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help [command]", "displays info about command, but no command entered shows the commands"],
@@ -229,55 +231,55 @@ const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 
 // Songs: names, and MIDIs as base64 URIs
-const SONG_NAMES = ["01 - Key",
-                    "02 - Door",
-                    "03 - Subwoofer Lullaby",
-                    "04 - Death",
-                    "05 - Living Mice",
-                    "06 - Moog City",
-                    "07 - Haggstrom",
-                    "08 - Minecraft",
-                    "", // 09 - Oxygene (NOT INCLUDED)
-                    "10 - Equinoxe",
-                    "11 - Mice on Venus",
-                    "12 - Dry Hands",
-                    "13 - Wet Hands",
-                    "14 - Clark",
-                    "15 - Chris",
-                    "", // 16 - Thirteen (NOT INCLUDED)
-                    "17 - Excuse",
-                    "18 - Sweden",
-                    "", // 19 - Cat (NOT INCLUDED)
-                    "", // 20 - Dog (NOT INCLUDED)
-                    "21 - Danny",
-                    "22 - Beginning",
-                    "23 - Droopy Likes Ricochet",
-                    "" // 24 - Droopy Likes Your Face (NOT INCLUDED)
+const SONG_NAMES = ["01: Key - C418",
+                    "02: Door - C418",
+                    "03: Subwoofer Lullaby - C418",
+                    "04: Death - C418",
+                    "05: Living Mice - C418",
+                    "06: Moog City - C418",
+                    "07: Haggstrom - C418",
+                    "08: Minecraft - C418",
+                    "", // 09: Oxygene - C418 (NOT INCLUDED)
+                    "10: Equinoxe - C418",
+                    "11: Mice on Venus - C418",
+                    "12: Dry Hands - C418",
+                    "13: Wet Hands - C418",
+                    "14: Clark - C418",
+                    "15: Chris - C418",
+                    "", // 16: Thirteen - C418 (NOT INCLUDED)
+                    "17: Excuse - C418",
+                    "18: Sweden - C418",
+                    "", // 19: Cat - C418 (NOT INCLUDED)
+                    "", // 20: Dog - C418 (NOT INCLUDED)
+                    "21: Danny - C418",
+                    "22: Beginning - C418",
+                    "23: Droopy Likes Ricochet - C418",
+                    "" // 24: Droopy Likes Your Face - C418 (NOT INCLUDED)
                    ];
-const SONG_MIDIS = ["", // 01 - Key (DATAURI REMOVED FOR GITHUB)
-                    "", // 03 - Subwoofer Lullaby (DATAURI REMOVED FOR GITHUB)
-                    "", // 02 - Door (DATAURI REMOVED FOR GITHUB)
-                    "", // 04 - Death (DATAURI REMOVED FOR GITHUB)
-                    "", // 05 - Living Mice (DATAURI REMOVED FOR GITHUB)
-                    "", // 06 - Moog City (DATAURI REMOVED FOR GITHUB)
-                    "", // 07 - Haggstrom (DATAURI REMOVED FOR GITHUB)
-                    "", // 08 - Minecraft (DATAURI REMOVED FOR GITHUB)
-                    "", // 09 - Oxygene (NOT INCLUDED)
-                    "", // 10 - Equinoxe (DATAURI REMOVED FOR GITHUB)
-                    "", // 11 - Mice on Venus (DATAURI REMOVED FOR GITHUB)
-                    "", // 12 - Dry Hands (DATAURI REMOVED FOR GITHUB)
-                    "", // 13 - Wet Hands (DATAURI REMOVED FOR GITHUB)
-                    "", // 14 - Clark (DATAURI REMOVED FOR GITHUB)
-                    "", // 15 - Chris (DATAURI REMOVED FOR GITHUB)
-                    "", // 16 - Thirteen (NOT INCLUDED)
-                    "", // 17 - Excuse (DATAURI REMOVED FOR GITHUB)
-                    "", // 18 - Sweden (DATAURI REMOVED FOR GITHUB)
-                    "", // 19 - Cat (NOT INCLUDED)
-                    "", // 20 - Dog (NOT INCLUDED)
-                    "", // 21 - Danny (DATAURI REMOVED FOR GITHUB)
-                    "", // 22 - Beginning (DATAURI REMOVED FOR GITHUB)
-                    "", // 23 - Droopy Likes Ricochet (DATAURI REMOVED FOR GITHUB)
-                    "" // 24 - Droopy Likes Your Face (NOT INCLUDED)
+const SONG_MIDIS = ["", // 01: Key - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 02: Door - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 03: Subwoofer Lullaby - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 04: Death - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 05: Living Mice - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 06: Moog City - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 07: Haggstrom - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 08: Minecraft - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 09: Oxygene - C418 (NOT INCLUDED)
+                    "", // 10: Equinoxe - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 11: Mice on Venus - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 12: Dry Hands - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 13: Wet Hands - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 14: Clark - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 15: Chris - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 16: Thirteen - C418 (NOT INCLUDED)
+                    "", // 17: Excuse - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 18: Sweden - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 19: Cat - C418 (NOT INCLUDED)
+                    "", // 20: Dog - C418 (NOT INCLUDED)
+                    "", // 21: Danny - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 22: Beginning - C418 (DATAURI REMOVED FOR GITHUB)
+                    "", // 23: Droopy Likes Ricochet - C418 (DATAURI REMOVED FOR GITHUB)
+                    "" // 24: Droopy Likes Your Face - C418 (NOT INCLUDED)
                    ];
 const SONG_LENGTH = SONG_MIDIS.length;
 
@@ -1076,7 +1078,7 @@ let help = function(command, userId, yourId) {
 }
 let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
-    mppChatMultiSend([MOD_MUSIC_CREDIT, MOD_MIDI_CREDIT], null, chatDelay);
+    mppChatMultiSend([(MOD_MUSIC_CREDIT + MOD_MUSIC_CREDIT_URL), (MOD_MIDI_CREDIT + MOD_MIDI_CREDIT_URL)], null, chatDelay);
 }
 let link = function() {
     mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
@@ -1346,7 +1348,7 @@ Player.on('midiEvent', function(event) {
 Player.on('endOfFile', function() {
     // Do something when end of the file has been reached.
     ended = true;
-    
+
     // do autoplay
     if (!repeatOption && autoplayOption != AUTOPLAY_OFF && !stopped) {
         // nice delay before playing next song
@@ -1605,7 +1607,9 @@ let waitForMPP = setInterval(function() {
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
                     html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
-                          `Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br>` +
+                          MOD_MUSIC_CREDIT + `<a href="${MOD_MUSIC_CREDIT_URL}">${MOD_MUSIC_CREDIT_URL}</a><br>` +
+                          `<br>` +
+                          MOD_MIDI_CREDIT + `<a href="${MOD_MIDI_CREDIT_URL}">${MOD_MIDI_CREDIT_URL}</a><br>` +
                           `<br>` +
                           `If you need any help using the mod, try using the command:<br>` +
                           ` ${LIST_BULLET} <code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,

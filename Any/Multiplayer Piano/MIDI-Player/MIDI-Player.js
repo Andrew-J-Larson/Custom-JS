@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.8.0";
+const VERSION = "3.8.1";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1460,7 +1460,7 @@ Player.on('midiEvent', function(event) {
 Player.on('endOfFile', function() {
     // Do something when end of the file has been reached.
     ended = true;
-    
+
     // do repeat
     if (repeatOption && !stopped && exists(currentSongName) && exists(currentSongData)) {
         // nice delay before playing song again
