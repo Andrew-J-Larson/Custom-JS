@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.8.4
+// @version      3.9.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -644,6 +644,7 @@ let chatDelay = CHAT_DELAY; // for how long to wait until posting another messag
 let endDelay; // used in multiline chats send commands
 
 let mppPianoNotes = null; // will eventually become an array of the available notes, once MPP loads
+let mppNoteBank = null; // this will be an array of integers tracking note presses/releases to fix overlapping notes on the same key
 let sustainState = { // needed for sustain tracking
     on: false,
     turnBackOn: false
@@ -1341,26 +1342,28 @@ Player.on('midiEvent', function(event) {
 
     // check event for note on/off and controller changes (sustain)
     let currentEvent = event.name;
-    let currentNote = exists(event.noteNumber) ? mppPianoNotes[event.noteNumber - 21] : null;
-    // Note on
-    if (currentEvent == "Note on") {
-        let mppNoteVelocity = (event.velocity ? event.velocity/127 : 0);
-        MPP.press(currentNote, mppNoteVelocity);
-        if (!sustainOption || event.velocity == 0) MPP.release(currentNote);
-    }
-    // Note off
-    if (sustainOption && (currentEvent == "Note off")) {
-        MPP.release(currentNote);
-    }
-    // Controller Change
-    if (currentEvent == "Controller Change") {
+    let currentNote = exists(event.noteNumber) &&
+                       (event.noteNumber >= 21) && (event.noteNumber <= 108)
+                        ? event.noteNumber : null;
+    let noteIndex = currentNote ? (currentNote - 21) : -1;
+    if (currentEvent == "Note on" && event.velocity) {
+        // Note on
+        MPP.press(mppPianoNotes[noteIndex], event.velocity/127);
+        mppNoteBank[currentNote]++;
+    } else if (currentEvent == "Note off" || (currentNote && !event.velocity)) {
+        // Note off
+        if (!sustainOption) {
+            // only if the note bank shows we have 1 or less, should we release a key
+            if (mppNoteBank[currentNote] <= 1) MPP.release(mppPianoNotes[noteIndex]);
+        }
+        mppNoteBank[currentNote]--;
+    } else if (currentEvent == "Controller Change") {
+        // Controller Change
         if (event.noteNumber == 64) {
             if (event.velocity > 20) {
                 MPP.pressSustain();
-                sustainState.on = true;
             } else {
                 MPP.releaseSustain();
-                sustainState.on = false;
             }
         }
     }
@@ -1579,6 +1582,7 @@ let waitForMPP = setInterval(function() {
         }
         // setup midi player needs
         mppPianoNotes = Object.keys(MPP.piano.keys);
+        mppNoteBank = Array.apply(null, Array(mppPianoNotes.length)).map(function () { return 0 });
         // won't work right if press/release sustain keys aren't available
         let compatitbilityError = '';
         if (!exists(MPP.pressSustain) && !exists(MPP.releaseSustain)) {
