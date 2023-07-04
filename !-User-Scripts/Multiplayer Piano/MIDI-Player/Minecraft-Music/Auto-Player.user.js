@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.7
+// @version      3.7.8
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -992,6 +992,7 @@ let getAutoplayValue = function(choice) {
         case "false": case "off": case "no": case "0": valid = 0; break;
         case "random": case "1": valid = 1; break;
         case "ordered": case "2": valid = 2; break;
+        default: valid = -1; break;
     }
     return valid;
 }
@@ -1199,9 +1200,13 @@ let song = function() {
 }
 let album = function() {
     // show list of songs available
+    let songNamesMonospace = JSON.parse(JSON.stringify(SONG_NAMES));
+    songNamesMonospace.forEach(song => {
+        song = song ? ('`' + song + '`') : song;
+    });
     mppChatSend(PRE_ALBUM);
-    mppChatMultiSend(SONG_NAMES, null, chatDelay);
-}
+    mppChatMultiSend(songNamesMonospace, null, chatDelay);
+};
 let repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
@@ -1228,7 +1233,7 @@ let autoplay = function(choice) {
     else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_SETTINGS + " Autoplay is already set to " + currentAutoplay);
     else {
         let valid = getAutoplayValue(choice);
-        if (valid) {
+        if (valid > -1) {
             stopped = false;
             toggleAutoplay(valid);
             mppChatSend(PRE_SETTINGS + " Autoplay set to " + getAutoplayString(valid));
@@ -1584,7 +1589,7 @@ let waitForMPP = setInterval(function() {
 
                 // send notification with basic instructions, and if there's an update include info on that too
                 let starterNotificationSetup = {
-                    target: "#chat",
+                    target: "#new-room-btn",
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
                     html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
