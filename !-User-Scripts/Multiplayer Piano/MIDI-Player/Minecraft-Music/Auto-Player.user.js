@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.6
+// @version      3.7.7
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -932,29 +932,26 @@ let openSong = function(songIndex) {
 // Plays song in player
 let playSong = function(songIndex) {
     if (openSong(songIndex)) {
-        // nice delay before next song
-        setTimeout(function() {
-            // play song
-            Player.play();
-            playerPlay();
-            let timeoutRecorder = 0;
-            let showSongName = setInterval(function() {
-                if (Player.isPlaying()) {
-                    clearInterval(showSongName);
+        // play song
+        Player.play();
+        playerPlay();
+        let timeoutRecorder = 0;
+        let showSongName = setInterval(function() {
+            if (Player.isPlaying()) {
+                clearInterval(showSongName);
 
-                    // changes song
-                    previousSongIndex = currentSongIndex;
-                    currentSongIndex = songIndex;
-                    currentSongName = SONG_NAMES[songIndex];
-                    currentSongEventsPlayed = Player.eventsPlayed();
-                    currentSongTotalEvents = Player.getTotalEvents();
+                // changes song
+                previousSongIndex = currentSongIndex;
+                currentSongIndex = songIndex;
+                currentSongName = SONG_NAMES[songIndex];
+                currentSongEventsPlayed = Player.eventsPlayed();
+                currentSongTotalEvents = Player.getTotalEvents();
 
-                    mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
-                } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
-                    clearInterval(showSongName);
-                } else timeoutRecorder++;
-            }, 1);
-        }, (autoplayOption != AUTOPLAY_OFF) ? REPEAT_DELAY : 0);
+                mppChatSend(PRE_MSG + ' `' + BAR_NOW_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
+            } else if (timeoutRecorder == SONG_NAME_TIMEOUT) {
+                clearInterval(showSongName);
+            } else timeoutRecorder++;
+        }, 1);
     }
 }
 
@@ -962,16 +959,20 @@ let playSong = function(songIndex) {
 let playRandom = function() {
     let newSongIndex = currentSongIndex;
     // ignore empty elements
-    let testName = "";
-    while (testName == "" || newSongIndex == currentSongIndex) {
-        if (autoplayOption == AUTOPLAY_RANDOM || autoplayOption == AUTOPLAY_OFF) newSongIndex = randomNumber(0, SONG_LENGTH - 1);
-        else if (autoplayOption == AUTOPLAY_ORDERED) {
-            newSongIndex = currentSongIndex + 1;
-            if (newSongIndex == SONG_LENGTH) newSongIndex = 0;
+    let findNewSong = setInterval(function() {
+        if (newSongIndex != currentSongIndex && SONG_NAMES[newSongIndex]) {
+            clearInterval(findNewSong);
+
+            playSong(newSongIndex);
+        } else {
+            if (autoplayOption == AUTOPLAY_RANDOM || autoplayOption == AUTOPLAY_OFF) newSongIndex = randomNumber(0, SONG_LENGTH - 1);
+            else if (autoplayOption == AUTOPLAY_ORDERED) {
+                if (newSongIndex == null) newSongIndex = -1;
+                newSongIndex++;
+                if (newSongIndex == SONG_LENGTH) newSongIndex = 0;
+            }
         }
-        testName = "" + SONG_NAMES[newSongIndex];
-    }
-    playSong(newSongIndex);
+    }, 1);
 }
 
 // Get the string/value to the autoplay option
@@ -1147,8 +1148,7 @@ let skip = function() {
     if (autoplayOption != AUTOPLAY_OFF) {
         if (ended) mppChatSend(NO_SONG);
         else {
-            mppChatSend("Skipped song");
-            stopSong(true);
+            playRandom();
         }
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
 }
@@ -1228,7 +1228,7 @@ let autoplay = function(choice) {
     else if (getAutoplayValue(choice) == autoplayOption) mppChatSend(PRE_SETTINGS + " Autoplay is already set to " + currentAutoplay);
     else {
         let valid = getAutoplayValue(choice);
-        if (valid != null) {
+        if (valid) {
             stopped = false;
             toggleAutoplay(valid);
             mppChatSend(PRE_SETTINGS + " Autoplay set to " + getAutoplayString(valid));
@@ -1329,7 +1329,19 @@ Player.on('midiEvent', function(event) {
 Player.on('endOfFile', function() {
     // Do something when end of the file has been reached.
     ended = true;
-    playerStop();
+    
+    // do autoplay
+    if (!repeatOption && autoplayOption != AUTOPLAY_OFF && !stopped) {
+        // nice delay before playing next song
+        setTimeout(function() {playRandom()}, REPEAT_DELAY);
+    }
+    // do repeat
+    else if (repeatOption && !stopped && exists(currentSongIndex)) {
+        // nice delay before playing song again
+        setTimeout(function() {playSong(currentSongIndex)}, REPEAT_DELAY);
+    }
+    // stop
+    else playerStop();
 });
 
 MPP.client.on('a', function (msg) {
@@ -1442,12 +1454,12 @@ let repeatingTasks = setInterval(function() {
                     elapsingProgressNotification.close();
                     elapsingProgressNotification = null;
                 }
-                let textColor = (MPP.client.user.color) ? MPP.client.user.color : '#0F0'; // fall back color just in case
+                let textColor = (MPP.client.user && MPP.client.user.color) ? MPP.client.user.color : '#0F0'; // fall back color just in case
                 let textStyle = 'style="color: ' + textColor + ' !important"'
                 let barProgress = getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
                 let elapsingProgressNotificationSetup = {
                     html: '<div class="title" style="display: block !important">' +
-                            '[<span ' + textStyle + '>' + barProgress + '</span>]<span </span>' +
+                            '[<span ' + textStyle + '>' + barProgress + '</span>]<span>  </span>' +
                           '</div>' +
                           '<div class="text">' +
                             'Song: <code class="markdown" ' + textStyle + '>' + currentSongName + '</code>' +
@@ -1471,19 +1483,6 @@ let repeatingTasks = setInterval(function() {
         mppChatSend(PRE_MSG + ' `' + BAR_DONE_PLAYING + '` ' + BAR_ARROW_RIGHT + ' `' + finishedSongName + '`');
         finishedSongName = null;
     }
-    // do autoplay
-    if (!repeatOption && autoplayOption != AUTOPLAY_OFF && ended && !stopped) {
-        ended = false;
-        // nice delay before playing next song
-        setTimeout(function() {playRandom()}, REPEAT_DELAY);
-    }
-    // do repeat
-    else if (repeatOption && ended && !stopped && exists(currentSongIndex)) {
-        ended = false;
-        // nice delay before playing song again
-        playSong(currentSongIndex);
-        setTimeout(function() {playSong(currentSongIndex)}, REPEAT_DELAY);
-    }
 }, 1);
 let slowRepeatingTasks = setInterval(function() {
     // do background tab fix
@@ -1495,18 +1494,39 @@ let slowRepeatingTasks = setInterval(function() {
     }
 }, SLOW_DELAY);
 
+// Automatically turns off the sound warning (mainly for autoplay)
+let triedClickingPlayButton = false;
+let playButtonMaxAttempts = 10; // it'll try to find the button this many times, before continuing anyways
+let playButtonCheckCounter = 0;
+let clearSoundWarning = setInterval(function() {
+    let playButton = document.querySelector("#sound-warning button");
+    if (exists(playButton) || playButtonCheckCounter >= playButtonMaxAttempts) {
+        clearInterval(clearSoundWarning);
+
+        // only turn off sound warning if it hasn't already been turned off
+        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") {
+            playButton.click();
+            setTimeout(function() {
+                // delay by a little bit to let click register
+                triedClickingPlayButton = true;
+            }, HALF_SECOND);
+        }
+    } else playButtonCheckCounter++;
+}, 1);
+
 // wait for the client to come online, and piano keys to be fully loaded
 let waitForMPP = setInterval(function() {
     let MPP_Fully_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.piano) && exists(MPP.piano.keys);
-    if (MPP_Fully_Loaded && mppGetRoom()) {
+    if (MPP_Fully_Loaded && mppGetRoom() && triedClickingPlayButton) {
         clearInterval(waitForMPP);
 
         // initialize mod settings and elements
         currentRoom = mppGetRoom();
         if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
             publicOption = true;
-            autoplayOption = AUTOPLAY_RANDOM;
             if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
+            autoplayOption = AUTOPLAY_RANDOM;
+            playRandom();
         }
         // attempt to create notification endpoint, if one doesn't already exist
         if (!exists(MPP.Notification)) {
@@ -1564,7 +1584,7 @@ let waitForMPP = setInterval(function() {
 
                 // send notification with basic instructions, and if there's an update include info on that too
                 let starterNotificationSetup = {
-                    target: "#piano",
+                    target: "#chat",
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
                     html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
@@ -1576,20 +1596,6 @@ let waitForMPP = setInterval(function() {
                 };
                 let starterNotification = mppNotificationSend(starterNotificationSetup);
             }
-        }, TENTH_OF_SECOND);
-
-        // Automatically turns off the sound warning (mainly for autoplay)
-        let playButtonAttempt = 10; // it'll try to find the button this many times, before continuing anyways
-        let playButtonCheckCounter = 0;
-        let clearSoundWarning = setInterval(function() {
-            let playButton = document.querySelector("#sound-warning button");
-            if (exists(playButton) || playButtonCheckCounter >= playButtonAttempt) {
-                clearInterval(clearSoundWarning);
-
-                // only turn off sound warning if it hasn't already been turned off
-                if (exists(playButton) && window.getComputedStyle(playButton).display == "block") playButton.click();
-            }
-            playButtonCheckCounter++;
         }, TENTH_OF_SECOND);
     }
 }, TENTH_OF_SECOND);
