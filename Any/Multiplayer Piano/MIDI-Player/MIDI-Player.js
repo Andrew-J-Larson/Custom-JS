@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.8.2";
+const VERSION = "3.8.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -143,10 +143,10 @@ const SONG_NAME_TIMEOUT = SECOND * 10; // if a file doesn't play, then forget ab
 const NOTIFICATION_DURATION = SECOND * 15; // how long it takes for notifications to disappear
 
 // URLs
-const githubRepo = 'https://github.com/TheAlienDrew/Custom-JS/';
-const githubIssueTitle = '[Feedback] ' + NAME + ' ' + VERSION;
-const githubIssueBody = '<!-- Please write your feedback below this line. -->';
-const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githubIssueTitle) + '&body=' + encodeURIComponent(githubIssueBody);
+const GITHUB_REPO = 'https://github.com/TheAlienDrew/Custom-JS/';
+const GITHUB_ISSUE_TITLE = '[Feedback] ' + NAME + ' ' + VERSION;
+const GITHUB_ISSUE_BODY = '<!-- Please write your feedback below this line. -->';
+const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITHUB_ISSUE_TITLE) + '&body=' + encodeURIComponent(GITHUB_ISSUE_BODY);
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // empty for now
@@ -255,6 +255,10 @@ let chatDelay = CHAT_DELAY; // for how long to wait until posting another messag
 let endDelay; // used in multiline chats send commands
 
 let mppPianoNotes = null; // will eventually become an array of the available notes, once MPP loads
+let sustainState = { // needed for sustain tracking
+    on: false,
+    turnBackOn: false
+};
 
 let loadingOption = false; // controls if loading music should be on or not
 let loadingProgress = 0; // updates when loading files
@@ -885,6 +889,13 @@ let stopSong = function(fullStop) {
         Player.stop();
         playerStop(true);
     }
+    // need to first release sustain, if it's on
+    if (sustainState.on) {
+        MPP.releaseSustain();
+        sustainState.on = false;
+        if (fullStop) sustainState.turnBackOn = false;
+        else sustainState.turnBackOn = true;
+    }
     // need to release all keys that are playing at the moment
     Object.values(mppPianoNotes).forEach(note => {
         MPP.release(note);
@@ -1354,6 +1365,13 @@ let resume = function() {
     else {
         let title = PRE_MSG + ' `';
         if (paused) {
+            // must turn back to original sustain state if needed
+            if (sustainState.turnBackOn) {
+                MPP.pressSustain();
+                sustainState.on = true;
+                sustainState.turnBackOn = false;
+            }
+            // then we can continue playing
             Player.play();
             playerPlay();
             title += BAR_RESUMED;
@@ -1450,8 +1468,10 @@ Player.on('midiEvent', function(event) {
         if (event.noteNumber == 64) {
             if (event.velocity > 20) {
                 MPP.pressSustain();
+                sustainState.on = true;
             } else {
                 MPP.releaseSustain();
+                sustainState.on = false;
             }
         }
     }
