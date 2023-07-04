@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.8
+// @version      3.7.9
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1200,12 +1200,23 @@ let song = function() {
 }
 let album = function() {
     // show list of songs available
-    let songNamesMonospace = JSON.parse(JSON.stringify(SONG_NAMES));
-    songNamesMonospace.forEach(song => {
-        song = song ? ('`' + song + '`') : song;
-    });
-    mppChatSend(PRE_ALBUM);
-    mppChatMultiSend(songNamesMonospace, null, chatDelay);
+    let songNamesMonospace = [];
+    // need to create new array first
+    let index = 0;
+    let modifySongNames = setInterval(function() {
+        if (index < SONG_NAMES.length) {
+            let song = SONG_NAMES[index]
+            if (SONG_NAMES[index]) {
+                songNamesMonospace.push('`' + song + '`');
+            }
+            index++;
+        } else {
+            clearInterval(modifySongNames);
+
+            mppChatSend(PRE_ALBUM);
+            mppChatMultiSend(songNamesMonospace, null, chatDelay);
+        }
+    }, 1);
 };
 let repeat = function() {
     // turns on or off repeat
