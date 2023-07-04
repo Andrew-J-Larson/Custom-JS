@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.9
+// @version      3.8.0
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -166,8 +166,8 @@ const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
 const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made by a nerd in javascript. Special thanks to grimmdude for https://github.com/grimmdude/MidiPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
-const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
-const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
+const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album ( https://c418.bandcamp.com/album/minecraft-volume-alpha ).";
+const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book ( https://www.google.com/books/edition/_/ywHUngEACAAJ ).";
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
 const BASE_COMMANDS = [
     ["help [command]", "displays info about command, but no command entered shows the commands"],
@@ -1076,6 +1076,7 @@ let help = function(command, userId, yourId) {
 }
 let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
+    mppChatMultiSend([MOD_MUSIC_CREDIT, MOD_MIDI_CREDIT], null, chatDelay);
 }
 let link = function() {
     mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
@@ -1207,7 +1208,7 @@ let album = function() {
         if (index < SONG_NAMES.length) {
             let song = SONG_NAMES[index]
             if (SONG_NAMES[index]) {
-                songNamesMonospace.push('`' + song + '`');
+                songNamesMonospace.push(PRE_MSG + ' `' + song + '`');
             }
             index++;
         } else {
