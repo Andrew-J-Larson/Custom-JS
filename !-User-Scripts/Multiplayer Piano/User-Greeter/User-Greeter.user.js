@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://thealiendrew.github.io/
-// @version      0.4.1
+// @version      0.4.2
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -23,9 +23,9 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/User-Greeter/pixabay.com/chat-1873543_960_720.png
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
+// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/pixabay.com/chat-1873543_960_720.png
 // @grant        GM_info
 // @run-at       document-end
 // ==/UserScript==

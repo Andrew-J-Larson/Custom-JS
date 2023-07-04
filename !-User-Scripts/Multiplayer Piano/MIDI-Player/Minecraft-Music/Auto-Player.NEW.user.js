@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Multiplayer Piano - Minecraft Music Auto Player
+// @name         Multiplayer Piano - Minecraft Music Auto Player BETA
 // @namespace    https://thealiendrew.github.io/
-// @version      3.7.6
+// @version      4.0.0-beta
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -28,10 +28,12 @@
 // @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/Auto-Player.user.js
 // @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/Minecraft-Music/favicon.png
+// @require      https://cdn.jsdelivr.net/npm/jzz
+// @require      https://cdn.jsdelivr.net/npm/jzz-midi-smf
+// @require      https://cdn.jsdelivr.net/npm/jzz-gui-player
 // @grant        GM_info
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     LatestMIDIPlayerJS https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest
 // @run-at       document-end
 // ==/UserScript==
 
@@ -55,7 +57,7 @@
 // ============================================================================================================== (with pages that show 10 songs at a time)
 // ============================================================================================================== https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal
 
-/* globals $, MPP, EventEmitter, mixin, MidiPlayer */
+/* globals $, MPP, EventEmitter, mixin, JZZ */
 
 // =============================================== SCRIPT CONSTANTS
 
@@ -68,32 +70,8 @@ const AUTHOR = SCRIPT.author;
 const SUPPORT_URL = SCRIPT.supportURL;
 const UPDATE_URL = SCRIPT.updateURL;
 
-// =============================================== FILES
+// =============================================== VERSION CHECK
 
-// midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
-// (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
-let stringLatestMIDIPlayerJS = GM_getResourceText("LatestMIDIPlayerJS");
-if (!stringLatestMIDIPlayerJS) {
-    throw new Error('[' + NAME + "] failed to find latest MidiPlayerJS release from " + GM_getResourceURL("LatestMIDIPlayerJS"));
-}
-let jsonLatestMIDIPlayerJS = JSON.parse(stringLatestMIDIPlayerJS);
-let LatestMIDIPlayerJS_VERSION = jsonLatestMIDIPlayerJS.name;
-let MIDIPlayerJS_URL = "https://raw.githubusercontent.com/grimmdude/MidiPlayerJS/"+LatestMIDIPlayerJS_VERSION+"/browser/midiplayer.js"
-let requestMPJS = new XMLHttpRequest();
-requestMPJS.open('GET', MIDIPlayerJS_URL, false);
-requestMPJS.send(null);
-if (requestMPJS.status === 200) {
-    let type = requestMPJS.getResponseHeader('Content-Type');
-    if (type.indexOf("text") !== 1) {
-        let stringMIDIPlayerJS = requestMPJS.responseText;
-        let scriptMIDIPlayerJS = document.createElement("script");
-        scriptMIDIPlayerJS.type = 'text/javascript';
-        scriptMIDIPlayerJS.appendChild(document.createTextNode(stringMIDIPlayerJS));
-        (document.body || document.head || document.documentElement).appendChild(scriptMIDIPlayerJS);
-    }
-} else {
-    throw new Error(GM_info.script + " failed to load MidiPlayerJS from " + MIDIPlayerJS_URL);
-}
 let latestVersion = null;
 let updateURL = UPDATE_URL + '?' + Date.now();
 let requestVersion = new XMLHttpRequest();
@@ -137,26 +115,34 @@ const SONG_NAME_TIMEOUT = SECOND * 10; // if a file doesn't play, then forget ab
 const NOTIFICATION_DURATION = SECOND * 15; // how long it takes for notifications to disappear
 
 // URLs
-const githubRepo = 'https://github.com/TheAlienDrew/Custom-JS/';
-const githubIssueTitle = '[Feedback] ' + NAME + ' ' + VERSION;
-const githubIssueBody = '<!-- Please write your feedback below this line. -->';
-const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githubIssueTitle) + '&body=' + encodeURIComponent(githubIssueBody);
+const GITHUB_REPO = 'https://github.com/TheAlienDrew/Custom-JS/';
+const GITHUB_ISSUE_TITLE = '[Feedback] ' + NAME + ' ' + VERSION;
+const GITHUB_ISSUE_BODY = '<!-- Please write your feedback below this line. -->';
+const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITHUB_ISSUE_TITLE) + '&body=' + encodeURIComponent(GITHUB_ISSUE_BODY);
 
 // Players listed by IDs (these are the _id strings)
 const BANNED_PLAYERS = []; // empty for now
 const LIMITED_PLAYERS = []; // empty for now
 
-// Bot constants
+// Library constants
+JZZ_AUTHOR = "jazz-soft (Sema)";
+JZZ_GITHUB = "https://github.com/jazz-soft/JZZ"
+JZZ_MIDI_SMF_GITHUB = "https://github.com/jazz-soft/JZZ-midi-SMF"
+JZZ_GUI_PLAYER_GITHUB = "https://github.com/jazz-soft/JZZ-gui-Player"
+JZZ_VERSION = (JZZ && JZZ.version) ? ('(' + JZZ.version + ')') : '';
+JZZ_MIDI_SMF_VERSION = (JZZ && JZZ.MIDI && JZZ.MIDI.SMF && JZZ.MIDI.SMF.version()) ? ('(' + JZZ.MIDI.SMF.version() + ')') : '';
+
+// Mod constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
 const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 const PERCUSSION_CHANNELS = [10/*, 11*/]; // (DON'T CHANGE) TODO: figure out how General MIDI Level 2 works with channel 11
 
-// Bot constant settings
+// Mod constant settings
 const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the mod will set the room to by default
 const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
 
-// Bot custom constants
+// Mod custom constants
 const PREFIX = "mc!";
 const PREFIX_LENGTH = PREFIX.length;
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
@@ -165,7 +151,7 @@ const MOD_KEYWORD = "MINECRAFT"; // this is used for auto enabling the public co
 const MOD_DISPLAYNAME = "Minecraft Music Auto Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
-const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made by a nerd in javascript. Special thanks to grimmdude for https://github.com/grimmdude/MidiPlayerJS "+((MidiPlayer && MidiPlayer.Constants && MidiPlayer.Constants.VERSION) ? ('(v'+MidiPlayer.Constants.VERSION+') ') : '')+"library."
+const MOD_DESCRIPTION = "[v" + VERSION + "] " + DESCRIPTION + " Made by a nerd in javascript. Special thanks to " + JZZ_AUTHOR + " for " + JZZ_GITHUB + ' ' + JZZ_VERSION + ', ' + JZZ_MIDI_SMF_GITHUB + ' ' + JZZ_MIDI_SMF_VERSION + ', and ' + JZZ_GUI_PLAYER_GITHUB + ' .'
 const MOD_MUSIC_CREDIT = "Music is by C418 from his Minecraft Volume Alpha album (https://c418.bandcamp.com/album/minecraft-volume-alpha).";
 const MOD_MIDI_CREDIT = "All songs here are from MIDIs I professionally transcribed from the official sheet music book (https://www.google.com/books/edition/_/ywHUngEACAAJ).";
 const MOD_AUTHOR = "Created by " + AUTHOR + '.';
@@ -227,6 +213,11 @@ const AUTOPLAY_ORDERED = 2;
 const LIST_BULLET = "• ";
 const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
+
+// Element constants
+const PRE_ELEMENT_ID = ([AUTHOR, MOD_DISPLAYNAME].join(' ')).toLowerCase().replace(/[^a-z0-9 ]/gi, '').replaceAll(' ','-') + '-mod';
+//const TOGGLER_ELEMENT_ID = PRE_ELEMENT_ID + "-toggler";
+const JZZ_GUI_PLAYER_ID = PRE_ELEMENT_ID + "-jzz-gui-player";
 
 // Songs: names, and MIDIs as base64 URIs
 const SONG_NAMES = ["01 - Key",
@@ -682,7 +673,7 @@ const Player = new MidiPlayer.Player();
 // Get visual elapsing progress (e.g. numBlocks = size of loading bar, think of it like a loading screen bar)
 let getElapsedProgressInt = function(numBlocks, intElapsed, intTotal) {
     return Math.round((intElapsed / intTotal) * numBlocks);
-}
+};
 let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
     let elapsedProgress = getElapsedProgressInt(numBlocks, intElapsed, intTotal);
     let progressMade = "";
@@ -693,13 +684,13 @@ let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
         progressMade += BAR_BLOCK_EMPTY;
     }
     return progressMade;
-}
+};
 
 // Check to make sure variable is initialized with something
 let exists = function(element) {
     if (typeof(element) != "undefined" && element != null) return true;
     return false;
-}
+};
 
 // Format time to HH:MM:SS from seconds
 /* let secondsToHms = function(d) {
@@ -721,7 +712,7 @@ let exists = function(element) {
     }
 
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
-} */
+}; */
 
 // Takes formatted time and removed preceeding zeros (only before minutes)
 /* let timeClearZeros = function(formattedHms) {
@@ -730,7 +721,7 @@ let exists = function(element) {
         newTime = newTime.substring(3);
     }
     return newTime;
-} */
+}; */
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
 /* let timeSizeFormat = function(timeCurrent, timeEnd) {
@@ -743,21 +734,21 @@ let exists = function(element) {
         newTimeFormat = "00:" + newTimeFormat;
     }
     return newTimeFormat;
-} */
+}; */
 
 // Generate a random number
 let randomNumber = function(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 // Puts quotes around string
 let quoteString = function(string) {
     let newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
-}
+};
 
 // Check if the color is light or dark
 let getContrast = function (hexcolor){
@@ -787,7 +778,7 @@ let getContrast = function (hexcolor){
     // tweaked for correct visibility on MPP
     return (yiq >= (255/9)*5) ? 'black' : 'white';
 
-}
+};
 
 // Makes all commands into one string
 let formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
@@ -797,17 +788,17 @@ let formattedCommands = function(commandsArray, prefix, spacing) { // needs to b
         commands += (spacing ? ' `' : '`') + prefix + commandsArray[i][0] + '`' + (i < (commandsArray.length - 1) ? ',' : '');
     }
     return commands;
-}
+};
 
 // Gets 1 command and info about it into a string
 let formatCommandInfo = function(commandsArray, commandIndex) {
     return '`' + PREFIX + commandsArray[commandIndex][0] + '`' + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
-}
+};
 
 // Send messages without worrying about timing
 let mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
-}
+};
 
 // Send multiline chats, and return final delay to make things easier for timings
 let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
@@ -821,14 +812,14 @@ let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
         }
     }
     return chatDelay * newDelay;
-}
+};
 
 // Sends art and tracks art being displayed
 let mppArtSend = function(strArray, initialDelay) {
     artDisplaying = true;
     let newDelay = mppChatMultiSend(strArray, null, 0);
     setTimeout(function() {artDisplaying = false}, newDelay);
-}
+};
 
 // Sends MPP a notification
 let mppNotificationSend = function (notificationObject) {
@@ -869,7 +860,7 @@ let mppNotificationSend = function (notificationObject) {
         // else, no text in html to display???
     }
     return null;
-}
+};
 
 let playerStop = function(manualStop = false) {
     ended = true; // TODO: temporary, until a real play button is implemented
@@ -882,14 +873,14 @@ let playerStop = function(manualStop = false) {
     }
     currentSongEventsPlayed = 0;
     currentSongProgress = -1;
-}
+};
 
 let playerPlay = function(loop = false) {
     if (loop) {
         // Need to do something???
     }
     ended = stopped = paused = false;
-}
+};
 
 let playerPause = function() {
     if (ended || stopped) {
@@ -897,7 +888,7 @@ let playerPause = function() {
         return;
     }
     paused = true;
-}
+};
 
 // Stops song in player, or at least stops all notes
 let stopSong = function(fullStop) {
@@ -910,10 +901,10 @@ let stopSong = function(fullStop) {
         playerStop(true);
     }
     // need to release all keys that are playing at the moment
-    Object.values(mppPianoNotes).forEach(note => {
+    mppPianoNotes.forEach(note => {
         MPP.release(note);
     });
-}
+};
 
 // Opens song in player
 let openSong = function(songIndex) {
@@ -927,7 +918,7 @@ let openSong = function(songIndex) {
         return false;
     }
     return true;
-}
+};
 
 // Plays song in player
 let playSong = function(songIndex) {
@@ -956,7 +947,7 @@ let playSong = function(songIndex) {
             }, 1);
         }, (autoplayOption != AUTOPLAY_OFF) ? REPEAT_DELAY : 0);
     }
-}
+};
 
 // Plays a random song, but not the same song twice in a row
 let playRandom = function() {
@@ -972,7 +963,7 @@ let playRandom = function() {
         testName = "" + SONG_NAMES[newSongIndex];
     }
     playSong(newSongIndex);
-}
+};
 
 // Get the string/value to the autoplay option
 let getAutoplayString = function(choice) {
@@ -984,7 +975,7 @@ let getAutoplayString = function(choice) {
         default: typeString = "unknown"; break; // shouldn't ever get here
     }
     return typeString;
-}
+};
 let getAutoplayValue = function(choice) {
     let valid = null;
     switch (choice.toLowerCase()) {
@@ -993,7 +984,7 @@ let getAutoplayValue = function(choice) {
         case "ordered": case "2": valid = 2; break;
     }
     return valid;
-}
+};
 
 // Turns autoplay onto certain modes
 let toggleAutoplay = function(choice) {
@@ -1001,7 +992,7 @@ let toggleAutoplay = function(choice) {
     if (choice == AUTOPLAY_RANDOM || choice == AUTOPLAY_ORDERED) autoplayActive = true;
     else autoplayActive = false;
     autoplayOption = choice;
-}
+};
 
 // Makes the mod the only one to play or turns it off
 let setOwnerOnlyPlay = function(choice) {
@@ -1016,20 +1007,20 @@ let setOwnerOnlyPlay = function(choice) {
         else console.log("Invalid choice was entered. Solo play wasn't set.");
         return false;
     }
-}
+};
 
 // Shows limited message for user
 let playerLimited = function(username) {
     // displays message with their name about being limited
     mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
-}
+};
 
 // When there is an incorrect command, show this error
 let cmdNotFound = function(cmd) {
     let error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (publicOption) mppChatSend(error);
     else console.log(error);
-}
+};
 
 // Commands
 let help = function(command, userId, yourId) {
@@ -1038,7 +1029,7 @@ let help = function(command, userId, yourId) {
         let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
                              + (publicOption ? ', ' + publicCommands : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
+                             + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
                              + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
@@ -1071,22 +1062,22 @@ let help = function(command, userId, yourId) {
         if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
-}
+};
 let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
-}
+};
 let link = function() {
     mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
-}
+};
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
-}
+};
 let ping = function() {
     // get a response back in milliseconds
     pinging = true;
     pingTime = Date.now();
     mppChatSend(PRE_PING);
-}
+};
 let play = function(args, argsString) {
     let error = PRE_ERROR + " (play)";
     // args should contain one number related to a song
@@ -1141,7 +1132,7 @@ let play = function(args, argsString) {
             default: mppChatSend(error + " Invalid song selection"); break;
         }
     }
-}
+};
 let skip = function() {
     // skips the current song if on autoplay
     if (autoplayOption != AUTOPLAY_OFF) {
@@ -1151,7 +1142,7 @@ let skip = function() {
             stopSong(true);
         }
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
-}
+};
 let stop = function() {
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
@@ -1160,7 +1151,7 @@ let stop = function() {
         stopSong(true);
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + '` ' + BAR_ARROW_RIGHT + ' `' + tempSongName + '`');
     }
-}
+};
 let pause = function(exceedsNoteQuota) {
     // pauses the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
@@ -1176,7 +1167,7 @@ let pause = function(exceedsNoteQuota) {
         let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`' + reason);
     }
-}
+};
 let resume = function() {
     // resumes the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
@@ -1189,37 +1180,37 @@ let resume = function() {
         } else title += BAR_STILL_RESUMED;
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     }
-}
+};
 let song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
         let title = PRE_MSG + ' `' + (paused ? BAR_PAUSED : BAR_PLAYING);
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
-}
+};
 let album = function() {
     // show list of songs available
     mppChatSend(PRE_ALBUM);
     mppChatMultiSend(SONG_NAMES, null, chatDelay);
-}
+};
 let repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
     mppChatSend(PRE_SETTINGS + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
-}
+};
 let sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
     mppChatSend(PRE_SETTINGS + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
-}
+};
 let percussion = function() {
     // turns on or off percussion instruments
     percussionOption = !percussionOption;
 
     mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
-}
+};
 let autoplay = function(choice) {
     // changes the type of autoplay
     let currentAutoplay = getAutoplayString(autoplayOption);
@@ -1234,7 +1225,7 @@ let autoplay = function(choice) {
             mppChatSend(PRE_SETTINGS + " Autoplay set to " + getAutoplayString(valid));
         } else mppChatSend(PRE_ERROR + " (autoplay) Invalid autoplay choice");
     }
-}
+};
 let art = function(name, yourParticipant) {
     // sends Minecraft mob ASCII art, when some isn't already being displayed
     if (exists(name) && !artDisplaying) {
@@ -1261,20 +1252,20 @@ let art = function(name, yourParticipant) {
             default: mppChatSend(PRE_ERROR + " (art) There is no art for " + quoteString(name)); break;
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
-}
+};
 let publicCommands = function(userId, yourId) {
     // only let the mod owner set if public mod commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
-}
+};
 let mppGetRoom = function() {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
         return MPP.client.channel._id;
     } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
         return MPP.client.desiredChannelId;
     } else return null;
-}
+};
 
 // =============================================== MAIN
 
@@ -1339,17 +1330,17 @@ MPP.client.on('a', function (msg) {
     let yourUsername = yourParticipant.name;
     // get the message as string
     let input = msg.a.trim();
-    let participant = msg.p;
-    let username = participant.name;
-    let userId = participant._id;
 
     // check if ping
-    if (userId == yourId && pinging && input == PRE_PING) {
+    if (pinging && input == PRE_PING) {
         pinging = false;
         pingTime = Date.now() - pingTime;
         mppChatSend(PRE_MSG + ' ' + pingTime + "ms", chatDelay);
     }
 
+    let participant = msg.p;
+    let username = participant.name;
+    let userId = participant._id;
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
         // don't allow banned or limited users to use the mod
@@ -1378,26 +1369,26 @@ MPP.client.on('a', function (msg) {
         let argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         let arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        let isBotOwner = userId == yourId;
+        let isModOwner = userId == yourId;
         let preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if ((isBotOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if ((isBotOwner || publicOption) && !preventsPlaying) about(); break;
-            case "link": case "li": if ((isBotOwner || publicOption) && !preventsPlaying) link(); break;
-            case "feedback": case "fb": if (isBotOwner || publicOption) feedback(); break;
-            case "ping": case "pi": if (isBotOwner || publicOption) ping(); break;
-            case "play": case "p": if ((isBotOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
-            case "skip": case "sk": if ((isBotOwner || publicOption) && !preventsPlaying) skip(); break;
-            case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
-            case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
-            case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
-            case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
-            case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
-            case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
-            case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
+            case "help": case "h": if ((isModOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
+            case "about": case "ab": if ((isModOwner || publicOption) && !preventsPlaying) about(); break;
+            case "link": case "li": if ((isModOwner || publicOption) && !preventsPlaying) link(); break;
+            case "feedback": case "fb": if (isModOwner || publicOption) feedback(); break;
+            case "ping": case "pi": if (isModOwner || publicOption) ping(); break;
+            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
+            case "skip": case "sk": if ((isModOwner || publicOption) && !preventsPlaying) skip(); break;
+            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) pause(); break;
+            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) resume(); break;
+            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) song(); break;
+            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) percussion(); break;
+            case "autoplay": case "ap": if ((isModOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
+            case "album": case "al": case "list": if (isModOwner || publicOption) album(); break;
+            case "art": if (isModOwner || publicOption) art(argumentsString, yourParticipant); break;
             case "public": publicCommands(userId, yourId); break;
         }
     }
@@ -1454,7 +1445,7 @@ let repeatingTasks = setInterval(function() {
                           '</div>',
                     duration: -1,
                     class: 'short'
-                }
+                };
                 elapsingProgressNotification = mppNotificationSend(elapsingProgressNotificationSetup);
             }
         }
@@ -1508,9 +1499,9 @@ let waitForMPP = setInterval(function() {
             autoplayOption = AUTOPLAY_RANDOM;
             if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
         }
-        // attempt to create notification endpoint, if one doesn't already exist
+        // attempt to create the Notification API, if it doesn't already exist
         if (!exists(MPP.Notification)) {
-            // 2023-07-02T06:45:05Z - code via https://github.com/LapisHusky/mppclone/blob/main/client/script.js
+            // 2023-07-02T06:45:05Z - code modified via https://github.com/LapisHusky/mppclone/blob/main/client/script.js
             MPP.Notification=function(t){if(this instanceof MPP.Notification==!1)throw"yeet";EventEmitter.call(this);t=t||{};this.id="Notification-"+(t.id||Math.random()),this.title=t.title||"",this.text=t.text||"",this.html=t.html||"",this.target=$(t.target||"#piano"),this.duration=t.duration||3e4,this.class=t.class||"classic";var i=this,e=$("#"+this.id);return e.length>0&&e.remove(),this.domElement=$('<div class="notification"><div class="notification-body"><div class="title"></div><div class="text"></div></div><div class="x">X</div></div>'),this.domElement[0].id=this.id,this.domElement.addClass(this.class),this.domElement.find(".title").text(this.title),this.text.length>0?this.domElement.find(".text").text(this.text):this.html instanceof HTMLElement?this.domElement.find(".text")[0].appendChild(this.html):this.html.length>0&&this.domElement.find(".text").html(this.html),document.body.appendChild(this.domElement.get(0)),this.position(),this.onresize=function(){i.position()},window.addEventListener("resize",this.onresize),this.domElement.find(".x").click((function(){i.close()})),this.duration>0&&setTimeout((function(){i.close()}),this.duration),this},mixin(MPP.Notification.prototype,EventEmitter.prototype),MPP.Notification.prototype.constructor=MPP.Notification,MPP.Notification.prototype.position=function(){var t=this.target.offset(),i=t.left-this.domElement.width()/2+this.target.width()/4,e=t.top-this.domElement.height()-8,o=this.domElement.width();i+o>$("body").width()&&(i-=i+o-$("body").width()),i<0&&(i=0),this.domElement.offset({left:i,top:e})},MPP.Notification.prototype.close=function(){var t=this;window.removeEventListener("resize",this.onresize),this.domElement.fadeOut(500,(function(){t.domElement.remove(),t.emit("close")}))};
         }
         // let user know if they won't be able to see notifications

@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Dark Reader - Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.0
+// @version      1.5.1
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        http*://*/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=darkreader.org
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
@@ -35,7 +35,7 @@
 
 /* globals XRegExp */
 
-// dark-site.config via https://github.com/darkreader/darkreader/blob/master/src/config/
+// dark-site.config via https://github.com/darkreader/darkreader/blob/main/src/config/
 
 // avoids breaking some websites that assume all errors are their own
 try {

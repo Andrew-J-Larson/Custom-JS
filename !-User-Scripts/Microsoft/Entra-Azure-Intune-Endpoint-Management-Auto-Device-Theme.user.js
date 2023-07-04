@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Entra/Azure/Intune/Endpoint Management - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Makes all Microsoft Entra/Azure/Intune/Endpoint portals/admin centers match the device theme at all times.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -12,8 +12,8 @@
 // @match        https://intune.microsoft365.com/*
 // @match        https://endpoint.microsoft.com/*
 // @match        https://endpoint.microsoft365.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
 // @icon         https://portal.azure.com/Content/favicon.ico
 // @grant        none
 // @noframes

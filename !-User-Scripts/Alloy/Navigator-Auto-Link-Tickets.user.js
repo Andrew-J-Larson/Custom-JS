@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.4
+// @version      1.4.5
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://*/*.aspx*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
 // @icon         https://hd.alloysoftware.com/helpdesk/favicon.ico
 // @grant        GM_addStyle
 // ==/UserScript==

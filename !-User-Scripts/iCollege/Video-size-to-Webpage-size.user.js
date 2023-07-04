@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         iCollege - Video size to Webpage size
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://www.icollege.co/course-launch/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=icollege.co
 // @grant        GM_addStyle
 // ==/UserScript==

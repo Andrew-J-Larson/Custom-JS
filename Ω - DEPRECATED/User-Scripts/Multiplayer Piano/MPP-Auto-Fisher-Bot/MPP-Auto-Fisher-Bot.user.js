@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Auto Fisher Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.5
+// @version      1.9.6
 // @description  Fishes for new colors!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -23,8 +23,8 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
 // @icon         https://icons.iconarchive.com/icons/fasticon/fish-toys/256/Green-Fish-icon.png
 // @grant        GM_info
 // @run-at       document-end
@@ -65,7 +65,7 @@ const MINUTE = 60 * SECOND;
 const FIVE_MINUTES = 5 * MINUTE;
 
 // URLs
-const FEEDBACK_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot";
+const FEEDBACK_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot";
 const USER_COLORS_URL = "https://multiplayer-piano.github.io/mpp-colors/";
 
 // Bot custom constants
@@ -129,7 +129,7 @@ const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
 
 // Audio
-const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/freesound.org/";
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/freesound.org/";
 const AUDIO_EXENSION = "mp3";
 
 // =============================================== OBJECT INITIALIZERS

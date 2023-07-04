@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.7.5";
+const VERSION = "3.7.6";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -21,8 +21,8 @@ const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g
                  /^https?:\/\/beta\-mpp\.csys64\.com.*/g,
                  /^https?:\/\/fleetway-mpp\.glitch\.me.*/g,
                  /^https?:\/\/([^/.]+\.)?mppclone\.com.*/g];
-const SUPPORT_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
-const UPDATE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
+const SUPPORT_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player";
+const UPDATE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player/MIDI-Player.user.js";
 const LatestMIDIPlayerJS_URL = "https://api.github.com/repos/grimmdude/MidiPlayerJS/releases/latest";
 // ==/JavaScript==
 

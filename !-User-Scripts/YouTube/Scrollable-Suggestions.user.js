@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         YouTube - Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.1
+// @version      1.9.2
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://*.youtube.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @require      https://code.jquery.com/jquery.min.js
 // @require      https://code.jquery.com/ui/1.13.2/jquery-ui.min.js

@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Zoom - Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Moves the chat history in "real time" against the recording's current time.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://*.zoom.us/rec/play/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=zoom.us
 // @grant        none
 // ==/UserScript==

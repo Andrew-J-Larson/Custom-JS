@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Remove Leading Zeros
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Removes leading zeros (like normal clocks), originally made for a small screen Raspberry PI clock kiosk.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://www.bitday.me/legacy*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bitday.me
 // @grant        none
 // ==/UserScript==

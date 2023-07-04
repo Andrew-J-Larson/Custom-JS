@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Twitter - Auto Device Theme (Dim Variant)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes Twitter match the device theme at all times. Dark theme uses "Dim" variant.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://twitter.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/master/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
+// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
+// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=twitter.com
 // @grant        none
 // ==/UserScript==
