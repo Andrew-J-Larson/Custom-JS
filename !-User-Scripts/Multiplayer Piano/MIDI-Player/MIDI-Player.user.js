@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.8.1
+// @version      3.8.2
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1743,7 +1743,7 @@ let waitForMPP = setInterval(function() {
                             newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br>` +
                                                   `<br>` +
                                                   `Please check the website!<br>` +
-                                                  `<a href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
+                                                  `<a target="_blank" href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
                         }
                     }
                 }
@@ -1752,7 +1752,7 @@ let waitForMPP = setInterval(function() {
                 let starterNotificationSetup = {
                     target: "#" + PRE_TOGGLER_ID,
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
-                    html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
+                    html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a target="_blank" href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
                           `Try dragging a MIDI onto the screen, or click the button below to find and use the <b>Open</b> button, to start playing MIDI files!<br>` +
                           `<br>` +

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.8.1
+// @version      3.8.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1596,7 +1596,7 @@ let waitForMPP = setInterval(function() {
                             newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br>` +
                                                   `<br>` +
                                                   `Please check the website!<br>` +
-                                                  `<a href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
+                                                  `<a target="_blank" href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
                         }
                     }
                 }
@@ -1605,11 +1605,11 @@ let waitForMPP = setInterval(function() {
                 let starterNotificationSetup = {
                     target: "#new-room-btn",
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
-                    html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
+                    html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a target="_blank" href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
-                          MOD_MUSIC_CREDIT + `<a href="${MOD_MUSIC_CREDIT_URL}">${MOD_MUSIC_CREDIT_URL}</a><br>` +
+                          MOD_MUSIC_CREDIT + `<a target="_blank" href="${MOD_MUSIC_CREDIT_URL}">${MOD_MUSIC_CREDIT_URL}</a><br>` +
                           `<br>` +
-                          MOD_MIDI_CREDIT + `<a href="${MOD_MIDI_CREDIT_URL}">${MOD_MIDI_CREDIT_URL}</a><br>` +
+                          MOD_MIDI_CREDIT + `<a target="_blank" href="${MOD_MIDI_CREDIT_URL}">${MOD_MIDI_CREDIT_URL}</a><br>` +
                           `<br>` +
                           `If you need any help using the mod, try using the command:<br>` +
                           ` ${LIST_BULLET} <code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
