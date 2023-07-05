@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.3
+// @version      3.9.4
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -147,17 +147,17 @@ const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITH
 const BANNED_PLAYERS = []; // empty for now
 const LIMITED_PLAYERS = []; // empty for now
 
-// Bot constants
+// Mod constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
 const OUTER_ROOM_COLOR = 1; // used in room color settings (DON'T CHANGE)
 const PERCUSSION_CHANNELS = [10/*, 11*/]; // (DON'T CHANGE) TODO: figure out how General MIDI Level 2 works with channel 11
 
-// Bot constant settings
+// Mod constant settings
 const MOD_ROOM_COLORS = ["#44673B", "#18110b"]; // these are the colors the mod will set the room to by default
 const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an owned room
 
-// Bot custom constants
+// Mod custom constants
 const PREFIX = "mc!";
 const PREFIX_LENGTH = PREFIX.length;
 const ART_CHOICES = "cow, pig, carved pumpkin, villager, iron golem, enderman, spider, creeper, ghast, skeleton, slime, zombie, wither, grass, cobblestone, or tnt";
@@ -1059,7 +1059,7 @@ let help = function(command, userId, yourId) {
         let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
                              + (publicOption ? ', ' + publicCommands : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
+                             + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
                              + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
@@ -1440,26 +1440,26 @@ MPP.client.on('a', function (msg) {
         let argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         let arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
-        let isBotOwner = userId == yourId;
+        let isModOwner = userId == yourId;
         let preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if ((isBotOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if ((isBotOwner || publicOption) && !preventsPlaying) about(); break;
-            case "link": case "li": if ((isBotOwner || publicOption) && !preventsPlaying) link(); break;
-            case "feedback": case "fb": if (isBotOwner || publicOption) feedback(); break;
-            case "ping": case "pi": if (isBotOwner || publicOption) ping(); break;
-            case "play": case "p": if ((isBotOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
-            case "skip": case "sk": if ((isBotOwner || publicOption) && !preventsPlaying) skip(); break;
-            case "stop": case "s": if ((isBotOwner || publicOption) && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if ((isBotOwner || publicOption) && !preventsPlaying) pause(); break;
-            case "resume": case "r": if ((isBotOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isBotOwner || publicOption) && !preventsPlaying) song(); break;
-            case "repeat": case "re": if ((isBotOwner || publicOption) && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if ((isBotOwner || publicOption) && !preventsPlaying) sustain(); break;
-            case "percussion": case "pe": if ((isBotOwner || publicOption) && !preventsPlaying) percussion(); break;
-            case "autoplay": case "ap": if ((isBotOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
-            case "album": case "al": case "list": if (isBotOwner || publicOption) album(); break;
-            case "art": if (isBotOwner || publicOption) art(argumentsString, yourParticipant); break;
+            case "help": case "h": if ((isModOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
+            case "about": case "ab": if ((isModOwner || publicOption) && !preventsPlaying) about(); break;
+            case "link": case "li": if ((isModOwner || publicOption) && !preventsPlaying) link(); break;
+            case "feedback": case "fb": if (isModOwner || publicOption) feedback(); break;
+            case "ping": case "pi": if (isModOwner || publicOption) ping(); break;
+            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
+            case "skip": case "sk": if ((isModOwner || publicOption) && !preventsPlaying) skip(); break;
+            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) stop(); break;
+            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) pause(); break;
+            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) resume(); break;
+            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) song(); break;
+            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) repeat(); break;
+            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) sustain(); break;
+            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) percussion(); break;
+            case "autoplay": case "ap": if ((isModOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
+            case "album": case "al": case "list": if (isModOwner || publicOption) album(); break;
+            case "art": if (isModOwner || publicOption) art(argumentsString, yourParticipant); break;
             case "public": publicCommands(userId, yourId); break;
         }
     }
