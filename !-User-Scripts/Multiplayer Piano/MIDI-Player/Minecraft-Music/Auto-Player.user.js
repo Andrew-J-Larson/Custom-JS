@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.4
+// @version      3.9.5
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -690,7 +690,7 @@ const Player = new MidiPlayer.Player();
 // Get visual elapsing progress (e.g. numBlocks = size of loading bar, think of it like a loading screen bar)
 let getElapsedProgressInt = function(numBlocks, intElapsed, intTotal) {
     return Math.round((intElapsed / intTotal) * numBlocks);
-}
+};
 let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
     let elapsedProgress = getElapsedProgressInt(numBlocks, intElapsed, intTotal);
     let progressMade = "";
@@ -701,13 +701,13 @@ let getElapsingProgress = function(numBlocks, intElapsed, intTotal) {
         progressMade += BAR_BLOCK_EMPTY;
     }
     return progressMade;
-}
+};
 
 // Check to make sure variable is initialized with something
 let exists = function(element) {
     if (typeof(element) != "undefined" && element != null) return true;
     return false;
-}
+};
 
 // Format time to HH:MM:SS from seconds
 /* let secondsToHms = function(d) {
@@ -729,7 +729,7 @@ let exists = function(element) {
     }
 
     return hDisplay + ':' + mDisplay + ':' + sDisplay;
-} */
+}; */
 
 // Takes formatted time and removed preceeding zeros (only before minutes)
 /* let timeClearZeros = function(formattedHms) {
@@ -738,7 +738,7 @@ let exists = function(element) {
         newTime = newTime.substring(3);
     }
     return newTime;
-} */
+}; */
 
 // Resizes a formatted HH:MM:SS time to the second formatted time
 /* let timeSizeFormat = function(timeCurrent, timeEnd) {
@@ -751,21 +751,21 @@ let exists = function(element) {
         newTimeFormat = "00:" + newTimeFormat;
     }
     return newTimeFormat;
-} */
+}; */
 
 // Generate a random number
 let randomNumber = function(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 // Puts quotes around string
 let quoteString = function(string) {
     let newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
-}
+};
 
 // Check if the color is light or dark
 let getContrast = function (hexcolor){
@@ -795,7 +795,7 @@ let getContrast = function (hexcolor){
     // tweaked for correct visibility on MPP
     return (yiq >= (255/9)*5) ? 'black' : 'white';
 
-}
+};
 
 // Makes all commands into one string
 let formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
@@ -805,17 +805,17 @@ let formattedCommands = function(commandsArray, prefix, spacing) { // needs to b
         commands += (spacing ? ' `' : '`') + prefix + commandsArray[i][0] + '`' + (i < (commandsArray.length - 1) ? ',' : '');
     }
     return commands;
-}
+};
 
 // Gets 1 command and info about it into a string
 let formatCommandInfo = function(commandsArray, commandIndex) {
     return '`' + PREFIX + commandsArray[commandIndex][0] + '`' + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
-}
+};
 
 // Send messages without worrying about timing
 let mppChatSend = function(str, delay) {
     setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
-}
+};
 
 // Send multiline chats, and return final delay to make things easier for timings
 let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
@@ -829,14 +829,14 @@ let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
         }
     }
     return chatDelay * newDelay;
-}
+};
 
 // Sends art and tracks art being displayed
 let mppArtSend = function(strArray, initialDelay) {
     artDisplaying = true;
     let newDelay = mppChatMultiSend(strArray, null, 0);
     setTimeout(function() {artDisplaying = false}, newDelay);
-}
+};
 
 // Sends MPP a notification
 let mppNotificationSend = function (notificationObject) {
@@ -877,7 +877,7 @@ let mppNotificationSend = function (notificationObject) {
         // else, no text in html to display???
     }
     return null;
-}
+};
 
 let playerStop = function(manualStop = false) {
     ended = true; // TODO: temporary, until a real play button is implemented
@@ -894,14 +894,14 @@ let playerStop = function(manualStop = false) {
     for (let i = 0; i < mppNoteBank.length; i++) {
         mppNoteBank[i] = 0;
     }
-}
+};
 
 let playerPlay = function(loop = false) {
     if (loop) {
         // Need to do something???
     }
     ended = stopped = paused = false;
-}
+};
 
 let playerPause = function() {
     if (ended || stopped) {
@@ -909,7 +909,7 @@ let playerPause = function() {
         return;
     }
     paused = true;
-}
+};
 
 // Stops song in player, or at least stops all notes
 let stopSong = function(fullStop) {
@@ -932,7 +932,7 @@ let stopSong = function(fullStop) {
     Object.values(mppPianoNotes).forEach(note => {
         MPP.release(note);
     });
-}
+};
 
 // Opens song in player
 let openSong = function(songIndex) {
@@ -946,7 +946,7 @@ let openSong = function(songIndex) {
         return false;
     }
     return true;
-}
+};
 
 // Plays song in player
 let playSong = function(songIndex) {
@@ -972,7 +972,7 @@ let playSong = function(songIndex) {
             } else timeoutRecorder++;
         }, 1);
     }
-}
+};
 
 // Plays a random song, but not the same song twice in a row
 let playRandom = function() {
@@ -992,7 +992,7 @@ let playRandom = function() {
             }
         }
     }, 1);
-}
+};
 
 // Get the string/value to the autoplay option
 let getAutoplayString = function(choice) {
@@ -1004,7 +1004,7 @@ let getAutoplayString = function(choice) {
         default: typeString = "unknown"; break; // shouldn't ever get here
     }
     return typeString;
-}
+};
 let getAutoplayValue = function(choice) {
     let valid = null;
     switch (choice.toLowerCase()) {
@@ -1014,7 +1014,7 @@ let getAutoplayValue = function(choice) {
         default: valid = -1; break;
     }
     return valid;
-}
+};
 
 // Turns autoplay onto certain modes
 let toggleAutoplay = function(choice) {
@@ -1022,7 +1022,7 @@ let toggleAutoplay = function(choice) {
     if (choice == AUTOPLAY_RANDOM || choice == AUTOPLAY_ORDERED) autoplayActive = true;
     else autoplayActive = false;
     autoplayOption = choice;
-}
+};
 
 // Makes the mod the only one to play or turns it off
 let setOwnerOnlyPlay = function(choice) {
@@ -1037,20 +1037,20 @@ let setOwnerOnlyPlay = function(choice) {
         else console.log("Invalid choice was entered. Solo play wasn't set.");
         return false;
     }
-}
+};
 
 // Shows limited message for user
 let playerLimited = function(username) {
     // displays message with their name about being limited
     mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
-}
+};
 
 // When there is an incorrect command, show this error
 let cmdNotFound = function(cmd) {
     let error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (publicOption) mppChatSend(error);
     else console.log(error);
-}
+};
 
 // Commands
 let help = function(command, userId, yourId) {
@@ -1092,23 +1092,23 @@ let help = function(command, userId, yourId) {
         if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
-}
+};
 let about = function() {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
     mppChatMultiSend([(MOD_MUSIC_CREDIT + MOD_MUSIC_CREDIT_URL), (MOD_MIDI_CREDIT + MOD_MIDI_CREDIT_URL)], null, chatDelay);
-}
+};
 let link = function() {
     mppChatSend(PRE_LINK + " You can get this mod from " + SUPPORT_URL);
-}
+};
 let feedback = function() {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
-}
+};
 let ping = function() {
     // get a response back in milliseconds
     pinging = true;
     pingTime = Date.now();
     mppChatSend(PRE_PING);
-}
+};
 let play = function(args, argsString) {
     let error = PRE_ERROR + " (play)";
     // args should contain one number related to a song
@@ -1163,7 +1163,7 @@ let play = function(args, argsString) {
             default: mppChatSend(error + " Invalid song selection"); break;
         }
     }
-}
+};
 let skip = function() {
     // skips the current song if on autoplay
     if (autoplayOption != AUTOPLAY_OFF) {
@@ -1172,7 +1172,7 @@ let skip = function() {
             playRandom();
         }
     } else mppChatSend(PRE_ERROR + " (skip) Need to be on random or ordered autoplay mode");
-}
+};
 let stop = function() {
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
     else {
@@ -1181,7 +1181,7 @@ let stop = function() {
         stopSong(true);
         mppChatSend(PRE_MSG + ' `' + BAR_STOPPED + '` ' + BAR_ARROW_RIGHT + ' `' + tempSongName + '`');
     }
-}
+};
 let pause = function(exceedsNoteQuota) {
     // pauses the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
@@ -1197,7 +1197,7 @@ let pause = function(exceedsNoteQuota) {
         let reason = exceedsNoteQuota ? ' Reason: Note quota was drained.' : '';
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`' + reason);
     }
-}
+};
 let resume = function() {
     // resumes the current song
     if (ended) mppChatSend(PRE_MSG + ' ' + NO_SONG);
@@ -1217,14 +1217,14 @@ let resume = function() {
         } else title += BAR_STILL_RESUMED;
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     }
-}
+};
 let song = function() {
     // shows current song playing
     if (exists(currentSongName) && currentSongName != "") {
         let title = PRE_MSG + ' `' + (paused ? BAR_PAUSED : BAR_PLAYING);
         mppChatSend(title + '` ' + BAR_ARROW_RIGHT + ' `' + currentSongName + '`');
     } else mppChatSend(PRE_MSG + ' ' + NO_SONG);
-}
+};
 let album = function() {
     // show list of songs available
     let songNamesMonospace = [];
@@ -1244,25 +1244,25 @@ let album = function() {
             mppChatMultiSend(songNamesMonospace, null, chatDelay);
         }
     }, 1);
-};
+};;
 let repeat = function() {
     // turns on or off repeat
     repeatOption = !repeatOption;
 
     mppChatSend(PRE_SETTINGS + " Repeat set to " + (repeatOption ? "" : "not") + " repeating");
-}
+};
 let sustain = function() {
     // turns on or off sustain
     sustainOption = !sustainOption;
 
     mppChatSend(PRE_SETTINGS + " Sustain set to " + (sustainOption ? "MIDI controlled" : "MPP controlled"));
-}
+};
 let percussion = function() {
     // turns on or off percussion instruments
     percussionOption = !percussionOption;
 
     mppChatSend(PRE_SETTINGS + ' '+ (percussionOption ? "En" : "Dis") + "abled percussion instruments");
-}
+};
 let autoplay = function(choice) {
     // changes the type of autoplay
     let currentAutoplay = getAutoplayString(autoplayOption);
@@ -1277,7 +1277,7 @@ let autoplay = function(choice) {
             mppChatSend(PRE_SETTINGS + " Autoplay set to " + getAutoplayString(valid));
         } else mppChatSend(PRE_ERROR + " (autoplay) Invalid autoplay choice");
     }
-}
+};
 let art = function(name, yourParticipant) {
     // sends Minecraft mob ASCII art, when some isn't already being displayed
     if (exists(name) && !artDisplaying) {
@@ -1304,20 +1304,20 @@ let art = function(name, yourParticipant) {
             default: mppChatSend(PRE_ERROR + " (art) There is no art for " + quoteString(name)); break;
         }
     } else if (!artDisplaying) mppChatSend(PRE_ART + " Your choices are " + ART_CHOICES, 0);
-}
+};
 let publicCommands = function(userId, yourId) {
     // only let the mod owner set if public mod commands should be on or not
     if (userId != yourId) return;
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
-}
+};
 let mppGetRoom = function() {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
         return MPP.client.channel._id;
     } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
         return MPP.client.desiredChannelId;
     } else return null;
-}
+};
 
 // =============================================== MAIN
 
@@ -1509,7 +1509,7 @@ let repeatingTasks = setInterval(function() {
                 let barProgress = getElapsingProgress(PROGRESS_BAR_BLOCK_SIZE, currentSongEventsPlayed, currentSongTotalEvents);
                 let elapsingProgressNotificationSetup = {
                     html: '<div class="title" style="display: block !important">' +
-                            '[<span ' + textStyle + '>' + barProgress + '</span>]<span>  </span>' +
+                            '<code class="markdown">「<span ' + textStyle + '>' + barProgress + '</span>」</code><span>  </span>' +
                           '</div>' +
                           '<div class="text">' +
                             'Song: <code class="markdown" ' + textStyle + '>' + currentSongName + '</code>' +
