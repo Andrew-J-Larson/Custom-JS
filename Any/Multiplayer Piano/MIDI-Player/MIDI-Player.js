@@ -1460,7 +1460,10 @@ Player.on('midiEvent', function(event) {
     let noteIndex = currentNote ? (currentNote - 21) : -1;
     if (currentEvent == "Note on" && event.velocity) {
         // Note on
-        MPP.press(mppPianoNotes[noteIndex], event.velocity/127);
+        //if (event.velocity >= 85) { // DEBLACKER NOTE: need to implement a slider for this
+            // attempt at deblackening
+            MPP.press(mppPianoNotes[noteIndex], event.velocity/127);
+        //}
         mppNoteBank[currentNote]++;
     } else if (currentEvent == "Note off" || (currentNote && !event.velocity)) {
         // Note off
