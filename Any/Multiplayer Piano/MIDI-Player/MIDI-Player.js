@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.9.2";
+const VERSION = "3.9.3";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1471,14 +1471,14 @@ Player.on('midiEvent', function(event) {
         mppNoteBank[currentNote]++;
     } else if (currentEvent == "Note off" || (currentNote && !event.velocity)) {
         // Note off
-        if (!sustainOption) {
+        if (sustainOption) {
             // only if the note bank shows we have 1 or less, should we release a key
             if (mppNoteBank[currentNote] <= 1) MPP.release(mppPianoNotes[noteIndex]);
         }
         mppNoteBank[currentNote]--;
     } else if (currentEvent == "Controller Change") {
         // Controller Change
-        if (event.noteNumber == 64) {
+        if (sustainOption && event.noteNumber == 64) {
             if (event.velocity > 20) {
                 MPP.pressSustain();
             } else {
