@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.1
+// @version      3.9.2
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -890,6 +890,10 @@ let playerStop = function(manualStop = false) {
     }
     currentSongEventsPlayed = 0;
     currentSongProgress = -1;
+    // don't forget to reset the note key bank
+    for (let i = 0; i < mppNoteBank.length; i++) {
+        mppNoteBank[i] = 0;
+    }
 }
 
 let playerPlay = function(loop = false) {
@@ -924,11 +928,9 @@ let stopSong = function(fullStop) {
         if (fullStop) sustainState.turnBackOn = false;
         else sustainState.turnBackOn = true;
     }
-    // need to release all keys that are playing at the moment,
-    // and reset the note key bank
-    Object.values(mppPianoNotes).forEach(function(note, index) {
+    // need to release all keys that are playing at the moment
+    Object.values(mppPianoNotes).forEach(note => {
         MPP.release(note);
-        mppNoteBank[index] = 0;
     });
 }
 
