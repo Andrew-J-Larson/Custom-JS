@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.0
+// @version      3.9.1
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -891,9 +891,11 @@ let stopSong = function(fullStop) {
         if (fullStop) sustainState.turnBackOn = false;
         else sustainState.turnBackOn = true;
     }
-    // need to release all keys that are playing at the moment
-    Object.values(mppPianoNotes).forEach(note => {
+    // need to release all keys that are playing at the moment,
+    // and reset the note key bank
+    Object.values(mppPianoNotes).forEach(function(note, index) {
         MPP.release(note);
+        mppNoteBank[index] = 0;
     });
 }
 
