@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Room Color Changer
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.5
+// @version      0.2.6
 // @description  Advanced room color changing!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,10 @@
 // @match        *://mpp.l3m0ncao.wtf/*
 // @match        *://mpp.terrium.net/*
 // @match        *://mpp.hyye.tk/*
+// @match        *://mpp.totalh.net/*
+// @match        *://mpp.meowbin.com/*
 // @match        *://mppfork.netlify.app/*
+// @match        *://better.mppclone.me/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*
 // @match        *://piano.ourworldofpixels.com/*

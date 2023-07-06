@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
 // @namespace    https://thealiendrew.github.io/
-// @version      0.3.5
+// @version      0.3.6
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -15,7 +15,10 @@
 // @match        *://mpp.l3m0ncao.wtf/*
 // @match        *://mpp.terrium.net/*
 // @match        *://mpp.hyye.tk/*
+// @match        *://mpp.totalh.net/*
+// @match        *://mpp.meowbin.com/*
 // @match        *://mppfork.netlify.app/*
+// @match        *://better.mppclone.me/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*
 // @match        *://piano.ourworldofpixels.com/*
