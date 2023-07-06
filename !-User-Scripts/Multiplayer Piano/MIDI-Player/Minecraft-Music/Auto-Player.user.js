@@ -1374,7 +1374,7 @@ Player.on('midiEvent', function(event) {
                 MPP.releaseSustain();
             }
         }
-    }
+    } // pitch bends don't need to be accounted for in midi files
 });
 
 Player.on('endOfFile', function() {
