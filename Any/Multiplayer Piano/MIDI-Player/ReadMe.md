@@ -22,7 +22,7 @@ You'll know it worked if you can see the `MIDI Player` button with the other but
 Location of the Bookmarklet (`MIDI-Player.js.bookmarklet`) is at:
 - https://github.com/TheAlienDrew/Custom-JS/tree/main/Any/!-Bookmarklets/Multiplayer%20Piano/MIDI-Player
 
-### Want it auto activate? Use the User-Script instead!
+### Want it to auto activate? Use the User-Script instead!
 
 Location of the User-Script (`MIDI-Player.user.js`) is at:
 - https://github.com/TheAlienDrew/Custom-JS/tree/main/!-User-Scripts/Multiplayer%20Piano/MIDI-Player
