@@ -132,7 +132,7 @@ const PRE_MSG = MOD_USERNAME;
 const PRE_HELP = PRE_MSG + " [Help]";
 const PRE_LINK = PRE_MSG + " [Link]";
 const PRE_FEEDBACK = PRE_MSG + " [Feedback]";
-const HELP_DESC = "To ping everyone: `" + PING_PREFIX + "all`, `" + PING_PREFIX + "online`, or `" + PING_PREFIX + "everyone` | To ping a specific user: `" + PING_PREFIX + "A Username Here` or `" + PING_PREFIX + "a user id here` | Misc: `" + PREFIX + "link` to get mod download URL, `" + PREFIX + "feedback` to submit feedback, or `" + PREFIX + "test` to hear the ping sound.";
+const HELP_DESC = "To ping everyone: `" + PING_PREFIX + "all`, `" + PING_PREFIX + "online`, or `" + PING_PREFIX + "everyone` | To ping a specific user: `" + PING_PREFIX + "A Username Here` or `" + PING_PREFIX + "a user id here` | Misc: `" + PREFIX + "link` to get mod download URL, `" + PREFIX + "feedback` to submit feedback, or `" + PREFIX + "test` to hear the ping sound";
 const LIST_BULLET = "• ";
 
 // Mod variables
@@ -249,8 +249,11 @@ MPP.client.on('a', function (msg) {
     let participant = msg.p;
     let username = participant.name;
     let userId = participant._id;
-    // to check for ping from MPP's built in mention feature
-    let pinged = exists(msg.r);
+    // to check for ping from MPP's built in reply/mention feature
+    let isReply = exists(msg.r) ? document.getElementById("msg-" + msg.r) : null;
+    let replyNameElement = isReply ? isReply.querySelector('span.name') : null;
+    let replyName = replyNameElement ? replyNameElement.innerText : null;
+    let pinged = replyName && (yourUsername == replyName.substring(0, replyName.length - 1));
 
     // check if input contains a command or ping
     let helpActivated = false;
