@@ -57,7 +57,6 @@
 
 // =============================================== SCRIPT CONSTANTS
 
-// Script constants
 const SCRIPT = GM_info.script;
 const NAME = SCRIPT.name;
 const NAMESPACE = SCRIPT.namespace;
