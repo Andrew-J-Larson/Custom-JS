@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.9
+// @version      3.9.91
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1364,7 +1364,7 @@ Player.on('midiEvent', function(event) {
             MPP.press(mppPianoNotes[noteIndex], event.velocity / 127);
         //}
         mppNoteBank[currentNote]++;
-    } else if (currentEvent == "Note off" || (currentNote && !event.velocity)) {
+    } else if (currentEvent == "Note off" || (currentEvent == "Note on" && !event.velocity)) {
         // Note off
         if (sustainOption) {
             // only if the note bank shows we have 1 or less, should we release a key
