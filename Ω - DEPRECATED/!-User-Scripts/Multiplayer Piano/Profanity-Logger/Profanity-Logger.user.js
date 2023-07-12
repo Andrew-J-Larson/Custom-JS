@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Profanity Logger
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.5
+// @version      1.2.6
 // @description  Logs anyone who cusses in the web console!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -19,6 +19,7 @@
 // @match        *://mpp.meowbin.com/*
 // @match        *://mppfork.netlify.app/*
 // @match        *://better.mppclone.me/*
+// @match        *://*.openmpp.tk/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*
 // @match        *://piano.ourworldofpixels.com/*

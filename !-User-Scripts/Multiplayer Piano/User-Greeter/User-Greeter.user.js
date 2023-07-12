@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://thealiendrew.github.io/
-// @version      0.4.3
+// @version      0.4.4
 // @description  Greets users who join the room with a custom message!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -19,6 +19,7 @@
 // @match        *://mpp.meowbin.com/*
 // @match        *://mppfork.netlify.app/*
 // @match        *://better.mppclone.me/*
+// @match        *://*.openmpp.tk/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*
 // @match        *://piano.ourworldofpixels.com/*
