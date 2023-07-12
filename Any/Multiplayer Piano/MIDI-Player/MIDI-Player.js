@@ -1783,7 +1783,7 @@ let waitForMPP = setInterval(function() {
 
                 // send notification with basic instructions, and if there's an update include info on that too
                 let starterNotificationSetup = {
-                    target: "#" + PRE_TOGGLER_ID,
+                    target: "#" + TOGGLER_ELEMENT_ID,
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
                     html: mppAdsWebsiteNotice + compatitbilityError + newVersionAvailable + `Mod created by <a target="_blank" href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
                           `<br>` +
