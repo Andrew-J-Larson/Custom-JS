@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.7
+// @version      3.9.8
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -19,6 +19,7 @@
 // @match        *://mpp.meowbin.com/*
 // @match        *://mppfork.netlify.app/*
 // @match        *://better.mppclone.me/*
+// @match        *://*.openmpp.tk/*
 // @match        *://*.mppkinda.com/*
 // @match        *://*.augustberchelmann.com/piano/*
 // @match        *://piano.ourworldofpixels.com/*
