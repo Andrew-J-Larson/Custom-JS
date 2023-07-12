@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.9.6";
+const VERSION = "3.9.7";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1489,7 +1489,7 @@ Player.on('endOfFile', function() {
     else playerStop();
 });
 
-MPP.client.on('a', function (msg) {
+MPP.client.on('a', function (msg) { // on: new message
     // if user switches to VPN, these need to update
     let yourParticipant = MPP.client.getOwnParticipant();
     let yourId = yourParticipant._id;
@@ -1555,19 +1555,24 @@ MPP.client.on('a', function (msg) {
         }
     }
 });
-MPP.client.on("ch", function(msg) {
-    // set new chat delay based on room ownership after changing rooms
-    if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
-    else chatDelay = CHAT_DELAY;
+MPP.client.on('ch', function(msg) { // on: room change
     // update current room info
     let newRoom = mppGetRoom();
     if (currentRoom != newRoom) {
         currentRoom = newRoom;
         // stop any songs that might have been playing before changing rooms
-        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) == -1 && !ended) stopSong(true);
+        // only if we are not the owner of the room we are switching to
+        if (!MPP.client.isOwner() && (currentRoom.toUpperCase()).indexOf(MOD_KEYWORD) == -1 && !ended) stopSong(true);
     }
 });
-MPP.client.on('p', function(msg) {
+MPP.client.on('nq', function(msg) { // on: note quota change
+    // changes to note quota also reflect changes to room ownership or switching
+
+    // set new chat delay
+    if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
+    else chatDelay = CHAT_DELAY;
+});
+MPP.client.on('p', function(msg) { // on: player joins room
     let userId = msg._id;
     // kick ban all the banned players
     let bannedPlayers = BANNED_PLAYERS.length;
