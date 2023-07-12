@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9.91
+// @version      0.9.92
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -336,12 +336,16 @@ MPP.client.on('a', function (msg) {
         }, 1);
     }
 });
-MPP.client.on("dm", function(msg) {
-    // got an MPP direct message
-    pingSound.play();
+MPP.client.on('dm', function(msg) { // on: any direct message
+    let yourParticipant = MPP.client.getOwnParticipant();
+    let yourId = yourParticipant._id;
+    // you got a direct message
+    if (yourId == msg.recipient._id) pingSound.play();
 });
-MPP.client.on("ch", function(msg) {
-    // set new chat delay based on room ownership after changing rooms
+MPP.client.on('nq', function(msg) { // on: note quota change
+    // changes to note quota also reflect changes to room ownership or switching
+
+    // set new chat delay
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
 });
