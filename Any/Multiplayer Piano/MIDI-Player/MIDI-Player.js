@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.9.8";
+const VERSION = "3.9.9";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -67,7 +67,7 @@ if (!validWebsite) {
 
 /* HANDLED AT TOP */
 
-// =============================================== FILES
+// =============================================== VERSION CHECK
 
 // midiplayer.js via https://github.com/grimmdude/MidiPlayerJS
 // (but I should maybe switch to https://github.com/mudcube/MIDI.js OR https://github.com/Tonejs/Midi)
@@ -238,8 +238,8 @@ const CSS_VARIABLE_Y_DISPLACEMENT = "--yDisplacement";
 const CSS_VARIABLE_X_INITIAL = "--xInitial";
 const CSS_VARIABLE_Y_INITIAL = "--yInitial";
 const CSS_VARIABLE_Y_TOGGLE_INITIAL = "--yToggleInitial"; // helps special case of determining toggle button placement
-const PRE_ELEMENT_ID = "aliendrew-midi-player-mod";
-const PRE_TOGGLER_ID = PRE_ELEMENT_ID + "-toggler";
+const PRE_ELEMENT_ID = ([AUTHOR, MOD_DISPLAYNAME].join(' ')).toLowerCase().replace(/[^a-z0-9 ]/gi, '').replaceAll(' ','-') + '-mod';
+const TOGGLER_ELEMENT_ID = PRE_ELEMENT_ID + "-toggler";
 const QUERY_BOTTOM_UGLY_BTNS = `#bottom > div > .ugly-button:not([id^=${PRE_ELEMENT_ID}])`;
 // buttons have some constant styles/classes
 const ELEM_ON = "display:block;";
@@ -575,7 +575,7 @@ let urlToBlob = function(url, callback) {
                       '</div>',
                 duration: HALF_SECOND,
                 class: 'short'
-            }
+            };
             loadingProgressNotification = mppNotificationSend(loadingProgressNotificationSetup);
             progress++;
         }, 200);
@@ -1178,7 +1178,7 @@ let createWebpageElements = function() {
     let buttonsOn = false;
     let togglerDiv = document.createElement("div");
     togglerDiv.title = 'Use `'+PREFIX+'help` for more commands'
-    togglerDiv.id = PRE_TOGGLER_ID;
+    togglerDiv.id = TOGGLER_ELEMENT_ID;
     togglerDiv.style = ELEM_POS + ELEM_ON + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_TOGGLE_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function() {
@@ -1455,7 +1455,7 @@ Player.on('midiEvent', function(event) {
         // Note on
         //if (event.velocity >= 85) { // DEBLACKER NOTE: need to implement a slider for this
             // attempt at deblackening
-            MPP.press(mppPianoNotes[noteIndex], event.velocity/127);
+            MPP.press(mppPianoNotes[noteIndex], event.velocity / 127);
         //}
         mppNoteBank[currentNote]++;
     } else if (currentEvent == "Note off" || (currentNote && !event.velocity)) {
@@ -1613,7 +1613,7 @@ let repeatingTasks = setInterval(function() {
                           '</div>',
                     duration: -1,
                     class: 'short'
-                }
+                };
                 elapsingProgressNotification = mppNotificationSend(elapsingProgressNotificationSetup);
             }
         }
@@ -1724,9 +1724,9 @@ let waitForMPP = setInterval(function() {
         if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
             // loadingOption = true;
         }
-        // attempt to create notification endpoint, if one doesn't already exist
+        // attempt to create the Notification API, if it doesn't already exist
         if (!exists(MPP.Notification)) {
-            // 2023-07-02T06:45:05Z - code via https://github.com/LapisHusky/mppclone/blob/main/client/script.js
+            // 2023-07-02T06:45:05Z - code modified via https://github.com/LapisHusky/mppclone/blob/main/client/script.js
             MPP.Notification=function(t){if(this instanceof MPP.Notification==!1)throw"yeet";EventEmitter.call(this);t=t||{};this.id="Notification-"+(t.id||Math.random()),this.title=t.title||"",this.text=t.text||"",this.html=t.html||"",this.target=$(t.target||"#piano"),this.duration=t.duration||3e4,this.class=t.class||"classic";var i=this,e=$("#"+this.id);return e.length>0&&e.remove(),this.domElement=$('<div class="notification"><div class="notification-body"><div class="title"></div><div class="text"></div></div><div class="x">X</div></div>'),this.domElement[0].id=this.id,this.domElement.addClass(this.class),this.domElement.find(".title").text(this.title),this.text.length>0?this.domElement.find(".text").text(this.text):this.html instanceof HTMLElement?this.domElement.find(".text")[0].appendChild(this.html):this.html.length>0&&this.domElement.find(".text").html(this.html),document.body.appendChild(this.domElement.get(0)),this.position(),this.onresize=function(){i.position()},window.addEventListener("resize",this.onresize),this.domElement.find(".x").click((function(){i.close()})),this.duration>0&&setTimeout((function(){i.close()}),this.duration),this},mixin(MPP.Notification.prototype,EventEmitter.prototype),MPP.Notification.prototype.constructor=MPP.Notification,MPP.Notification.prototype.position=function(){var t=this.target.offset(),i=t.left-this.domElement.width()/2+this.target.width()/4,e=t.top-this.domElement.height()-8,o=this.domElement.width();i+o>$("body").width()&&(i-=i+o-$("body").width()),i<0&&(i=0),this.domElement.offset({left:i,top:e})},MPP.Notification.prototype.close=function(){var t=this;window.removeEventListener("resize",this.onresize),this.domElement.fadeOut(500,(function(){t.domElement.remove(),t.emit("close")}))};
         }
         // let user know if they won't be able to see notifications
