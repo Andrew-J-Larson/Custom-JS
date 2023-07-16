@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.93
+// @version      3.9.94
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1467,7 +1467,7 @@ Player.on('midiEvent', function(event) {
                 } else {
                     MPP.releaseSustain();
                 }
-            } else if (note_number == 121) {
+            } else if (event.noteNumber == 121) {
                 // CC - Reset All Controllers
                 releaseSustain();
             }
