@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.92
+// @version      3.9.93
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1372,12 +1372,18 @@ Player.on('midiEvent', function(event) {
         }
         mppNoteBank[currentNote]--;
     } else if (currentEvent == "Controller Change") {
-        // Controller Change
-        if (sustainOption && event.noteNumber >= 64) {
-            if (event.velocity > 20) {
-                MPP.pressSustain();
-            } else {
-                MPP.releaseSustain();
+        // Controller Change (CC)
+        if (sustainOption) {
+            if (event.noteNumber == 64) {
+                // CC - Sustain
+                if (event.velocity >= 64) {
+                    MPP.pressSustain();
+                } else {
+                    MPP.releaseSustain();
+                }
+            } else if (note_number == 121) {
+                // CC - Reset All Controllers
+                releaseSustain();
             }
         }
     } // pitch bends don't need to be accounted for in midi files
