@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.9.94";
+const VERSION = "3.9.95";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1477,7 +1477,7 @@ Player.on('midiEvent', function(event) {
                 }
             } else if (event.noteNumber == 121) {
                 // CC - Reset All Controllers
-                releaseSustain();
+                MPP.releaseSustain();
             }
         }
     } // pitch bends don't need to be accounted for in midi files
