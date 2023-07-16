@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.91
+// @version      3.9.92
 // @description  Plays Minecraft music!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1373,7 +1373,7 @@ Player.on('midiEvent', function(event) {
         mppNoteBank[currentNote]--;
     } else if (currentEvent == "Controller Change") {
         // Controller Change
-        if (sustainOption && event.noteNumber == 64) {
+        if (sustainOption && event.noteNumber >= 64) {
             if (event.velocity > 20) {
                 MPP.pressSustain();
             } else {
