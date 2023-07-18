@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://thealiendrew.github.io/
-// @version      3.9.96
+// @version      3.9.97
 // @description  Plays MIDI files!
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
@@ -1414,7 +1414,7 @@ let mppGetRoom = function() {
 // =============================================== MAIN
 
 // bug fix: see https://github.com/grimmdude/MidiPlayerJS/issues/25
-Player.sampleRate = 1; // ms; official MIDI spec details this to be the correct sample rate
+Player.sampleRate = 0; // 1 ms is official MIDI spec, but can cause EOF to not be triggered, so set to 0 instead
 
 Player.on('fileLoaded', function() {
     // Do something when file is loaded
