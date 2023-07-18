@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://thealiendrew.github.io/";
-const VERSION = "3.9.95";
+const VERSION = "3.9.96";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "AlienDrew";
 const LICENSE = "GPL-3.0-or-later";
@@ -1422,7 +1422,7 @@ let mppGetRoom = function() {
 // =============================================== MAIN
 
 // bug fix: see https://github.com/grimmdude/MidiPlayerJS/issues/25
-Player.sampleRate = 0; // this allows sequential notes that are supposed to play at the same time, do so when using fast MIDIs (e.g. some black MIDIs)
+Player.sampleRate = 1; // ms; official MIDI spec details this to be the correct sample rate
 
 Player.on('fileLoaded', function() {
     // Do something when file is loaded
