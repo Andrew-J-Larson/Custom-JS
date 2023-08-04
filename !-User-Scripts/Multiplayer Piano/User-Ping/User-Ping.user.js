@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      0.9.93
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       Andrew Larson

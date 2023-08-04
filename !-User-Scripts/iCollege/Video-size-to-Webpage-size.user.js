@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         iCollege - Video size to Webpage size
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.2.0
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       Andrew Larson

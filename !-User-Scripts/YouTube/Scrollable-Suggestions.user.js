@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         YouTube - Scrollable Suggestions
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.9.3
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
 // @author       Andrew Larson

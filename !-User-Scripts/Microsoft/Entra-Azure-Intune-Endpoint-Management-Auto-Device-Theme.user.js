@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Microsoft Entra/Azure/Intune/Endpoint Management - Auto Device Theme
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.8
 // @description  Makes all Microsoft Entra/Azure/Intune/Endpoint portals/admin centers match the device theme at all times.
 // @author       Andrew Larson

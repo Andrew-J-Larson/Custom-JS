@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Microsoft Exchange admin center - Auto Device Theme
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.9
 // @description  Makes Microsoft Exchange admin center match the device theme at all times.
 // @author       Andrew Larson

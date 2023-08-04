@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Apartment List - Cheap Apartments Sort
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.5
 // @description  try to take over the world!
 // @author       Andrew Larson

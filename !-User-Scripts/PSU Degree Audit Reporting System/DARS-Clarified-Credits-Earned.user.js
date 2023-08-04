@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         PSU - DARS Clarified Credits Earned
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.1.5
 // @description  This will show the total number of credits earned, and how much of the earned credits were taken from PSU or external sources, along with showing the total amount from external sources (which may not have been transferred).
 // @author       Andrew Larson

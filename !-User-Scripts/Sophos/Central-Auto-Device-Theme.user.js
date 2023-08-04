@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Sophos Central - Auto Device Theme
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.7
 // @description  Makes Sophos Central match the device theme at all times.
 // @author       Andrew Larson

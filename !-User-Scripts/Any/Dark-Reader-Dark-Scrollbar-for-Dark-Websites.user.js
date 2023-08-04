@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Dark Reader - Dark Scrollbar for Dark Websites
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.5.2
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       Andrew Larson

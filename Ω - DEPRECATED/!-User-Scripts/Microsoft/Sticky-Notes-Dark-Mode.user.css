@@ -1,12 +1,12 @@
 /* ==UserStyle==
 @name           Microsoft Sticky Notes - Partial Dark Mode
-@namespace      https://thealiendrew.github.io/
+@namespace      https://andrew-j-larson.github.io/
 @version        1.6.2
 @description    Themes the part of the website that the default dark mode doesn't.
 @author         AlienDrew
 @license        GPL-3.0-or-later
-@updateURL      https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/main/Microsoft/Sticky-Notes-Dark-Mode.user.css
-@downloadURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/main/Microsoft/Sticky-Notes-Dark-Mode.user.css
+@updateURL      https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Sticky-Notes-Dark-Mode.user.css
+@downloadURL    https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Sticky-Notes-Dark-Mode.user.css
 ==/UserStyle== */
 
 /* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
@@ -31,7 +31,7 @@
    This 'theme' just decorates the part the dark theme doesn't.
 
    * If you are wondering why the theme is not entirely on, please
-     go to https://github.com/TheAlienDrew/Tampermonkey-Scripts/raw/main/Microsoft/Sticky-Notes-Dark-Mode.user.js
+     go to https://github.com/Andrew-J-Larson/Tampermonkey-Scripts/raw/main/Microsoft/Sticky-Notes-Dark-Mode.user.js
      and install the Tampermonkey script that automatically turn
      dark mode on for sticky notes */
 

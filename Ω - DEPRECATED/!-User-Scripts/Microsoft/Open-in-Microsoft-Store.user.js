@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Open in Microsoft Store
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.4
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       AlienDrew
 // @license      GPL-3.0-or-later
 // @match        https://apps.microsoft.com/store/detail/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
 // @icon         https://www.google.com/s2/favicons?domain=microsoft.com
 // @grant        none
 // @noframes
@@ -42,7 +42,7 @@ if (!UserAgent.includes("Windows NT 10.0") && !UserAgent.includes("Windows NT 11
 // Get the product ID from webpage
 let getOrRemoveButton; // need this button as reference to create new one
 let ProductID;
-let waitingForAppInfo = setInterval(function() {
+let waitingForAppInfo = setInterval(function () {
     // need to get the button and its parent element for creating a new button
     getOrRemoveButton = document.querySelector(Get_Or_Remove_Button_Selector);
     if (getOrRemoveButton && getOrRemoveButton.parentElement) {
@@ -53,7 +53,7 @@ let waitingForAppInfo = setInterval(function() {
         // Create elements for open in MS store button
         let openInStoreButton = getOrRemoveButton.cloneNode(true);
         openInStoreButton.id = "openInStoreButton-" + ProductID;
-        openInStoreButton.onclick = function () {location.href = MS_STORE_URI+ProductID};
+        openInStoreButton.onclick = function () { location.href = MS_STORE_URI + ProductID };
         let openInStoreButtonDiv = openInStoreButton.querySelector('div');
         openInStoreButtonDiv.ariaLabel = openInStoreButtonDiv.ariaLabel.replace("Get", "Open");
         openInStoreButtonDiv.innerText = openInStoreButtonDiv.innerText.replace("Get", "Open");

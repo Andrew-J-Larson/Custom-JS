@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Room Color Changer
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      0.2.9
 // @description  Advanced room color changing!
 // @author       Andrew Larson

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Dim Variant)
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      1.1.0
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Dim" variant.
 // @author       Andrew Larson

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
-// @namespace    https://thealiendrew.github.io/
+// @namespace    https://andrew-j-larson.github.io/
 // @version      3.9.98
 // @description  Plays MIDI files!
 // @author       Andrew Larson
