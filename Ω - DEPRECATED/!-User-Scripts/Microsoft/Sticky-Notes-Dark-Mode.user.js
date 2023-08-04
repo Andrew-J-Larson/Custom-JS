@@ -3,7 +3,7 @@
 // @namespace    https://andrew-j-larson.github.io/
 // @version      1.6.2
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @include      /^https?://www\.onenote\.com/stickynotes*/
 // @include      /^https?://support\.office\.com/client/results\?NS=stickynotes&Context=%7B%22ThemeId%22:4,*/

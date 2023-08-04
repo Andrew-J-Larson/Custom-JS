@@ -3,7 +3,7 @@
 // @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.4
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://apps.microsoft.com/store/detail/*
 // @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
