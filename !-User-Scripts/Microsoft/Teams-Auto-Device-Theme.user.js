@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Microsoft Teams - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Makes Microsoft Teams match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://teams.microsoft.com/*
 // @match        https://teams.microsoft365.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Teams-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Teams-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Teams-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Teams-Auto-Device-Theme.user.js
 // @icon         https://statics.teams.cdn.office.net/hashedassets/favicon/prod/favicon-34ed16c5.ico
 // @grant        none
 // @noframes
@@ -57,20 +57,20 @@ function updateTheme(changeToScheme) {
     if (theme != changeToScheme && !document.hidden) { // teams settings won't always change when the window is hidden
         settingsMenuButton.click();
 
-        let waitForMoreSettings = setInterval(function() {
+        let waitForMoreSettings = setInterval(function () {
             let settingsButton = document.querySelector(settingsButtonSelector);
             if (settingsButton) {
                 clearInterval(waitForMoreSettings);
                 settingsButton.click();
 
-                let waitForSettingsModal = setInterval(function() {
+                let waitForSettingsModal = setInterval(function () {
                     let generalTab = document.querySelector(generalTabSelector);
                     if (generalTab) {
                         clearInterval(waitForSettingsModal);
                         generalTab.click();
 
                         let closeButton, lightModeOption, darkModeOption;
-                        let waitForGeneralSettings = setInterval(function() {
+                        let waitForGeneralSettings = setInterval(function () {
                             closeButton = document.querySelector(closeButtonSelector);
                             lightModeOption = document.querySelector(lightModeOptionSelector);
                             darkModeOption = document.querySelector(darkModeOptionSelector);
@@ -94,8 +94,8 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function() {
-    let waitForSettingsButton = setInterval(function() {
+window.addEventListener('load', function () {
+    let waitForSettingsButton = setInterval(function () {
         settingsMenuButton = document.querySelector(settingsMenuButtonSelector);
         if (settingsMenuButton) {
             clearInterval(waitForSettingsButton);

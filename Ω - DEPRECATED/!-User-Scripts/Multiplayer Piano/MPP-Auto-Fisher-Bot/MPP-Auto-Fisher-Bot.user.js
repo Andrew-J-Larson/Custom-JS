@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Auto Fisher Bot
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.8
+// @version      1.9.9
 // @description  Fishes for new colors!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
@@ -27,8 +27,8 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/MPP-Auto-Fisher-Bot.user.js
 // @icon         https://icons.iconarchive.com/icons/fasticon/fish-toys/256/Green-Fish-icon.png
 // @grant        GM_info
 // @run-at       document-end
@@ -69,7 +69,7 @@ const MINUTE = 60 * SECOND;
 const FIVE_MINUTES = 5 * MINUTE;
 
 // URLs
-const FEEDBACK_URL = "https://github.com/TheAlienDrew/Custom-JS/tree/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot";
+const FEEDBACK_URL = "https://github.com/Andrew-J-Larson/Custom-JS/tree/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot";
 const USER_COLORS_URL = "https://multiplayer-piano.github.io/mpp-colors/";
 
 // Bot custom constants
@@ -133,13 +133,13 @@ const FRUIT_PICK = "picked";
 const BOOST = "fishing boost.";
 
 // Audio
-const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/freesound.org/";
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/User-Scripts/Multiplayer%20Piano/MPP-Auto-Fisher-Bot/freesound.org/";
 const AUDIO_EXENSION = "mp3";
 
 // =============================================== OBJECT INITIALIZERS
 
 // Create new audio objects prefixed with URL and postfixed with extension
-var newAudio = function(name) {
+var newAudio = function (name) {
     return new Audio(AUDIO_BASE_URL + name + '.' + AUDIO_EXENSION);
 }
 
@@ -181,98 +181,98 @@ var kekEatOption = false; // this allows for auto eating the fruit when you get 
 // =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
-var exists = function(element) {
-    if (typeof(element) != "undefined" && element != null) return true;
+var exists = function (element) {
+    if (typeof (element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Puts quotes around string
-var quoteString = function(string) {
+var quoteString = function (string) {
     var newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
 }
 
 // Plays audio only when enabled
-var audioPlay = function(audioObj) {
+var audioPlay = function (audioObj) {
     if (audioEnabled) audioObj.play();
 }
 
 // =============================================== FUNCTIONS
 
 // Send messages without worrying about timing
-var mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
+var mppChatSend = function (str, delay) {
+    setTimeout(function () { MPP.chat.send(str) }, (exists(delay) ? delay : 0));
 }
 
 // Makes all commands into one string
-var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+var formattedCommands = function (commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
     if (!exists(prefix)) prefix = '';
     var commands = '';
     var i;
-    for(i = 0; i < commandsArray.length; ++i) {
+    for (i = 0; i < commandsArray.length; ++i) {
         commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
     }
     return commands;
 }
 
 // Gets 1 command and info about it into a string
-var formatCommandInfo = function(commandsArray, commandIndex) {
+var formatCommandInfo = function (commandsArray, commandIndex) {
     return LIST_BULLET + CMD_PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Commands for `fishing`
-var cast = function() {
+var cast = function () {
     mppChatSend(CMD_PREFIX + CMD_CAST[0]);
 }
-var reel = function() {
+var reel = function () {
     mppChatSend(CMD_PREFIX + CMD_REEL);
 }
-var sack = function() {
+var sack = function () {
     mppChatSend(CMD_PREFIX + CMD_SACK[0]);
 }
-var eat = function(item) {
+var eat = function (item) {
     mppChatSend(CMD_PREFIX + CMD_EAT + ' ' + item);
 }
-var pick = function() {
+var pick = function () {
     mppChatSend(CMD_PREFIX + CMD_PICK);
 }
-var take = function(item) {
+var take = function (item) {
     mppChatSend(CMD_PREFIX + CMD_TAKE + ' ' + item);
 }
-var yeet = function(item) {
+var yeet = function (item) {
     mppChatSend(CMD_PREFIX + CMD_YEET + ' ' + item.toLowerCase());
 }
-var look = function() {
+var look = function () {
     mppChatSend(CMD_PREFIX + CMD_LOOK);
 }
 // Format strings for when ...
-var noTook = function(username, item) {
+var noTook = function (username, item) {
     // you can't take an item
     return "Friend " + username + ": You can't take " + item + " from outside.";
 }
-var sackContents = function(username) {
+var sackContents = function (username) {
     // you're looking at your sack of items
     return "Contents of " + username + "'s fish sack: ";
 }
-var carryingTooMuch = function(username) {
+var carryingTooMuch = function (username) {
     // can't take anything when carrying too much
     return "Friend " + username + " is carrying too much.";
 }
 
 // When there is an incorrect command, show this error
-var cmdNotFound = function(cmd) {
+var cmdNotFound = function (cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (active) mppChatSend(error);
     else console.log(error);
 }
 
 // Commands for this bot
-var help = function(command, userId, yourId) {
+var help = function (command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + CMD_PREFIX, true)
-                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + CMD_PREFIX, true) : ''));
+            + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + CMD_PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
@@ -280,7 +280,7 @@ var help = function(command, userId, yourId) {
         command = command.toLowerCase();
         // check commands arrays
         var i;
-        for(i = 0; i < BASE_COMMANDS.length; i++) {
+        for (i = 0; i < BASE_COMMANDS.length; i++) {
             if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BASE_COMMANDS;
@@ -288,7 +288,7 @@ var help = function(command, userId, yourId) {
             }
         }
         var k;
-        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+        for (k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
             if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_OWNER_COMMANDS;
@@ -300,29 +300,29 @@ var help = function(command, userId, yourId) {
         else cmdNotFound(command);
     }
 }
-var about = function() {
+var about = function () {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
-var link = function() {
+var link = function () {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
 }
-var feedback = function() {
+var feedback = function () {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
 }
-var didCast = function() {
+var didCast = function () {
     fishTimer = FISH_INTERVAL;
     casted = true;
     audioPlay(castedSound);
 }
-var didReel = function() {
+var didReel = function () {
     casted = false;
     audioPlay(reeledSound);
 }
-var didPick = function() {
+var didPick = function () {
     picked = true;
     audioPlay(pickedSound);
 }
-var didYeet = function(argsString) {
+var didYeet = function (argsString) {
     tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
     notYeeted = false;
     // get rid of the nonEdible we yeeted if we did yeet one
@@ -335,36 +335,36 @@ var didYeet = function(argsString) {
             var checkNonEdible = invNonEdibles[n].toLowerCase();
             if (checkNonEdible.includes(toYeet)) {
                 haveYeet = true;
-                invNonEdibles.splice(n,1);
+                invNonEdibles.splice(n, 1);
             }
             n++;
         }
     }
 }
-var didSack = function() {
+var didSack = function () {
     invSack = false;
     checkingSack = true;
 }
-var didEat = function() {
+var didEat = function () {
     tooMuchCarried = false; // this doesn't garentee that you're not carrying too much
 }
-var didLook = function() {
+var didLook = function () {
     seen = true;
 }
-var colors = function() {
+var colors = function () {
     mppChatSend(PRE_COLORS + " You can find all possible colors at: " + USER_COLORS_URL);
 }
-var kekTake = function() {
+var kekTake = function () {
     // toggles auto taking of kek on/off
     kekTakeOption = !kekTakeOption;
     mppChatSend(PRE_KEK_TAKE + " Kek auto taking is " + (kekTakeOption ? "on" : "off"));
 }
-var kekEat = function() {
+var kekEat = function () {
     // toggles auto eating of kek on/off
     kekEatOption = !kekEatOption;
     mppChatSend(PRE_KEK_EAT + " Kek auto eating is " + (kekEatOption ? "on" : "off"));
 }
-var audioToggler = function() {
+var audioToggler = function () {
     // toggles audio on/off
     audioEnabled = !audioEnabled;
     mppChatSend(PRE_AUDIO + " Audio is " + (audioEnabled ? "on" : "off"));
@@ -388,7 +388,7 @@ MPP.client.on('a', function (msg) {
         var command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
         var argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1).trim() : null;
         // look through commands
-        switch(command.toLowerCase()) {
+        switch (command.toLowerCase()) {
             case "help": case "h": help(argumentsString, userId, yourId); break;
             case "about": case "ab": about(); break;
             case "link": case "li": link(); break;
@@ -412,7 +412,7 @@ MPP.client.on('a', function (msg) {
         if (input.includes(yourUsername + ' ' + CAUGHT)) {
             casted = false;
             var i;
-            for(i = 0; i < NON_EDIBLES.length; i++) {
+            for (i = 0; i < NON_EDIBLES.length; i++) {
                 if (input.includes(NON_EDIBLES[i])) invNonEdibles.push(NON_EDIBLES[i]);
             }
             audioPlay(caughtSound);
@@ -443,7 +443,7 @@ MPP.client.on('a', function (msg) {
                 var inputLC = input.toLowerCase();
                 // check if a nonedible is found
                 var j;
-                for(j = 0; j < NON_EDIBLES.length; j++) {
+                for (j = 0; j < NON_EDIBLES.length; j++) {
                     var currentNonEdible = NON_EDIBLES[j].toLowerCase();
                     if (takeNonEdible == "" && inputLC.includes(currentNonEdible)) {
                         takeNonEdible = currentNonEdible;
@@ -467,7 +467,7 @@ MPP.client.on('a', function (msg) {
             if (checkingSack) {
                 checkingSack = false;
                 var k;
-                for(k = 0; k < NON_EDIBLES.length; k++) {
+                for (k = 0; k < NON_EDIBLES.length; k++) {
                     var theNonEdible = NON_EDIBLES[k];
                     var finding = INV_BULLET + theNonEdible + " x";
                     var found = input.toLowerCase().indexOf(finding.toLowerCase()) + finding.length;
@@ -486,7 +486,7 @@ MPP.client.on('a', function (msg) {
                         var amount = parseInt(input.substring(found, foundEnd));
                         // now add that amount to the inventory
                         var m;
-                        for(m = 0; m < amount; m++) {
+                        for (m = 0; m < amount; m++) {
                             invNonEdibles.push(theNonEdible);
                             notYeeted = true;
                         }
@@ -498,7 +498,7 @@ MPP.client.on('a', function (msg) {
         else if (input == carryingTooMuch(yourUsername)) tooMuchCarried = true;
     }
 });
-MPP.client.on("ch", function(msg) {
+MPP.client.on("ch", function (msg) {
     // update current room info
     currentRoom = MPP.client.channel._id;
     if (currentRoom == "test/fishing") active = true;
@@ -508,7 +508,7 @@ MPP.client.on("ch", function(msg) {
 // =============================================== INTERVALS
 
 // constantly check if a command executes when run, and exectute if not already
-var checkMessages = function() {
+var checkMessages = function () {
     if (active) {
         if (fishTimer > 0) fishTimer -= SECOND;
         else if (casted) {
@@ -533,13 +533,13 @@ var checkMessages = function() {
 }
 
 // Automatically turns off the sound warning (loading the bot)
-var clearSoundWarning = setInterval(function() {
+var clearSoundWarning = setInterval(function () {
     var playButton = document.querySelector("#sound-warning button");
     if (exists(playButton)) {
         clearInterval(clearSoundWarning);
         playButton.click();
         // wait for the client to come online
-        var waitForMPP = setInterval(function() {
+        var waitForMPP = setInterval(function () {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
                 console.log(PRE_MSG + "Online!");

@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Microsoft Entra/Azure/Intune/Endpoint Management - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes all Microsoft Entra/Azure/Intune/Endpoint portals/admin centers match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://entra.microsoft.com/*
 // @match        https://entra.microsoft365.com/*
@@ -12,8 +12,8 @@
 // @match        https://intune.microsoft365.com/*
 // @match        https://endpoint.microsoft.com/*
 // @match        https://endpoint.microsoft365.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Entra-Azure-Intune-Endpoint-Management-Auto-Device-Theme.user.js
 // @icon         https://portal.azure.com/Content/favicon.ico
 // @grant        none
 // @noframes
@@ -72,7 +72,7 @@ function updateTheme(changeToScheme) {
         // need to wait for panel to open
         let applyButtonEnabled = false,
             applyButtonClicked = false;
-        let waitForSettingsPane = setInterval(function() {
+        let waitForSettingsPane = setInterval(function () {
             try {
                 if (!settingsSectionLoaded) {
                     settingsSectionLoaded = document.querySelector(settingsSectionLoadingSelector) ? false : true;
@@ -116,9 +116,9 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     // need to wait for button & icon to be available
-    let waitingForSettingsBtn = setInterval(function() {
+    let waitingForSettingsBtn = setInterval(function () {
         let splashScreen = document.querySelector(splashScreenSelector),
             bladeProgress = document.querySelector(bladeProgressSelector);
         settingsButton = document.querySelector(settingsBtnSelector);

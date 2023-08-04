@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Remove Leading Zeros
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Removes leading zeros (like normal clocks), originally made for a small screen Raspberry PI clock kiosk.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://www.bitday.me/legacy*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/BitDay/Legacy-Remove-Leading-Zeros.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=bitday.me
 // @grant        none
 // ==/UserScript==
@@ -49,26 +49,26 @@ window["updateClock"] = function () {
 
 	//Check if the hour has changed
 	var oldHour = getMilitaryHour(oldStr);
-	if(oldStr.length == 0) return;
+	if (oldStr.length == 0) return;
 	var currHour = d.getHours();
-	if(currHour != oldHour) {
+	if (currHour != oldHour) {
 
 		//Change bgs
 		var cssClass = getPicture(currHour);
 		var oldClass = getPicture(oldHour);
 
-		if(cssClass != oldClass) {
+		if (cssClass != oldClass) {
 
 			//Make our waiting div the active div
 			$('.bg-tobe').removeClass('bg-tobe').addClass('bg-' + cssClass);
 
 			//Fade in the new bg
-	    	$('.bg-' + cssClass).fadeIn();
+			$('.bg-' + cssClass).fadeIn();
 
 			//Fade out the active and put it in a waiting state
-	    	$('.bg-' + oldClass).fadeOut(function() {
-	    		$('.bg-' + oldClass).removeClass('bg-' + oldClass).addClass('bg-tobe');
-	    	});
-	    }
+			$('.bg-' + oldClass).fadeOut(function () {
+				$('.bg-' + oldClass).removeClass('bg-' + oldClass).addClass('bg-tobe');
+			});
+		}
 	}
 };

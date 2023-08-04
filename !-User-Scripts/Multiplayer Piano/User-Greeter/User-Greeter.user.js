@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://thealiendrew.github.io/
-// @version      0.4.4
+// @version      0.4.5
 // @description  Greets users who join the room with a custom message!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
@@ -27,9 +27,9 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/pixabay.com/chat-1873543_960_720.png
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/User-Greeter.user.js
+// @icon         https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Greeter/pixabay.com/chat-1873543_960_720.png
 // @grant        GM_info
 // @run-at       document-end
 // ==/UserScript==
@@ -70,7 +70,7 @@ const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 1
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 
 // URLs
-const githubRepo = 'https://github.com/TheAlienDrew/Custom-JS/';
+const githubRepo = 'https://github.com/Andrew-J-Larson/Custom-JS/';
 const githubIssueTitle = '[Feedback] ' + NAME + ' ' + VERSION;
 const githubIssueBody = '<!-- Please write your feedback below this line. -->';
 const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githubIssueTitle) + '&body=' + encodeURIComponent(githubIssueBody);
@@ -148,24 +148,24 @@ document.addEventListener('visibilitychange', function () {
 // =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
-var exists = function(element) {
-    if (typeof(element) != "undefined" && element != null) return true;
+var exists = function (element) {
+    if (typeof (element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Puts quotes around string
-var quoteString = function(string) {
+var quoteString = function (string) {
     var newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
 }
 
 // Set the bot on or off (only from bot)
-var setActive = function(args, userId, yourId) {
+var setActive = function (args, userId, yourId) {
     if (userId != yourId) return;
     var choice = args[0];
     var newActive = null;
-    switch(choice.toLowerCase()) {
+    switch (choice.toLowerCase()) {
         case "false": case "off": case "no": case "0": newActive = false; break;
         case "true": case "on": case "yes": case "1": newActive = true; break;
         default: console.log("Invalid choice. Bot wasn't turned off or on.");
@@ -177,28 +177,28 @@ var setActive = function(args, userId, yourId) {
 }
 
 // Makes all commands into one string
-var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+var formattedCommands = function (commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
     if (!exists(prefix)) prefix = '';
     var commands = '';
     var i;
-    for(i = 0; i < commandsArray.length; ++i) {
+    for (i = 0; i < commandsArray.length; ++i) {
         commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
     }
     return commands;
 }
 
 // Gets 1 command and info about it into a string
-var formatCommandInfo = function(commandsArray, commandIndex) {
+var formatCommandInfo = function (commandsArray, commandIndex) {
     return LIST_BULLET + PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Send messages without worrying about timing
-var mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
+var mppChatSend = function (str, delay) {
+    setTimeout(function () { MPP.chat.send(str) }, (exists(delay) ? delay : 0));
 }
 
 // Send multiline chats, and return final delay to make things easier for timings
-var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
+var mppChatMultiSend = function (strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
     var newDelay = 0;
     var i;
@@ -213,16 +213,16 @@ var mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
 }
 
 // Gets the MPP color name for users color
-var mppGetUserColorName = function(hexColor) {
+var mppGetUserColorName = function (hexColor) {
     return (new Color(hexColor)).getName().replace("A shade of ", "");
 }
 
 // Send command info to user
-var mppCmdSend = function(commandsArray, cmdSubstring, delay) {
+var mppCmdSend = function (commandsArray, cmdSubstring, delay) {
     var commandIndex = null;
     // get command index
     var i;
-    for(i = 0; i < commandsArray.length; ++i) {
+    for (i = 0; i < commandsArray.length; ++i) {
         if (commandsArray[i][0].indexOf(cmdSubstring) == 0) {
             commandIndex = i;
         }
@@ -232,19 +232,19 @@ var mppCmdSend = function(commandsArray, cmdSubstring, delay) {
 }
 
 // When there is an incorrect command, show this error
-var cmdNotFound = function(cmd) {
+var cmdNotFound = function (cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (active) mppChatSend(error);
     else console.log(error);
 }
 
 // Commands
-var help = function(command, userId, yourId) {
+var help = function (command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
-                             + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
+            + (active ? ' ' + formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true) : '')
+            + (userId == yourId ? " | Bot Owner Commands: " + formattedCommands(BOT_OWNER_COMMANDS, LIST_BULLET + PREFIX, true) : ''));
     } else {
         var valid = null;
         var commandIndex = null;
@@ -252,7 +252,7 @@ var help = function(command, userId, yourId) {
         command = command.toLowerCase();
         // check commands arrays
         var i;
-        for(i = 0; i < BASE_COMMANDS.length; i++) {
+        for (i = 0; i < BASE_COMMANDS.length; i++) {
             if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BASE_COMMANDS;
@@ -260,7 +260,7 @@ var help = function(command, userId, yourId) {
             }
         }
         var j;
-        for(j = 0; j < BOT_COMMANDS.length; j++) {
+        for (j = 0; j < BOT_COMMANDS.length; j++) {
             if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_COMMANDS;
@@ -268,7 +268,7 @@ var help = function(command, userId, yourId) {
             }
         }
         var k;
-        for(k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
+        for (k = 0; k < BOT_OWNER_COMMANDS.length; k++) {
             if (BOT_OWNER_COMMANDS[k][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_OWNER_COMMANDS;
@@ -280,16 +280,16 @@ var help = function(command, userId, yourId) {
         else cmdNotFound(command);
     }
 }
-var about = function() {
+var about = function () {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
-var link = function() {
+var link = function () {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
 }
-var feedback = function() {
+var feedback = function () {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
 }
-var greetMsgSet = function(cmd, intGreet, msg) {
+var greetMsgSet = function (cmd, intGreet, msg) {
     var greet = "The ";
     var title;
     if (intGreet == GREET_HI) title = PRE_HI;
@@ -297,27 +297,27 @@ var greetMsgSet = function(cmd, intGreet, msg) {
     if (!exists(msg)) mppCmdSend(BOT_COMMANDS, cmd + ' ');
     else {
         var sameMsg = false;
-        switch(intGreet) {
+        switch (intGreet) {
             case GREET_HI: greet += "welcome"; hiMessage == msg ? sameMsg = true : hiMessage = msg; break;
             case GREET_BYE: greet += "goodbye"; byeMessage == msg ? sameMsg = true : byeMessage = msg; break;
         }
         if (sameMsg) mppChatSend(title + ' ' + greet + " message wasn't changed");
-        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME,"[username here]").replace(GREET_ID,"[user ID here]").replace(GREET_COLOR,"[user color here]"));
+        else mppChatSend(title + ' ' + greet + " message was set to: " + msg.replace(GREET_NAME, "[username here]").replace(GREET_ID, "[user ID here]").replace(GREET_COLOR, "[user color here]"));
     }
 }
-var greetToggle = function(cmd, intGreet, boolChoice) {
+var greetToggle = function (cmd, intGreet, boolChoice) {
     // check greet, then check current bool, lastly set it if not already
     var greet = "The ";
     var alreadySet = false;
     if (intGreet == GREET_HI) {
         greet += "welcome";
-        switch(hiOn) {
+        switch (hiOn) {
             case true: boolChoice ? alreadySet = true : hiOn = false; break;
             case false: boolChoice ? hiOn = true : alreadySet = true; break;
         }
     } else if (intGreet == GREET_BYE) {
         greet += "goodbye";
-        switch(byeOn) {
+        switch (byeOn) {
             case true: boolChoice ? alreadySet = true : byeOn = false; break;
             case false: boolChoice ? byeOn = true : alreadySet = true; break;
         }
@@ -366,7 +366,7 @@ MPP.client.on('a', function (msg) {
         }
     }
 });
-MPP.client.on("ch", function(msg) {
+MPP.client.on("ch", function (msg) {
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
@@ -386,21 +386,21 @@ MPP.client.on("ch", function(msg) {
             // check players joined
             if (hiOn) {
                 var added_ids = [];
-                jQuery.grep(new_ids, function(_id) {
+                jQuery.grep(new_ids, function (_id) {
                     if (jQuery.inArray(_id, old_ids) == -1) added_ids.push(_id);
                     i++;
                 });
                 // if we have gained users, welcome them in
                 if (exists(added_ids) && added_ids.length > 0) {
                     var j;
-                    for(j = 0; j < added_ids.length; j++) {
+                    for (j = 0; j < added_ids.length; j++) {
                         var k;
-                        for(k = 0; k < updatedPlayers.length; k++) {
+                        for (k = 0; k < updatedPlayers.length; k++) {
                             // if added _id matches in updatedPlayers, then get name and show hiMessage
                             if (added_ids[j] == updatedPlayers[k][0]) {
-                                mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME,updatedPlayers[k][1])
-                                                               .replace(GREET_ID,updatedPlayers[k][0])
-                                                               .replace(GREET_COLOR,mppGetUserColorName(updatedPlayers[k][2])));
+                                mppChatSend(PRE_MSG + hiMessage.replace(GREET_NAME, updatedPlayers[k][1])
+                                    .replace(GREET_ID, updatedPlayers[k][0])
+                                    .replace(GREET_COLOR, mppGetUserColorName(updatedPlayers[k][2])));
                             }
                         }
                     }
@@ -410,21 +410,21 @@ MPP.client.on("ch", function(msg) {
             // check players left
             if (byeOn) {
                 var removed_ids = [];
-                jQuery.grep(old_ids, function(_id) {
+                jQuery.grep(old_ids, function (_id) {
                     if (jQuery.inArray(_id, new_ids) == -1) removed_ids.push(_id);
                     i++;
                 });
                 // if we have lost users, goodbye to them
                 if (exists(removed_ids) && removed_ids.length > 0) {
                     var l;
-                    for(l = 0; l < removed_ids.length; l++) {
+                    for (l = 0; l < removed_ids.length; l++) {
                         var m;
-                        for(m = 0; m < currentPlayers.length; m++) {
+                        for (m = 0; m < currentPlayers.length; m++) {
                             // if removed _id matches in currentPlayers, then get name and show byeMessage
                             if (removed_ids[l] == currentPlayers[m][0]) {
-                                mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME,currentPlayers[m][1])
-                                                                .replace(GREET_ID,updatedPlayers[m][0])
-                                                                .replace(GREET_COLOR,mppGetUserColorName(currentPlayers[m][2])));
+                                mppChatSend(PRE_MSG + byeMessage.replace(GREET_NAME, currentPlayers[m][1])
+                                    .replace(GREET_ID, updatedPlayers[m][0])
+                                    .replace(GREET_COLOR, mppGetUserColorName(currentPlayers[m][2])));
                             }
                         }
                     }
@@ -440,7 +440,7 @@ MPP.client.on("ch", function(msg) {
 // =============================================== INTERVALS
 
 // Stuff that needs to be done by intervals (e.g. repeat)
-var slowRepeatingTasks = setInterval(function() {
+var slowRepeatingTasks = setInterval(function () {
     // do background tab fix
     if (!pageVisible) {
         var note = MPP.piano.keys["a-1"].note;
@@ -451,13 +451,13 @@ var slowRepeatingTasks = setInterval(function() {
 }, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
-var clearSoundWarning = setInterval(function() {
+var clearSoundWarning = setInterval(function () {
     var playButton = document.querySelector("#sound-warning button");
     if (exists(playButton)) {
         clearInterval(clearSoundWarning);
         playButton.click();
         // wait for the client to come online
-        var waitForMPP = setInterval(function() {
+        var waitForMPP = setInterval(function () {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 

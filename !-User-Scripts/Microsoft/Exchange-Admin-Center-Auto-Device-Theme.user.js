@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Microsoft Exchange admin center - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Makes Microsoft Exchange admin center match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://admin.exchange.microsoft.com/*
 // @match        https://admin.exchange.microsoft365.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Exchange-Admin-Center-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Exchange-Admin-Center-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Exchange-Admin-Center-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Exchange-Admin-Center-Auto-Device-Theme.user.js
 // @icon         https://eacprodeusstorage.blob.core.windows.net/resources/images/favicon_metro.ico
 // @grant        none
 // @noframes
@@ -58,7 +58,7 @@ function updateTheme(changeToScheme) {
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
     // need to wait for button & icon to be available
-    let waitingForThemeBtnAndIco = setInterval(function() {
+    let waitingForThemeBtnAndIco = setInterval(function () {
         themeButton = document.querySelector(themeBtnSelector);
         themeNotIcon = document.querySelector(themeNotIconSelector);
 

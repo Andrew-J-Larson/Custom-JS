@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name         Poolsuite FM - Minecraft DLC
 // @namespace    https://thealiendrew.github.io/
-// @version      0.4.5
+// @version      0.4.6
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://poolsuite.net/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/Minecraft-DLC.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/Minecraft-DLC.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/favicons/favicon_dithered_tampermonkey.png
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/Minecraft-DLC.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/Minecraft-DLC.user.js
+// @icon         https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/Minecraft-DLC/favicons/favicon_dithered_tampermonkey.png
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
-// @resource     splashBGColorTXT https://raw.githubusercontent.com/AltAlienDrew/minecraft-classic/main/splash/mojang-bg.txt
+// @resource     splashBGColorTXT https://raw.githubusercontent.com/Andrew-J-Larson-Alt/minecraft-classic/main/splash/mojang-bg.txt
 // @run-at       document-end
 // @noframes
 // ==/UserScript==
@@ -40,7 +40,7 @@ var splashBGColor = GM_getResourceText("splashBGColorTXT");
 
 const TENTH_OF_SECOND = 100;
 const SECOND = 10 * TENTH_OF_SECOND;
-const UPDATE_GUI_TIMEOUT = 2.5*SECOND;
+const UPDATE_GUI_TIMEOUT = 2.5 * SECOND;
 const YT_LOADER_TIMEOUT = SECOND;
 
 // =============================================== APP CONSTANTS (NOT TO CHANGE)
@@ -61,8 +61,8 @@ const HIDE_DESKTOP_CLASS = "hide-desktop";
 const APP_NAME = "Minecraft";
 const APP_ID = APP_NAME.toLowerCase();
 const APP_WEBSITE = "https://classic.minecraft.net/";
-const PS_FM_RESOURCES_LINK = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/";
-const APP_SPLASH = "https://raw.githubusercontent.com/AltAlienDrew/minecraft-classic/main/splash/mojang.png";
+const PS_FM_RESOURCES_LINK = "https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Poolsuite%20FM/";
+const APP_SPLASH = "https://raw.githubusercontent.com/Andrew-J-Larson-Alt/minecraft-classic/main/splash/mojang.png";
 const APP_RAW_LINK = PS_FM_RESOURCES_LINK + "Minecraft-DLC/";
 const APP_ICONS_LINK = PS_FM_RESOURCES_LINK + "window-button-icons/";
 const APP_FAVICON = APP_RAW_LINK + "favicons/favicon_dithered.png";
@@ -140,36 +140,36 @@ var appOuterHTML = minecraftOuterHTML.substring(0, 8) + 'id="' + IFRAME_ID + '" 
 // =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
-var exists = function(element) {
-    if (typeof(element) != "undefined" && element != null) return true;
+var exists = function (element) {
+    if (typeof (element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Where el is the DOM element you'd like to test for visibility
-var isHidden = function(el) {
+var isHidden = function (el) {
     return (el.offsetParent === null)
 }
 
 // when the game loads, it needs a first time gui fix
-var fixGuiMC = function(appIframe) {
+var fixGuiMC = function (appIframe) {
     appIframe.style = "pointer-events: all; " + STYLE_IFRAME;
     document.exitPointerLock();
     document.getElementsByTagName("section")[0].focus();
 }
 
 // Takes an app (iframe), and replaces the Poolsuite TV iframe
-var replaceIframe = function() {
+var replaceIframe = function () {
     // 'reload' iframe by changing the outer HTML (avoids leave site prompt)
     appIframe.outerHTML = appOuterHTML;
     appIframe = document.getElementById(IFRAME_ID);
     appIframe.focus(); // fixes appGL not loading error on some appsites that start up
 
     // fix Minecraft GUI after every iframe reload
-    appIframe.onload = function() {setTimeout(function() {fixGuiMC(appIframe)}, UPDATE_GUI_TIMEOUT)}
+    appIframe.onload = function () { setTimeout(function () { fixGuiMC(appIframe) }, UPDATE_GUI_TIMEOUT) }
 }
 
 // Set the app vue X, Y, W, H
-var storeVueWindowCoords = function() {
+var storeVueWindowCoords = function () {
     prevX = vueApp.left;
     prevY = vueApp.top;
     prevW = vueApp.width;
@@ -177,7 +177,7 @@ var storeVueWindowCoords = function() {
 }
 
 // Sets the design changes for the app window sizer button
-var setSizerBtnDesign = function(maximizing) {
+var setSizerBtnDesign = function (maximizing) {
     var appWindowTitleBar = appWindow.children[1];
     if (maximizing) {
         storeVueWindowCoords();
@@ -214,9 +214,9 @@ var setSizerBtnDesign = function(maximizing) {
 }
 
 // Toggles size of window for app
-var toggleSizer = function(choice) {
+var toggleSizer = function (choice) {
     var tempIsMaximized = appIsMaximized;
-    if (exists(choice) && typeof(optional) == "boolean") tempIsMaximized = choice;
+    if (exists(choice) && typeof (optional) == "boolean") tempIsMaximized = choice;
     else tempIsMaximized = !appIsMaximized;
 
     // only do something when we've changed the setting
@@ -227,7 +227,7 @@ var toggleSizer = function(choice) {
 }
 
 // Converts the Poolsuite TV into Minecraft
-var convertToMinecraft = function() {
+var convertToMinecraft = function () {
     // MORE VARIABLES
     desktop = document.getElementById(DESKTOP_ID);
     taskbar = document.querySelector(TASKBAR_SELECTOR);
@@ -273,12 +273,12 @@ var convertToMinecraft = function() {
     // RELOAD (necessary for when appGL breaks)
     reloadBtn.id = RELOAD_ID;
     reloadBtn.title = "Reload";
-    reloadBtn.onmouseup = function() {replaceIframe()}
+    reloadBtn.onmouseup = function () { replaceIframe() }
     appDragHeader.insertBefore(reloadBtn, minimizeBtn.nextSibling);
     document.styleSheets[0].addRule('#' + reloadBtn.id + ":after", "background: url('" + RELOAD_ICON + "') " + STYLE_APP_WINDOW_BTN_PART);
     // SIZER
     sizerBtn.id = SIZER_ID;
-    sizerBtn.onmouseup = function() {toggleSizer()}
+    sizerBtn.onmouseup = function () { toggleSizer() }
     appDragHeader.insertBefore(sizerBtn, minimizeBtn.nextSibling);
     setSizerBtnDesign(appIsMaximized);
 
@@ -293,7 +293,7 @@ var convertToMinecraft = function() {
     }
 
     // watch for when resizing to fix issues with it being bugged
-    setInterval(function() {
+    setInterval(function () {
         var movingCheck = appWindow.classList.contains("resizing") || appWindow.classList.contains("dragging");
         if (movingCheck && !isMoving) {
             isMoving = true;
@@ -307,7 +307,7 @@ var convertToMinecraft = function() {
 
 // =============================================== INTERVALS
 
-var waitForShortcut = setInterval(function() {
+var waitForShortcut = setInterval(function () {
     var appShortcut = document.querySelector("#app > div > div.section-icons.is-absolute > ul:nth-child(1) > li:nth-child(3) > div");
     if (exists(appShortcut)) {
         clearInterval(waitForShortcut);
@@ -322,15 +322,15 @@ var waitForShortcut = setInterval(function() {
         appIconText.style.width = "52px";
 
         // fixes issue of the youtube loader disappearing too fast
-        setTimeout(function() {if (!loadedYT) loadedYT = true}, YT_LOADER_TIMEOUT);
+        setTimeout(function () { if (!loadedYT) loadedYT = true }, YT_LOADER_TIMEOUT);
     }
 }, TENTH_OF_SECOND);
-var waitForIframe = setInterval(function() {
+var waitForIframe = setInterval(function () {
     appIframe = document.getElementById(IFRAME_ID);
 
     if (exists(appIframe)) clearInterval(waitForIframe);
 }, TENTH_OF_SECOND);
-var waitForYTLoader = setInterval(function() {
+var waitForYTLoader = setInterval(function () {
     youtubeLoader = document.querySelector(YT_LOADER_SELECTOR);
     if (exists(youtubeLoader)) {
         clearInterval(waitForYTLoader);
@@ -346,7 +346,7 @@ var waitForYTLoader = setInterval(function() {
 
 // =============================================== MAIN
 
-var loadMain = setInterval(function() {
+var loadMain = setInterval(function () {
     // don't run main until appIframe exists and the youtube loader doesn't
     if (exists(appIframe) && !exists(youtubeLoader) && loadedYT) {
         clearInterval(loadMain);

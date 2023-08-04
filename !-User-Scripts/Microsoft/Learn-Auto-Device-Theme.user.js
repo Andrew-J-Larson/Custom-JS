@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Microsoft Learn - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes Microsoft Learn match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://learn.microsoft.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=learn.microsoft.com
 // @grant        none
 // @noframes
@@ -45,7 +45,7 @@ function updateTheme(changeToScheme) {
     if (html.classList.contains(LIGHT_STYLE)) theme = 'light';
 
     if (theme != changeToScheme) {
-        let themeModeSwitch= document.querySelector(themeModeSwitchSelector);
+        let themeModeSwitch = document.querySelector(themeModeSwitchSelector);
         themeModeSwitch.click();
 
         let changeThemeModeSwitch = document.querySelector(changeToScheme == 'light' ? lightModeSwitchSelector : darkModeSwitchSelector);

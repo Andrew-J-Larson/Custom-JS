@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Room Color Changer
 // @namespace    https://thealiendrew.github.io/
-// @version      0.2.8
+// @version      0.2.9
 // @description  Advanced room color changing!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
@@ -27,9 +27,9 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/iconarchive.com/color-palette-icon.png
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/Room-Color-Changer.user.js
+// @icon         https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Multiplayer%20Piano/Room-Color-Changer/iconarchive.com/color-palette-icon.png
 // @grant        GM_info
 // @run-at       document-end
 // ==/UserScript==
@@ -70,7 +70,7 @@ const CHAT_DELAY = 5 * TENTH_OF_SECOND; // needed since the chat is limited to 1
 const SLOW_CHAT_DELAY = 2 * SECOND // when you are not the owner, your chat quota is lowered
 
 // URLs
-const githubRepo = 'https://github.com/TheAlienDrew/Custom-JS/';
+const githubRepo = 'https://github.com/Andrew-J-Larson/Custom-JS/';
 const githubIssueTitle = '[Feedback] ' + NAME + ' ' + VERSION;
 const githubIssueBody = '<!-- Please write your feedback below this line. -->';
 const FEEDBACK_URL = githubRepo + 'issues/new?title=' + encodeURIComponent(githubIssueTitle) + '&body=' + encodeURIComponent(githubIssueBody);
@@ -138,48 +138,48 @@ document.addEventListener('visibilitychange', function () {
 // =============================================== FUNCTIONS
 
 // Check to make sure variable is initialized with something
-var exists = function(element) {
-    if (typeof(element) != "undefined" && element != null) return true;
+var exists = function (element) {
+    if (typeof (element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Puts quotes around string
-var quoteString = function(string) {
+var quoteString = function (string) {
     var newString = string;
     if (exists(string) && string != "") newString = '"' + string + '"';
     return newString
 }
 
 // Makes all commands into one string
-var formattedCommands = function(commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
+var formattedCommands = function (commandsArray, prefix, spacing) { // needs to be 2D array with commands before descriptions
     if (!exists(prefix)) prefix = '';
     var commands = '';
     var i;
-    for(i = 0; i < commandsArray.length; ++i) {
+    for (i = 0; i < commandsArray.length; ++i) {
         commands += (spacing ? ' ' : '') + prefix + commandsArray[i][0];
     }
     return commands;
 }
 
 // Gets 1 command and info about it into a string
-var formatCommandInfo = function(commandsArray, commandIndex) {
+var formatCommandInfo = function (commandsArray, commandIndex) {
     return LIST_BULLET + PREFIX + commandsArray[commandIndex][0] + DESCRIPTION_SEPARATOR + commandsArray[commandIndex][1];
 }
 
 // Send messages without worrying about timing
-var mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
+var mppChatSend = function (str, delay) {
+    setTimeout(function () { MPP.chat.send(str) }, (exists(delay) ? delay : 0));
 }
 
 // When there is an incorrect command, show this error
-var cmdNotFound = function(cmd) {
+var cmdNotFound = function (cmd) {
     var error = PRE_ERROR + " Invalid command, " + quoteString(cmd) + " doesn't exist";
     if (active) mppChatSend(error);
     else console.log(error);
 }
 
 // Validates colors
-var isColor = function(strColor){
+var isColor = function (strColor) {
     // no need to test if color exists
     var s = new Option().style;
     s.color = strColor;
@@ -193,21 +193,21 @@ var isColor = function(strColor){
 }
 
 // Checks to see if HEX color is valid
-var isHexColor = function(strColor) {
+var isHexColor = function (strColor) {
     return /^#([0-9A-F]{3}){1,2}$/i.test(strColor);
 }
 
 // Convert HSL to HEX color
-var HSLToHex = function(hsl) {
+var HSLToHex = function (hsl) {
     let sep = hsl.indexOf(",") > -1 ? "," : " ";
     hsl = hsl.substr(4).split(")")[0].split(sep);
 
     let h = hsl[0],
-        s = hsl[1].substr(0,hsl[1].length - 1) / 100,
-        l = hsl[2].substr(0,hsl[2].length - 1) / 100,
+        s = hsl[1].substr(0, hsl[1].length - 1) / 100,
+        l = hsl[2].substr(0, hsl[2].length - 1) / 100,
         c = (1 - Math.abs(2 * l - 1)) * s,
         x = c * (1 - Math.abs((h / 60) % 2 - 1)),
-        m = l - c/2,
+        m = l - c / 2,
         r = 0,
         g = 0,
         b = 0;
@@ -239,7 +239,7 @@ var HSLToHex = function(hsl) {
 }
 
 // Convert RGB to HEX color
-var RGBToHex = function(rgb) {
+var RGBToHex = function (rgb) {
     // Choose correct separator
     let sep = rgb.indexOf(",") > -1 ? "," : " ";
     // Turn "rgb(r,g,b)" into [r,g,b]
@@ -257,7 +257,7 @@ var RGBToHex = function(rgb) {
 }
 
 // Get CSS color name as HEX color
-var colorToHEX = function(strColor) {
+var colorToHEX = function (strColor) {
     if (!isColor(strColor)) return null;
     strColor = strColor.toLowerCase();
     if (isHexColor(strColor)) {
@@ -294,15 +294,15 @@ var colorToHEX = function(strColor) {
 }
 
 // Change the room colors
-var roomColorAreaToString = function(area) {
+var roomColorAreaToString = function (area) {
     // send string value from room color area number value
-    switch(area) {
+    switch (area) {
         case INNER_ROOM_COLOR: return "inner"; break;
         case OUTER_ROOM_COLOR: return "outer"; break;
         default: return "unknown"; break; // shouldn't ever get here
     }
 }
-var currentRoomColor = function(area) {
+var currentRoomColor = function (area) {
     // shows the current color of ths choosen room area
     var color = null;
 
@@ -328,11 +328,11 @@ var currentRoomColor = function(area) {
 
     return color;
 }
-var getRoomColorArea = function(area) {
+var getRoomColorArea = function (area) {
     // get area we are setting a color to
     var valid = null;
     if (exists(area)) { // don't continue if value is already correct
-        switch(area) {
+        switch (area) {
             case INNER_ROOM_COLOR:
             case OUTER_ROOM_COLOR: return area; break;
         }
@@ -342,7 +342,7 @@ var getRoomColorArea = function(area) {
     var result = null;
     var output = "";
 
-    switch(valid) {
+    switch (valid) {
         case "inner": case "inside": case "center": case "1": result = INNER_ROOM_COLOR; break;
         case "outer": case "outside": case "outskirts": case "2": result = OUTER_ROOM_COLOR; break;
         default: console.log("Invalid area: " + quoteString(area)); break;
@@ -351,20 +351,20 @@ var getRoomColorArea = function(area) {
     if (valid != null) console.log(output + '.'); return null;
     return result;
 }
-var getRoomColorSet = function(area, color) {
+var getRoomColorSet = function (area, color) {
     // get the set we need to change area color
     var validArea = getRoomColorArea(area);
     var validColor = colorToHEX(color);
     var result = null;
     var output = null;
 
-    switch(validArea) {
+    switch (validArea) {
         case INNER_ROOM_COLOR:
         case OUTER_ROOM_COLOR: output = roomColorAreaToString(validArea); break;
     }
-    switch(validArea) {
-        case INNER_ROOM_COLOR: result = {color: validColor, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR))}; break; // second color gets reset without setting it with first color
-        case OUTER_ROOM_COLOR: result = {color2: validColor}; break;
+    switch (validArea) {
+        case INNER_ROOM_COLOR: result = { color: validColor, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR)) }; break; // second color gets reset without setting it with first color
+        case OUTER_ROOM_COLOR: result = { color2: validColor }; break;
     }
 
     if (output != null) {
@@ -374,16 +374,16 @@ var getRoomColorSet = function(area, color) {
     }
     return result;
 }
-var getRoomColorsSet = function(color1, color2) {
+var getRoomColorsSet = function (color1, color2) {
     // get the set we need to change colors
     var validColor1 = colorToHEX(color1);
     var validColor2 = colorToHEX(color2);
     var result = null;
     var output = null;
 
-    if (validColor1 != null && validColor2 != null) result = {color: validColor1, color2: validColor2};
-    else if (validColor1 != null) result = {color: validColor1, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR))}; // second color gets reset without setting it with first color
-    else if (validColor2 != null) result = {color2: validColor2};
+    if (validColor1 != null && validColor2 != null) result = { color: validColor1, color2: validColor2 };
+    else if (validColor1 != null) result = { color: validColor1, color2: colorToHEX(currentRoomColor(OUTER_ROOM_COLOR)) }; // second color gets reset without setting it with first color
+    else if (validColor2 != null) result = { color2: validColor2 };
 
     if (validColor1 != null) output = "Room " + roomColorAreaToString(INNER_ROOM_COLOR) + " color will be set to: " + color1;
     if (validColor2 != null) output += (output == null ? "" : "\n") + "Room " + roomColorAreaToString(OUTER_ROOM_COLOR) + " color will be set to: " + color2;
@@ -391,37 +391,37 @@ var getRoomColorsSet = function(color1, color2) {
     if (output != null) console.log(output);
     return result;
 }
-var setRoomColor = function(area, color) {
+var setRoomColor = function (area, color) {
     // set color based on inner or outer area
     var isOwner = MPP.client.isOwner();
 
     var set = getRoomColorSet(area, color);
     if (isOwner && set != null) {
-        MPP.client.sendArray([{m: "chset", set: set}]);
+        MPP.client.sendArray([{ m: "chset", set: set }]);
         return true;
     } else { // room ownership (other errors are logged from other functions)
         if (!isOwner) console.log(NOT_OWNER);
         return false;
     }
 }
-var setRoomColors = function(color1, color2) {
+var setRoomColors = function (color1, color2) {
     // set both inner and outer colors
     var isOwner = MPP.client.isOwner();
 
     var set = getRoomColorsSet(color1, color2);
     if (isOwner && set != null) {
-        MPP.client.sendArray([{m: "chset", set: set}]);
+        MPP.client.sendArray([{ m: "chset", set: set }]);
         return true;
     } else { // room ownership (other errors are logged from other functions)
         if (!isOwner) console.log(NOT_OWNER);
         return false;
     }
 }
-var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OUTER constant
+var mppRoomColorSend = function (area, color, delay) { // area is the INNER or OUTER constant
     // check the color string for defaults or show color
     if (exists(color) && color != "") {
         var checkColor = (color != "") ? color.toLowerCase() : "normal";
-        switch(checkColor) {
+        switch (checkColor) {
             case "normal": color = BOT_ROOM_COLORS[area]; break;
             case "default": case "mpp": color = MPP_DEFAULT_ROOMCOLORS[area]; break;
             case "lobby": case "test": color = MPP_LOBBY_ROOMCOLORS[area]; break;
@@ -435,12 +435,12 @@ var mppRoomColorSend = function(area, color, delay) { // area is the INNER or OU
 }
 
 // Commands
-var help = function(command, userId, yourId) {
+var help = function (command, userId, yourId) {
     var isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         var publicCommands = formattedCommands(BOT_COMMANDS, LIST_BULLET + PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, LIST_BULLET + PREFIX, true)
-                             + publicCommands);
+            + publicCommands);
     } else {
         var valid = null;
         var commandIndex = null;
@@ -448,7 +448,7 @@ var help = function(command, userId, yourId) {
         command = command.toLowerCase();
         // check commands arrays
         var i;
-        for(i = 0; i < BASE_COMMANDS.length; i++) {
+        for (i = 0; i < BASE_COMMANDS.length; i++) {
             if (BASE_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BASE_COMMANDS;
@@ -456,7 +456,7 @@ var help = function(command, userId, yourId) {
             }
         }
         var j;
-        for(j = 0; j < BOT_COMMANDS.length; j++) {
+        for (j = 0; j < BOT_COMMANDS.length; j++) {
             if (BOT_COMMANDS[j][0].indexOf(command) == 0) {
                 valid = command;
                 commandArray = BOT_COMMANDS;
@@ -468,16 +468,16 @@ var help = function(command, userId, yourId) {
         else cmdNotFound(command);
     }
 }
-var about = function() {
+var about = function () {
     mppChatSend(PRE_ABOUT + ' ' + BOT_DESCRIPTION + ' ' + BOT_AUTHOR + ' ' + BOT_NAMESPACE);
 }
-var link = function() {
+var link = function () {
     mppChatSend(PRE_LINK + " You can download this bot from " + DOWNLOAD_URL);
 }
-var feedback = function() {
+var feedback = function () {
     mppChatSend(PRE_FEEDBACK + " Please go to " + FEEDBACK_URL + " in order to submit feedback.");
 }
-var roomcolor = function(command) {
+var roomcolor = function (command) {
     if (!exists(command) || command == "") {
         mppChatSend(PRE_ROOMCOLOR + ' ' + ROOMCOLOR_OPTIONS, 0);
         mppChatSend("Commands: " + formattedCommands(ROOMCOLOR_COMMANDS, LIST_BULLET + PREFIX, true), 0);
@@ -487,7 +487,7 @@ var roomcolor = function(command) {
         command = command.toLowerCase();
         // check commands array
         var i;
-        for(i = 0; i < ROOMCOLOR_COMMANDS.length; ++i) {
+        for (i = 0; i < ROOMCOLOR_COMMANDS.length; ++i) {
             if (ROOMCOLOR_COMMANDS[i][0].indexOf(command) == 0) {
                 valid = command;
                 commandIndex = i;
@@ -498,13 +498,13 @@ var roomcolor = function(command) {
         else cmdNotFound(command);
     }
 }
-var roomcolor1 = function(color) {
+var roomcolor1 = function (color) {
     mppRoomColorSend(INNER_ROOM_COLOR, color, 0);
 }
-var roomcolor2 = function(color) {
+var roomcolor2 = function (color) {
     mppRoomColorSend(OUTER_ROOM_COLOR, color, 0);
 }
-var roomcolors = function(argsColors) {
+var roomcolors = function (argsColors) {
     // check the arguments for color string defaults or show colors
     var color1 = currentRoomColor(INNER_ROOM_COLOR);
     var color2 = currentRoomColor(OUTER_ROOM_COLOR);
@@ -514,7 +514,7 @@ var roomcolors = function(argsColors) {
         if (argsColors.length <= 2) {
             // get color1
             var newColor1 = argsColors[INNER_ROOM_COLOR].toLowerCase();
-            switch(newColor1) {
+            switch (newColor1) {
                 case "normal": color1 = BOT_ROOM_COLORS[INNER_ROOM_COLOR]; break;
                 case "default": case "mpp": color1 = MPP_DEFAULT_ROOMCOLORS[INNER_ROOM_COLOR]; break;
                 case "lobby": case "test": color1 = MPP_LOBBY_ROOMCOLORS[INNER_ROOM_COLOR]; break;
@@ -524,7 +524,7 @@ var roomcolors = function(argsColors) {
             // get color2
             var newColor2 = newColor1;
             if (argsColors.length > 1) newColor2 = argsColors[OUTER_ROOM_COLOR].toLowerCase();
-            switch(newColor2) {
+            switch (newColor2) {
                 case "normal": color2 = BOT_ROOM_COLORS[OUTER_ROOM_COLOR]; break;
                 case "default": case "mpp": color2 = MPP_DEFAULT_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
                 case "lobby": case "test": color2 = MPP_LOBBY_ROOMCOLORS[OUTER_ROOM_COLOR]; break;
@@ -571,7 +571,7 @@ MPP.client.on('a', function (msg) {
         }
     }
 });
-MPP.client.on("ch", function(msg) {
+MPP.client.on("ch", function (msg) {
     // set new chat delay based on room ownership after changing rooms
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
@@ -580,7 +580,7 @@ MPP.client.on("ch", function(msg) {
 // =============================================== INTERVALS
 
 // Stuff that needs to be done by intervals (e.g. repeat)
-var slowRepeatingTasks = setInterval(function() {
+var slowRepeatingTasks = setInterval(function () {
     // do background tab fix
     if (!pageVisible) {
         var note = MPP.piano.keys["a-1"].note;
@@ -591,13 +591,13 @@ var slowRepeatingTasks = setInterval(function() {
 }, SECOND);
 
 // Automatically turns off the sound warning (mainly for autoplay)
-var clearSoundWarning = setInterval(function() {
+var clearSoundWarning = setInterval(function () {
     var playButton = document.querySelector("#sound-warning button");
     if (exists(playButton)) {
         clearInterval(clearSoundWarning);
         playButton.click();
         // wait for the client to come online
-        var waitForMPP = setInterval(function() {
+        var waitForMPP = setInterval(function () {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 

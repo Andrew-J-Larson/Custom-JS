@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://thealiendrew.github.io/
-// @version      1.4.5
+// @version      1.4.6
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://*/*.aspx*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
 // @icon         https://hd.alloysoftware.com/helpdesk/favicon.ico
 // @grant        GM_addStyle
 // ==/UserScript==
@@ -42,7 +42,7 @@ const NOT_ALLOY_NAVIGATOR = "[" + GM_info.script.name + "] Aborted script, this 
 const SPEED_SECOND = 1000; // ms
 const INTERVAL_SLOW_SPEED = 500; // ms
 const INTERVAL_SPEED = 200; // ms
-const ticketLinkRandomNumber = function() {
+const ticketLinkRandomNumber = function () {
     let length = 18; // 18 is likely overkill, but fine
     return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
 }();
@@ -101,7 +101,7 @@ let placementElement; // gets set dynamically
 // MAIN
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     // need to confirm we are running on Alloy Navigator, and confirm features
     let applicationNameElement = (document.head).querySelector(applicationNameSelector);
     let applicationName = applicationNameElement ? applicationNameElement.content : null;
@@ -117,7 +117,7 @@ window.addEventListener('load', function() {
         let hasBreadcrumbs = (applicationVersionSplit && applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2);
 
         // need to wait for element(s) to be available
-        let waitForAlloyElements = setInterval(function() {
+        let waitForAlloyElements = setInterval(function () {
             let ticketHeader = document.querySelector(headerWrapperSelector);
             let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
             if (ticketHeader && !document.hidden && (hasBreadcrumbs ? alloyBreadcrumbs : true)) {
@@ -170,17 +170,17 @@ window.addEventListener('load', function() {
                     ticketLinkButton.id = ticketLinkButtonID;
                     ticketLinkButton.title = COPY_TOOLTIP;
                     ticketLinkButton.alt = COPY_TOOLTIP;
-                    ticketLinkButton.onclick = function() {
+                    ticketLinkButton.onclick = function () {
                         copyToClip(ticketRichTextLink, linkURL);
                         // need to remove active fade first
                         if (currentFade) clearTimeout(currentFade);
                         ticketLinkToast.style.transition = '';
                         ticketLinkToast.style.display = '';
                         ticketLinkToast.style.opacity = '1';
-                        currentFade = setTimeout(function() {
+                        currentFade = setTimeout(function () {
                             ticketLinkToast.style.transition = 'opacity 1s ease-in-out';
                             ticketLinkToast.style.opacity = '0';
-                            currentFade = setTimeout(function() { ticketLinkToast.style.display = 'none' }, SPEED_SECOND);
+                            currentFade = setTimeout(function () { ticketLinkToast.style.display = 'none' }, SPEED_SECOND);
                         }, SPEED_SECOND);
                     };
                     // hide an inferior Alloy button that provides the same function*
@@ -194,7 +194,7 @@ window.addEventListener('load', function() {
 
                     // button injection depends on if Alloy version has breadcrumbs
                     if (hasBreadcrumbs) {
-                        let fixMissingButton = setInterval(function() {
+                        let fixMissingButton = setInterval(function () {
                             if (!document.getElementById(ticketLinkButtonID)) {
                                 alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
                                 alloyObjectDirectoryItems = alloyBreadcrumbs ? alloyBreadcrumbs.querySelectorAll('div > div > div > a > span') : null;
@@ -233,7 +233,7 @@ window.addEventListener('load', function() {
 
                     // monitor page theme to change link button colors appropriately
                     let htmlPage = document.querySelector('html');
-                    setInterval(function() {
+                    setInterval(function () {
                         if ((!theme || theme === "light") && htmlPage.hasAttribute('data-darkreader-scheme') && htmlPage.getAttribute('data-darkreader-scheme') === "dark") {
                             theme = "dark";
                             ticketLinkButton.innerHTML = googleFontLinkDarkMode;

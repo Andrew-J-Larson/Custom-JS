@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Indeed - Archive All Messages
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Archives all your messages in your Indeed inbox.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://messages.indeed.com/conversations*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Indeed/Archive-All-Messages.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Indeed/Archive-All-Messages.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Indeed/Archive-All-Messages.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Indeed/Archive-All-Messages.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=indeed.com
 // @grant        GM_addStyle
 // ==/UserScript==
@@ -32,7 +32,7 @@ const slowLoopDelay = 200; // ms
 const loopDelay = 10; // ms
 const listHeaderSelector = "#conversation-list-pane-header > div";
 const conversationListSelector = "div.msgw-ConversationList";
-const conversationListMessagesSelector = conversationListSelector+" > div";
+const conversationListMessagesSelector = conversationListSelector + " > div";
 const folderDropdownButtonSelector = "button[aria-describedby='msgw-folderDropdownGroup']";
 const messageSelector = "a.msgw-ConversationListItem";
 const overflowMenuButtonSelector = "div.msg-OverflowMenu > button[id^='menu-button']";
@@ -54,7 +54,7 @@ function simulateMouseClick(targetNode) {
         clickEvent.initEvent(eventType, true, true);
         targetNode.dispatchEvent(clickEvent);
     }
-    ["mouseover", "mousedown", "mouseup", "click"].forEach(function(eventType) {
+    ["mouseover", "mousedown", "mouseup", "click"].forEach(function (eventType) {
         triggerMouseEvent(targetNode, eventType);
     });
 }
@@ -70,15 +70,15 @@ var message; // needs to be set for each message clear
 // MAIN
 
 // for stylizing archive all button
-GM_addStyle("."+archiveAllButtonClassname+"{box-shadow:inset 0 1px 0 0 #fff;background-color:#fff;border-radius:6px;border:1px solid #dcdcdc;display:inline-block;cursor:pointer;color:#666;font-family:Arial;font-size:15px;padding:4px;margin-left:auto;margin-right:0;text-decoration:none;text-shadow:0 1px 0 #fff}."+archiveAllButtonClassname+":disabled{box-shadow:none;background-color:#f6f6f6;color:#bababa;text-shadow:none}."+archiveAllButtonClassname+":not([disabled]):hover{background-color:#f6f6f6}."+archiveAllButtonClassname+":not([disabled]):active{position:relative;top:1px}");
+GM_addStyle("." + archiveAllButtonClassname + "{box-shadow:inset 0 1px 0 0 #fff;background-color:#fff;border-radius:6px;border:1px solid #dcdcdc;display:inline-block;cursor:pointer;color:#666;font-family:Arial;font-size:15px;padding:4px;margin-left:auto;margin-right:0;text-decoration:none;text-shadow:0 1px 0 #fff}." + archiveAllButtonClassname + ":disabled{box-shadow:none;background-color:#f6f6f6;color:#bababa;text-shadow:none}." + archiveAllButtonClassname + ":not([disabled]):hover{background-color:#f6f6f6}." + archiveAllButtonClassname + ":not([disabled]):active{position:relative;top:1px}");
 
 // need to create archive all button
 let archiveAllButton = document.createElement("button");
 archiveAllButton.setAttribute("disabled", "");
 archiveAllButton.classList.add(archiveAllButtonClassname);
 archiveAllButton.innerText = "Archive All";
-archiveAllButton.onclick = function() {
-    let waitingForMessages = setInterval(function() {
+archiveAllButton.onclick = function () {
+    let waitingForMessages = setInterval(function () {
         message = document.querySelector(messageSelector);
 
         // need to wait to click until async operation is done
@@ -93,19 +93,19 @@ archiveAllButton.onclick = function() {
                 if (overflowMenuButton) {
                     clearInterval(waitForOverflowMenuButton);
 
-                    let waitForArchiveButton = setInterval(function() {
+                    let waitForArchiveButton = setInterval(function () {
                         simulateMouseClick(overflowMenuButton);
                         let archiveButton = document.querySelector(archiveButtonSelector);
                         if (archiveButton && !(((((archiveButton.parentElement).parentElement).parentElement).parentElement).parentElement).hasAttribute('hidden')) {
                             clearInterval(waitForArchiveButton);
 
-                            let waitForMessageClear = setInterval(function() {
+                            let waitForMessageClear = setInterval(function () {
                                 simulateMouseClick(archiveButton);
                                 let noMessageSelected = document.querySelector(noMessageSelectedSelector);
                                 if (noMessageSelected) {
                                     clearInterval(waitForMessageClear);
 
-                                    setTimeout(function () {readyForNextMessage = true}, loopDelay);
+                                    setTimeout(function () { readyForNextMessage = true }, loopDelay);
                                 }
                             }, loopDelay);
                         }
@@ -114,7 +114,7 @@ archiveAllButton.onclick = function() {
             }, loopDelay);
         } else if (!message) {
             clearInterval(waitingForMessages);
-            let waitForNewInboxMessages = setInterval(function() {
+            let waitForNewInboxMessages = setInterval(function () {
                 message = document.querySelector(messageSelector);
                 folderDropdownButton = document.querySelector(folderDropdownButtonSelector);
                 // only check if there are new messages, when we are in the inbox
@@ -131,10 +131,10 @@ archiveAllButton.onclick = function() {
 // MUTATION OBSERVERS
 
 // monitor messages in list, to disable button as needed
-var conversationListMessagesObserver = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
+var conversationListMessagesObserver = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
         if (mutation.type === "childList") {
-            setTimeout(function() {
+            setTimeout(function () {
                 message = document.querySelector(messageSelector);
                 if (!message) archiveAllButton.setAttribute("disabled", "");
             }, slowLoopDelay);
@@ -143,10 +143,10 @@ var conversationListMessagesObserver = new MutationObserver(function(mutations) 
 });
 
 // monitor clicks on folderDropdownGroup, to hide button as needed
-var folderDropdownObserver = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
+var folderDropdownObserver = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
         if (mutation.type === "attributes") {
-            setTimeout(function() {
+            setTimeout(function () {
                 hideElementBasedOnInnerText("Inbox", folderDropdownButton, archiveAllButton);
                 // need to also check if there are messages in case of a needed re-enable
                 message = document.querySelector(messageSelector);
@@ -158,7 +158,7 @@ var folderDropdownObserver = new MutationObserver(function(mutations) {
 });
 
 // wait for React to load
-let waitForReact = setInterval(function() {
+let waitForReact = setInterval(function () {
     if (document.readyState === "complete") {
         clearInterval(waitForReact);
 
@@ -169,7 +169,7 @@ let waitForReact = setInterval(function() {
             if (!checkingArchiveButton) {
                 checkingArchiveButton = true;
                 let listHeader = document.querySelector(listHeaderSelector);
-                foundArchiveAllButton = document.querySelector("button."+archiveAllButtonClassname);
+                foundArchiveAllButton = document.querySelector("button." + archiveAllButtonClassname);
                 folderDropdownButton = document.querySelector(folderDropdownButtonSelector);
                 conversationList = document.querySelector(conversationListSelector);
                 conversationListMessages = document.querySelector(conversationListMessagesSelector);

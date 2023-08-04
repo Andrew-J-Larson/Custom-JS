@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Apartment List - Cheap Apartments Sort
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  try to take over the world!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://www.apartmentlist.com/shortlist
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Apartment%20List/Cheap-Apartments-Sort.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Apartment%20List/Cheap-Apartments-Sort.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Apartment%20List/Cheap-Apartments-Sort.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Apartment%20List/Cheap-Apartments-Sort.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=apartmentlist.com
 // @grant        GM_addStyle
 // ==/UserScript==
@@ -72,9 +72,9 @@ for (let i = 0; i < propertyElements.length; i++) {
 delete propertyElements; // no need to keep this anymore
 
 // sort properties from lowest to highest price, places without a price come first
-properties.sort(function(a, b) {
-  if(a.price === Infinity) return 1;
-  else if(isNaN(a.price)) return -1;
+properties.sort(function (a, b) {
+  if (a.price === Infinity) return 1;
+  else if (isNaN(a.price)) return -1;
   else return a.price - b.price;
 });
 
@@ -84,10 +84,10 @@ GM_addStyle(cheapPropertySortCSS);
 // create the basic button layout with IDs
 let cheapPropertiesSortElement = document.createElement('div');
 cheapPropertiesSortElement.id = cheapPropertiesSortId;
-cheapPropertiesSortElement.innerHTML = '<button type="button" id="'+cheapPropertiesLeftId+'" disabled>&#9664;</button> <label id="'+cheapPropertiesPageTextId+'"></label> <button type="button" id="'+cheapPropertiesRightId+'" disabled>&#9654;</button>'
+cheapPropertiesSortElement.innerHTML = '<button type="button" id="' + cheapPropertiesLeftId + '" disabled>&#9664;</button> <label id="' + cheapPropertiesPageTextId + '"></label> <button type="button" id="' + cheapPropertiesRightId + '" disabled>&#9654;</button>'
 
 // need to add the button somewhere, chose right after logo in the first navbar element
-let firstNavbarElement = document.querySelector('#'+navbarId+' > div > div:first-of-type');
+let firstNavbarElement = document.querySelector('#' + navbarId + ' > div > div:first-of-type');
 firstNavbarElement.appendChild(cheapPropertiesSortElement);
 
 // get buttons and assign functions required to traverse the cheap properties list
@@ -99,7 +99,7 @@ let currentIndex = 0; // index updates with each left or right button click
 
 // enables/disables buttons and updates entry label after each button click
 // also scrolls the next cheap property into view
-let updatePropertyButtons = function() {
+let updatePropertyButtons = function () {
   if (properties.length <= 0 && (!propertyLeftBtn.disabled || !propertyLeftBtn.disabled)) {
     propertyLeftBtn.disabled = true;
     propertyRightBtn.disabled = true;
@@ -117,11 +117,11 @@ let updatePropertyButtons = function() {
 updatePropertyButtons(); // need to activate at least once to initialize the buttons/entry label
 
 // functions for buttons, updates index then updates buttons
-propertyLeftBtn.onclick = function() {
+propertyLeftBtn.onclick = function () {
   currentIndex--;
   updatePropertyButtons();
 };
-propertyRightBtn.onclick = function() {
+propertyRightBtn.onclick = function () {
   currentIndex++;
   updatePropertyButtons();
 };

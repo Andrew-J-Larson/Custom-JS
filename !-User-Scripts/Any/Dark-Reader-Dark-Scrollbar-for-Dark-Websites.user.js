@@ -1,19 +1,19 @@
 // ==UserScript==
 // @name         Dark Reader - Dark Scrollbar for Dark Websites
 // @namespace    https://thealiendrew.github.io/
-// @version      1.5.1
+// @version      1.5.2
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        http*://*/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=darkreader.org
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://unpkg.com/xregexp/xregexp-all.js
-// @resource     css https://raw.githubusercontent.com/TheAlienDrew/Custom-CSS/main/!-User-Styles/Any/Global-Dark-Scrollbar.user.css
+// @resource     css https://raw.githubusercontent.com/Andrew-J-Larson/Custom-CSS/main/!-User-Styles/Any/Global-Dark-Scrollbar.user.css
 // @resource     config https://raw.githubusercontent.com/darkreader/darkreader/main/src/config/dark-sites.config
 // ==/UserScript==
 
@@ -59,7 +59,7 @@ try {
 
     // loop through dark_sites and see if the current URL matches
     let darkSiteIndex = 0;
-    let checkDarkSites = setInterval(function() {
+    let checkDarkSites = setInterval(function () {
         // only check if the entry is not blank (like in the case with the last line of some config files)
         if (darkSiteIndex < dark_sites.length && dark_sites[darkSiteIndex]) {
             // note:

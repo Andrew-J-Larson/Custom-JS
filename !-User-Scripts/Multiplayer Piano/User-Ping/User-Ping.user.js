@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
 // @namespace    https://thealiendrew.github.io/
-// @version      0.9.92
+// @version      0.9.93
 // @description  Sounds off a notification when the user of script gets a ping!
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
@@ -27,10 +27,10 @@
 // @match        *://fleetway-mpp.glitch.me/*
 // @match        *://*.multiplayerpiano.com/*
 // @match        *://*.mppclone.com/*
-// @supportURL   https://github.com/TheAlienDrew/Custom-JS/tree/main/!-User-Scripts/Multiplayer%20Piano/User-Ping
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/User-Ping.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/User-Ping.user.js
-// @icon         https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/iconscout.com/notification-1765818-1505607.png
+// @supportURL   https://github.com/Andrew-J-Larson/Custom-JS/tree/main/!-User-Scripts/Multiplayer%20Piano/User-Ping
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/User-Ping.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/User-Ping.user.js
+// @icon         https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/iconscout.com/notification-1765818-1505607.png
 // @grant        GM_info
 // @run-at       document-end
 // ==/UserScript==
@@ -106,11 +106,11 @@ const SLOW_CHAT_DELAY = SECOND * 2; // when you are not the owner, your chat quo
 const NOTIFICATION_DURATION = SECOND * 15; // how long it takes for notifications to disappear
 
 // Audio
-const AUDIO_BASE_URL = "https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/freesound.org/";
+const AUDIO_BASE_URL = "https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Multiplayer%20Piano/User-Ping/freesound.org/";
 const PING_SOUND_URL = AUDIO_BASE_URL + "level-up-01.mp3";
 
 // URLs
-const GITHUB_REPO = 'https://github.com/TheAlienDrew/Custom-JS/';
+const GITHUB_REPO = 'https://github.com/Andrew-J-Larson/Custom-JS/';
 const GITHUB_ISSUE_TITLE = '[Feedback] ' + NAME + ' ' + VERSION;
 const GITHUB_ISSUE_BODY = '<!-- Please write your feedback below this line. -->';
 const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITHUB_ISSUE_TITLE) + '&body=' + encodeURIComponent(GITHUB_ISSUE_BODY);
@@ -119,8 +119,8 @@ const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITH
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PING_PREFIX = '@'; // MPP uses this for mentions already (DON'T CHANGE)
 const ALLOWED_BEFORE_AFTER_CHARS = [
-  ' ', '~', '!', '(', ')', '_', '+', '{', '}', '|', ':', '"',
-  '<', '>', '?', '-', '=', '[', ']', '\\', ';', '\'', ',', '.', '/'
+    ' ', '~', '!', '(', ')', '_', '+', '{', '}', '|', ':', '"',
+    '<', '>', '?', '-', '=', '[', ']', '\\', ';', '\'', ',', '.', '/'
 ]
 
 // Mod custom constants
@@ -147,7 +147,7 @@ let chatDelay = CHAT_DELAY; // for how long to wait until posting another messag
 // =============================================== OBJECTS
 
 // Create new audio objects prefixed with URL and postfixed with extension
-let newAudio = function(name) {
+let newAudio = function (name) {
     return new Audio(AUDIO_BASE_URL + name);
 }
 let pingSound = newAudio("level-up-01.mp3");
@@ -166,18 +166,18 @@ document.addEventListener('visibilitychange', function () {
 // =============================================== FUNCTIONS
 
 // Check to make sure letiable is initialized with something
-let exists = function(element) {
-    if (typeof(element) != "undefined" && element != null) return true;
+let exists = function (element) {
+    if (typeof (element) != "undefined" && element != null) return true;
     return false;
 }
 
 // Send messages without worrying about timing
-let mppChatSend = function(str, delay) {
-    setTimeout(function(){MPP.chat.send(str)}, (exists(delay) ? delay : 0));
+let mppChatSend = function (str, delay) {
+    setTimeout(function () { MPP.chat.send(str) }, (exists(delay) ? delay : 0));
 };
 
 // Send multiline chats, and return final delay to make things easier for timings
-let mppChatMultiSend = function(strArray, optionalPrefix, initialDelay) {
+let mppChatMultiSend = function (strArray, optionalPrefix, initialDelay) {
     if (!exists(optionalPrefix)) optionalPrefix = '';
     let newDelay = 0;
     for (let i = 0; i < strArray.length; ++i) {
@@ -275,10 +275,10 @@ MPP.client.on('a', function (msg) {
         }
     } else if (pinged) pingSound.play(); // got an MPP mention
     else if (input.indexOf(PING_PREFIX + yourId) != -1 ||
-               input.indexOf(PING_PREFIX + yourUsername) != -1 ||
-               inputLowerCase.indexOf(PING_PREFIX + "all") ||
-               inputLowerCase.indexOf(PING_PREFIX + "online") ||
-               inputLowerCase.indexOf(PING_PREFIX + "everyone")) {
+        input.indexOf(PING_PREFIX + yourUsername) != -1 ||
+        inputLowerCase.indexOf(PING_PREFIX + "all") ||
+        inputLowerCase.indexOf(PING_PREFIX + "online") ||
+        inputLowerCase.indexOf(PING_PREFIX + "everyone")) {
         // check for pings
         matches = [];
         let pingsToMatch = [yourId, yourUsername];
@@ -297,7 +297,7 @@ MPP.client.on('a', function (msg) {
                 matches.push(match);
             }
         }
-        let checkMatches = setInterval(function() {
+        let checkMatches = setInterval(function () {
             if (!matchValid && matches && matches.length > 0 && (matchesIndex < matches.length)) {
                 let tempMatch = matches[matchesIndex];
                 let tempInputString = tempMatch.input;
@@ -336,13 +336,13 @@ MPP.client.on('a', function (msg) {
         }, 1);
     }
 });
-MPP.client.on('dm', function(msg) { // on: any direct message
+MPP.client.on('dm', function (msg) { // on: any direct message
     let yourParticipant = MPP.client.getOwnParticipant();
     let yourId = yourParticipant._id;
     // you got a direct message
     if (yourId == msg.recipient._id) pingSound.play();
 });
-MPP.client.on('nq', function(msg) { // on: note quota change
+MPP.client.on('nq', function (msg) { // on: note quota change
     // changes to note quota also reflect changes to room ownership or switching
 
     // set new chat delay
@@ -353,7 +353,7 @@ MPP.client.on('nq', function(msg) { // on: note quota change
 // =============================================== INTERVALS
 
 // Stuff that needs to be done by intervals (e.g. repeat)
-let slowRepeatingTasks = setInterval(function() {
+let slowRepeatingTasks = setInterval(function () {
     // do background tab fix
     if (!pageVisible) {
         let note = MPP.piano.keys["a-1"].note;
@@ -364,7 +364,7 @@ let slowRepeatingTasks = setInterval(function() {
 }, SECOND);
 
 // wait for the client to come online
-let waitForMPP = setInterval(function() {
+let waitForMPP = setInterval(function () {
     let MPP_Fully_Loaded = exists(MPP) && exists(MPP.client);
     if (MPP_Fully_Loaded) {
         clearInterval(waitForMPP);
@@ -378,8 +378,8 @@ let waitForMPP = setInterval(function() {
         let mppAdsWebsiteNotice = '';
         if (window.location.hostname == mppAdsWebsite) {
             mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" +
-                                  ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
-                                  ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
+                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
+                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
         }
 
         // check if there's an update available
@@ -393,14 +393,14 @@ let waitForMPP = setInterval(function() {
                     if (latestVersion != VERSION) {
                         // make sure latestVersion is newer (prevent old updates from sending out false notification about an update available)
                         let versionRegex = /[0-9.]+/g; // this will not display a notification if a beta was to ever be published
-                        let latestVersionInt = parseInt((latestVersion.match(versionRegex))[0].replaceAll('.',''));
-                        let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.',''));
+                        let latestVersionInt = parseInt((latestVersion.match(versionRegex))[0].replaceAll('.', ''));
+                        let currentVersionInt = parseInt((VERSION.match(versionRegex))[0].replaceAll('.', ''));
                         if (latestVersionInt > currentVersionInt) {
                             starterNotificationDuration = -1; // making sticky so user will for sure know that there's a new update
                             newVersionAvailable = `New version available: <code class="markdown" style="color: #0F0 !important">v${latestVersion}</code><br>` +
-                                                  `<br>` +
-                                                  `Please check the website!<br>` +
-                                                  `<a target="_blank" href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
+                                `<br>` +
+                                `Please check the website!<br>` +
+                                `<a target="_blank" href="${SUPPORT_URL}">` + SUPPORT_URL + '</a><br><br>';
                         }
                     }
                 }
@@ -410,14 +410,14 @@ let waitForMPP = setInterval(function() {
                     target: "#piano",
                     title: MOD_DISPLAYNAME + " [v" + VERSION + "]",
                     html: mppAdsWebsiteNotice + newVersionAvailable + `Mod created by <a target="_blank" href="${NAMESPACE}">${AUTHOR}</a>, thanks for using it!<br>` +
-                          `<br>` +
-                          `If you need any help using the mod, try using the command:<br>` +
-                          ` ${LIST_BULLET} <code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
+                        `<br>` +
+                        `If you need any help using the mod, try using the command:<br>` +
+                        ` ${LIST_BULLET} <code class="markdown" style="color: #0F0 !important">${PREFIX}help</code>`,
                     duration: starterNotificationDuration
                 };
                 let starterNotification = mppNotificationSend(starterNotificationSetup);
                 // need a little delay to wait for toggler button to position itself, to correctly position notifications with it
-                setTimeout(function() {
+                setTimeout(function () {
                     starterNotification.position();
                 }, TENTH_OF_SECOND);
             }

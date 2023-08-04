@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         YouTube - Scrollable Suggestions
 // @namespace    https://thealiendrew.github.io/
-// @version      1.9.2
+// @version      1.9.3
 // @description  Converts the side video suggestions into a confined scrollable list, so you can watch your video while looking at suggestions.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://*.youtube.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/YouTube/Scrollable-Suggestions.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
 // @require      https://code.jquery.com/jquery.min.js
 // @require      https://code.jquery.com/ui/1.13.2/jquery-ui.min.js
@@ -137,10 +137,10 @@ let waitForPosition = function(element, aFunction, time) {
 */
 
 // if the element gains or loses height do something
-let detectHeightChange = function(element, aFunction) {
+let detectHeightChange = function (element, aFunction) {
     let prevHeight = element.height();
     element.attrchange({
-        callback: function(e) {
+        callback: function (e) {
             let curHeight = element.height();
             if (prevHeight !== curHeight) {
                 aFunction(true);
@@ -151,14 +151,14 @@ let detectHeightChange = function(element, aFunction) {
 };
 
 // don't try to do anything until page is visible
-$(document).on('visibilitychange', function() {
+$(document).on('visibilitychange', function () {
     visibility = document.visibilityState;
 });
 
 // prevent page from scolling when trying to scroll on an element
-let disablePageScrolling = function(element) {
+let disablePageScrolling = function (element) {
     // code via https://stackoverflow.com/a/33672757/7312536
-    element.on('DOMMouseScroll mousewheel', function(ev) {
+    element.on('DOMMouseScroll mousewheel', function (ev) {
         if (enabledYT && !disabledYT) {
             let $this = $(this),
                 scrollTop = this.scrollTop,
@@ -169,7 +169,7 @@ let disablePageScrolling = function(element) {
                     ev.originalEvent.wheelDelta),
                 up = delta > 0;
 
-            let prevent = function() {
+            let prevent = function () {
                 ev.stopPropagation();
                 ev.preventDefault();
                 ev.returnValue = false;
@@ -190,7 +190,7 @@ let disablePageScrolling = function(element) {
 };
 
 // check if element has an attribute
-let checkAttribute = function(element, attribute) {
+let checkAttribute = function (element, attribute) {
     let attr = element.attr(attribute);
 
     // For some browsers, `attr` is undefined; for others,
@@ -214,7 +214,7 @@ let isInViewport = function(element) {
 */
 
 // check if element has a height
-let hasHeight = function(element) {
+let hasHeight = function (element) {
     let height = element.height();
 
     if (typeof height === typeof undefined || isNaN(height) || height == 0) return false;
@@ -222,7 +222,7 @@ let hasHeight = function(element) {
 };
 
 // check if element has a width
-let hasWidth = function(element) {
+let hasWidth = function (element) {
     let width = element.width();
 
     if (typeof width === typeof undefined || isNaN(width) || width == 0) return false;
@@ -230,14 +230,14 @@ let hasWidth = function(element) {
 };
 
 // append css styling to html page
-let addStyleString = function(str) {
+let addStyleString = function (str) {
     let node = document.createElement('style');
     node.innerHTML = str;
     document.body.appendChild(node);
 };
 
 // enable/disable scrollbar function
-let enableSuggestionsScroll = function(trueFalse) {
+let enableSuggestionsScroll = function (trueFalse) {
     // readdress where elements are first
     suggestions = $(suggestionsSelector).first();
     autoPlay = $(autoPlaySelector).first();
@@ -281,7 +281,7 @@ function yt_navigate_finish() {
         extendedDisable = false;
 
         // must run at least once (after the page is in view)
-        let waitUntilPageInView = setInterval(function() {
+        let waitUntilPageInView = setInterval(function () {
             if (visibility == 'visible') {
                 clearInterval(waitUntilPageInView);
 
@@ -291,7 +291,7 @@ function yt_navigate_finish() {
                 let i = 0,
                     j = 0;
                 let loadThumbnails = true;
-                let loopingItems = setInterval(function() {
+                let loopingItems = setInterval(function () {
                     if (loadThumbnails) {
                         let suggestionItems = $(suggestionsSelector).first().children();
                         // make sure item exists and is in view
@@ -372,7 +372,7 @@ function yt_navigate_finish() {
                         if (firstRun) firstRun = false;
 
                         // detect position changes to change size accordingly
-                        window.fixDynamicSizes = function(forceRun) {
+                        window.fixDynamicSizes = function (forceRun) {
                             if (visibility == 'visible') {
                                 let viewHeight = $(window).height(),
                                     viewWidth = $(window).width(),
@@ -485,15 +485,15 @@ function yt_navigate_finish() {
                         window.fixDynamicSizes(true);
 
                         // when the screen is resized also update the sidebar width
-                        $(document).on('scroll', function() {
+                        $(document).on('scroll', function () {
                             window.fixDynamicSizes(false);
                         });
-                        $(window).on('resize', function() {
+                        $(window).on('resize', function () {
                             window.fixDynamicSizes(true);
                         });
 
                         // when scroll has happened and we reach a change of ending, update positions
-                        suggestions.on('scroll', function() {
+                        suggestions.on('scroll', function () {
                             if (enabledYT && !disabledYT) {
                                 let atPrevious = atSugEnd,
                                     suggestScrBottom = suggestions.scrollTop() + suggestions.innerHeight(),
@@ -507,24 +507,24 @@ function yt_navigate_finish() {
                         });
 
                         // must know when miniplayer, size, and fullscreen buttons/keys are pressed
-                        $(function() {
+                        $(function () {
                             // button presses
 
-                            $(miniplayerSelector).click(function() {
+                            $(miniplayerSelector).click(function () {
                                 // must disable the size/position settings when going off of current page
                                 extendedDisable = true;
                                 window.fixDynamicSizes(true);
                             });
 
-                            $(sizeSelector).click(function() {
-                                setTimeout(function() {
+                            $(sizeSelector).click(function () {
+                                setTimeout(function () {
                                     // don't need to update variables related to theater mode, since sizing for that is already handled
                                     window.fixDynamicSizes(true);
                                 }, fastDelay);
                             });
 
-                            $(fullscreenSelector).click(function() {
-                                setTimeout(function() {
+                            $(fullscreenSelector).click(function () {
+                                setTimeout(function () {
                                     let tempTitle = $(fullscreenSelector).attr('title');
 
                                     if (tempTitle == fullscreenEnter) fullscreen = false;
@@ -535,7 +535,7 @@ function yt_navigate_finish() {
                             });
 
                             // key presses
-                            $(document).on("keyup", function(e) {
+                            $(document).on("keyup", function (e) {
                                 let keyUpCode = e.which;
 
                                 // miniplayer
@@ -544,7 +544,7 @@ function yt_navigate_finish() {
                                     extendedDisable = true;
                                     window.fixDynamicSizes(true);
                                 } else if (keyUpCode == 84 || keyUpCode == 70) {
-                                    setTimeout(function() {
+                                    setTimeout(function () {
                                         // size
                                         if (keyUpCode == 70) {
                                             let tempTitle = $(fullscreenSelector).attr('title');
@@ -561,7 +561,7 @@ function yt_navigate_finish() {
                         });
 
                         // this must start only after the two panel view is on
-                        var waitForRightHaveChildren = setInterval(function() {
+                        var waitForRightHaveChildren = setInterval(function () {
                             if (rightCoIn && rightCoIn.children().length > 1) {
                                 clearInterval(waitForRightHaveChildren);
 

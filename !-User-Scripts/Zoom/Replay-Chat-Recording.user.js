@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Zoom - Replay Chat Recording
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Moves the chat history in "real time" against the recording's current time.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://*.zoom.us/rec/play/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Zoom/Replay-Chat-Recording.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=zoom.us
 // @grant        none
 // ==/UserScript==
@@ -56,10 +56,10 @@ function timeToSeconds(timeString) {
     hours = minutes = seconds = 0;
   }
 
-  return (hours*HOUR)+(minutes*MINUTE)+seconds;
+  return (hours * HOUR) + (minutes * MINUTE) + seconds;
 }
 
-let waitForTimeRangeCurrent = setInterval(function() {
+let waitForTimeRangeCurrent = setInterval(function () {
   // contains current time
   let timeRangeCurrent = document.querySelector('.vjs-time-range-current');
   if (timeRangeCurrent && timeRangeCurrent.innerText != "") {
@@ -76,7 +76,7 @@ let waitForTimeRangeCurrent = setInterval(function() {
     let chatListItemCount = chatListItems.length;
 
     // need times in seconds
-    let endListTime = chatListItems[chatListItemCount-1].querySelector('.chat-time').innerText;
+    let endListTime = chatListItems[chatListItemCount - 1].querySelector('.chat-time').innerText;
     let endTimeInChat = timeToSeconds(endListTime);
     let endTimeInVideo = timeToSeconds(timeRangeDuration.innerText);
     let chatTimeDiff = endTimeInChat - endTimeInVideo; // positive or negative values acceptable and possible
@@ -87,8 +87,8 @@ let waitForTimeRangeCurrent = setInterval(function() {
     //   and finally the most magic number part is multiplying that value by 23/60.
     // * 23/60 was found by taking a few videos and finding a good multiplier between
     //   them all that made all videos sync up to the chat the most.
-    let lastChatRemainderSeconds = parseInt(endListTime.substring(endListTime.length-2));
-    let appoxSecondsFix = Math.round(23*((((chatTimeDiff/60)%1)*60)-lastChatRemainderSeconds)/60);
+    let lastChatRemainderSeconds = parseInt(endListTime.substring(endListTime.length - 2));
+    let appoxSecondsFix = Math.round(23 * ((((chatTimeDiff / 60) % 1) * 60) - lastChatRemainderSeconds) / 60);
     chatTimeDiff -= appoxSecondsFix;
 
     // need an array of the chat times in seconds
@@ -101,13 +101,13 @@ let waitForTimeRangeCurrent = setInterval(function() {
     // need mutation observer to watch for timeRangeCurrent
     let observer = new MutationObserver(mutations => {
       // watch the current time and scroll to chat
-      for(let mutation of mutations) {
+      for (let mutation of mutations) {
         let currentTime = timeToSeconds(mutation.target.textContent);
 
         // check chat time array for matching time
         let foundIndex = -1;
         let i = chatListItemCount - 1;
-        while(i > -1 && foundIndex == -1) {
+        while (i > -1 && foundIndex == -1) {
           if (chatListItemTimes[i] == currentTime) foundIndex = i;
           i--;
         }

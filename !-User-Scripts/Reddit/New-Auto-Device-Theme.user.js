@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.2.6
+// @version      1.2.7
 // @description  Makes (new) Reddit match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://new.reddit.com/*
 // @match        https://www.reddit.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Reddit/New-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Reddit/New-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Reddit/New-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Reddit/New-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=reddit.com
 // @grant        none
 // @noframes
@@ -100,11 +100,11 @@ function updateTheme(changeToScheme) {
 }
 
 // wait for the page to be fully loaded
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     // if old reddit might be loading, must delay; using timeline to get rough loadTime to use for delay
     let magicLoadingNumberDivisor = 4; // not sure why, but seems like the most reasonable number to use to get close to remote resource load times
     let timeoutDelay = (window.location.host).startsWith("www.") ? (document.timeline.currentTime / magicLoadingNumberDivisor) : 0;
-    setTimeout(function() {
+    setTimeout(function () {
         // doesn't work on old reddit
         if (window.reddit) throw new Error("This script only runs on the newest Reddit design.");
 

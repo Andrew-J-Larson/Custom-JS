@@ -1,16 +1,16 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://thealiendrew.github.io/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://*.microsoft365.com/*
 // @match        https://*.office.com/*
 // @match        https://*.office365.com/*
 // @match        https://*.sharepoint.com/personal/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com
 // @grant        none
 // @noframes
@@ -81,7 +81,7 @@ try {
 
         let maybeMoreButton, settingsButton; // needs to be here or else causes infinite loops
         if (theme != changeToScheme) {
-            let waitForMoreAndSettings = setInterval(function() {
+            let waitForMoreAndSettings = setInterval(function () {
                 maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
                 settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(maybeMoreSettingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
                 if (maybeMoreButton && maybeMoreButton.ariaExpanded == "false") {
@@ -93,7 +93,7 @@ try {
                     // now settings can be opened
                     settingsButton.click();
 
-                    let waitForThemeToggle = setInterval(function() {
+                    let waitForThemeToggle = setInterval(function () {
                         let firstThemeCard = document.querySelector(firstThemeCardSelector) || document.querySelector(owaFirstThemeCardSelector);
                         let themeToggleSwitch = document.querySelector(themeToggleSwitchSelector) || document.querySelector(owaThemeToggleSwitchSelector);
                         if (firstThemeCard && themeToggleSwitch) {
@@ -104,7 +104,7 @@ try {
 
                             // need to wait a short bit for change to go through, only on old pages that need reloading (e.g. Outlook)
                             if (window.userNormalizedTheme) {
-                                setTimeout(function() {
+                                setTimeout(function () {
                                     window.location.reload();
                                 }, OLD_PAGE_DELAY);
                             } else { // click the close button on the settings pane
@@ -124,11 +124,11 @@ try {
     }
 
     // wait for the page to be fully loaded
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
         subdomain = (window.location.host).split('.')[0];
         let testSubDomainIndex = 0;
         let testSubDomainEnd = excludedSubDomains.length;
-        let testSubDomainLoop = setInterval(function() {
+        let testSubDomainLoop = setInterval(function () {
             if (subdomain == excludedSubDomains[testSubDomainIndex]) {
                 testSubDomainIndex = -1;
             } else testSubDomainIndex++;
@@ -136,7 +136,7 @@ try {
             if (testSubDomainIndex >= testSubDomainEnd) {
                 clearInterval(testSubDomainLoop);
 
-                let waitForThemeAndSettingsAvailable = setInterval(function() {
+                let waitForThemeAndSettingsAvailable = setInterval(function () {
                     // need to wait for one of the required buttons
                     if (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector)) {
                         clearInterval(waitForThemeAndSettingsAvailable);

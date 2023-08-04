@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Dim Variant)
 // @namespace    https://thealiendrew.github.io/
-// @version      1.0.9
+// @version      1.1.0
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Dim" variant.
-// @author       AlienDrew
+// @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://twitter.com/*
 // @match        https://x.com/*
-// @updateURL    https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
-// @downloadURL  https://raw.githubusercontent.com/TheAlienDrew/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Twitter/Auto-Device-Theme-Dim-Variant.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=twitter.com
 // @grant        none
 // ==/UserScript==
@@ -60,7 +60,7 @@ function updateTheme(changeToScheme) {
         hideMenusStyle.innerHTML = hideMenusCSS;
         document.getElementsByTagName('head')[0].appendChild(hideMenusStyle);
 
-        let waitForMoreMenu = setInterval(function() {
+        let waitForMoreMenu = setInterval(function () {
             try {
                 if (!moreMenu) {
                     moreMenu = document.querySelector(moreMenuSelector);
@@ -82,7 +82,7 @@ function updateTheme(changeToScheme) {
                     // can't click button programmatically to exit, so window history back will have to do
                     window.history.back();
                     // need to remove the style theme is changed
-                    setTimeout(function() {
+                    setTimeout(function () {
                         hideMenusStyle.parentNode.removeChild(hideMenusStyle);
 
                         if (watchEventTriggered) {
@@ -91,7 +91,7 @@ function updateTheme(changeToScheme) {
                         }
                     }, INTERVAL_SPEED);
                 }
-            } catch (error) {/* Error checking not needed */}
+            } catch (error) {/* Error checking not needed */ }
         }, INTERVAL_SPEED);
     } else watchEventTriggered = false;
 }
@@ -99,7 +99,7 @@ function updateTheme(changeToScheme) {
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
     // must not be on logout page, and need to wait for the background-color style to not be empty
-    let waitingForBGStyle = setInterval(function() {
+    let waitingForBGStyle = setInterval(function () {
         if (window.location.pathname != "/logout" && document.body.style.backgroundColor) {
             clearInterval(waitingForBGStyle);
 
