@@ -19,7 +19,7 @@
 // @noframes
 // ==/UserScript==
 
-/* Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+/* Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
