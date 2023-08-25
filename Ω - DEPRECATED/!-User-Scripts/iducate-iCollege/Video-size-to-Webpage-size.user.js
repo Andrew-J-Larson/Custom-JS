@@ -1,14 +1,15 @@
 // ==UserScript==
-// @name         iCollege - Video size to Webpage size
+// @name         iducate (iCollege) - Video size to Webpage size
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
+// @match        https://www.iducate.io/course-launch/*
 // @match        https://www.icollege.co/course-launch/*
-// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
-// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/iCollege/Video-size-to-Webpage-size.user.js
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=icollege.co
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/iducate-iCollege/Video-size-to-Webpage-size.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/iducate-iCollege/Video-size-to-Webpage-size.user.js
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=iducate.io
 // @grant        GM_addStyle
 // ==/UserScript==
 
