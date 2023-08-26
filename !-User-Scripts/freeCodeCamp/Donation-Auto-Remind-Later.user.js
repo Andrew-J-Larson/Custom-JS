@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.0
+// @version      1.0.1
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -30,27 +30,27 @@
  */
 
 // Constants (CSS)
-const DONATION_LABEL_MODEL_CLASS = "donation-label-model";
+const DONATION_LABEL_MODEL_CLASS = "donation-label-modal";
+const ASK_ME_LATER_BUTTON_SELECTOR = "button.btn-link:last-of-type";
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
     // observe the main body element for any new elements
-    const targetNode = document.getElementById("___gatsby");
 
     // only observe when elements are being added at the root of the body or in any of the children
-    const config = { childList: true, subtree: true };
+    const donationFinderConfig = { childList: true, subtree: true };
 
     // Callback function to execute when mutations are observed
-    const callback = (mutationList, observer) => {
+    const donationFinderCallback = (mutationList, observer) => {
         for (const mutation of mutationList) {
             if (mutation.type === "childList") {
                 if (mutation.addedNodes) {
                     for (const addedNode of mutation.addedNodes) {
-                        if (addedNode.classList.contains(DONATION_LABEL_MODEL_CLASS)) {
+                        console.log(addedNode);
+                        if (addedNode.classList && addedNode.classList.contains(DONATION_LABEL_MODEL_CLASS)) {
                             let donationLabelModel = addedNode;
                             let donationBodyModel = donationLabelModel.parentElement.parentElement.parentElement.parentElement;
-                            let donationModelButtons = donationBodyModel.querySelectorAll('button');
-                            let askMeLaterButton = donationModelButtons[donationModelButtons.length - 1];
+                            let askMeLaterButton = donationBodyModel.querySelector(ASK_ME_LATER_BUTTON_SELECTOR);
                             askMeLaterButton.click();
                         }
                     }
@@ -60,8 +60,8 @@ window.addEventListener('load', function () {
     };
 
     // Create an observer instance linked to the callback function
-    const observer = new MutationObserver(callback);
+    const donationFinderObserver = new MutationObserver(donationFinderCallback);
 
     // Start observing the target node for configured mutations
-    observer.observe(targetNode, config);
+    donationFinderObserver.observe(document.body, donationFinderConfig);
 }, false);
