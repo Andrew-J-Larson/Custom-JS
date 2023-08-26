@@ -71,7 +71,6 @@ window.addEventListener('load', function () {
         // not ever going to clear this interval, so not assigning it a variable is fine for now
         let donationLabelModel = document.querySelector('.' + DONATION_LABEL_MODEL_CLASS);
         if (donationLabelModel) {
-            let donationLabelModel = addedNode;
             let donationBodyModel = donationLabelModel.parentElement.parentElement.parentElement.parentElement;
             let askMeLaterButton = donationBodyModel.querySelector(ASK_ME_LATER_BUTTON_SELECTOR);
             askMeLaterButton.click();
