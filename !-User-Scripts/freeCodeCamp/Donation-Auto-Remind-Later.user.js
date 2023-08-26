@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -35,8 +35,8 @@ const ASK_ME_LATER_BUTTON_SELECTOR = "button.btn-link:last-of-type";
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
-    // observe the main body element for any new elements
-
+    // can't use an observer, there's some weird Chromium bug that prevents it from working properly on `document.body`
+    /*
     // only observe when elements are being added at the root of the body or in any of the children
     const donationFinderConfig = { childList: true, subtree: true };
 
@@ -63,4 +63,18 @@ window.addEventListener('load', function () {
 
     // Start observing the target node for configured mutations
     donationFinderObserver.observe(document.body, donationFinderConfig);
+    */
+
+    // must use `setInterval` instead
+    const fps250 = 4; // ms; the delay to keep checking for the donation model
+    setInterval(function() {
+        // not ever going to clear this interval, so not assigning it a variable is fine for now
+        let donationLabelModel = document.querySelector('.' + DONATION_LABEL_MODEL_CLASS);
+        if (donationLabelModel) {
+            let donationLabelModel = addedNode;
+            let donationBodyModel = donationLabelModel.parentElement.parentElement.parentElement.parentElement;
+            let askMeLaterButton = donationBodyModel.querySelector(ASK_ME_LATER_BUTTON_SELECTOR);
+            askMeLaterButton.click();
+        }
+    }, fps250);
 }, false);
