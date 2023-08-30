@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.4.6
+// @version      1.4.7
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -114,7 +114,7 @@ window.addEventListener('load', function () {
         if (!applicationName || !applicationName.startsWith("Alloy Navigator")) throw new Error(NOT_ALLOY_NAVIGATOR);
 
         // only version 2022.2 and newer have the breadcrumb trails
-        let hasBreadcrumbs = (applicationVersionSplit && applicationVersionSplit[0] >= 2022 && applicationVersionSplit[1] >= 2);
+        let hasBreadcrumbs = (applicationVersionSplit && applicationVersionSplit[0] > 2022 || (applicationVersionSplit[0] = 2022 && applicationVersionSplit[1] >= 2));
 
         // need to wait for element(s) to be available
         let waitForAlloyElements = setInterval(function () {
