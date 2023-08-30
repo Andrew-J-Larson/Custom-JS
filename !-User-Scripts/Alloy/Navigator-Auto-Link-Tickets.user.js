@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.4.7
+// @version      1.4.8
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -46,6 +46,7 @@ const ticketLinkRandomNumber = function () {
     let length = 18; // 18 is likely overkill, but fine
     return Math.floor(Math.pow(10, length - 1) + Math.random() * (Math.pow(10, length) - Math.pow(10, length - 1) - 1));
 }();
+let ticketLinkAnchorID = 'ticketLinkWrapper-' + ticketLinkRandomNumber;
 let ticketLinkToastID = 'ticketLinkToast-' + ticketLinkRandomNumber;
 let ticketLinkButtonID = 'ticketLinkButton-' + ticketLinkRandomNumber;
 
@@ -68,13 +69,17 @@ const clipHoverLightModeBackground = '#bedafc';
 const clipHoverDarkModeBackground = '#2b2f31';
 GM_addStyle('#' + ticketLinkButtonID + ' {border: none !important; background: transparent !important}');
 GM_addStyle('#' + ticketLinkButtonID + ':focus, #' + ticketLinkButtonID + ' > svg:focus {outline: none !important}');
-GM_addStyle('.MuiTypography-root > #' + ticketLinkButtonID + ' {padding: 0 !important}');
-GM_addStyle('.MuiTypography-root > #' + ticketLinkButtonID + ' > svg {margin-top: -1.015px !important}');
+GM_addStyle('#' + ticketLinkAnchorID + ' {padding-inline: 0 !important}');
+GM_addStyle('#' + ticketLinkAnchorID + ' > #' + ticketLinkButtonID + ' {padding: 0 !important; border-radius: 4px !important; width: 24px !important; height: 24px !important}');
+GM_addStyle('#' + ticketLinkAnchorID + ' > #' + ticketLinkButtonID + ' > svg {margin-top: -1.015px !important}');
 GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + ' > svg {margin-inline: -3px !important; padding: 0 3px 0.3333px !important; border-radius: 4px !important}');
-GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + ':not(.dkDark) :hover {background-color: ' + clipHoverLightModeBackground + ' !important}');
-GM_addStyle('.full-form-header__1_1 > #' + ticketLinkButtonID + '.dkDark :hover {background-color: ' + clipHoverDarkModeBackground + '40 !important}');
-GM_addStyle('.MuiTypography-root > #' + ticketLinkToastID + ' {font-size: 12px !important; margin-top: -1.015px !important}');
-GM_addStyle('.full-form-header__1_1 > #' + ticketLinkToastID + ' {font-size: 14px !important; padding-bottom: 2.0833px !important; font-weight: 400 !important; color: ' + clipTextColor + ' !important}');
+GM_addStyle('#' + ticketLinkAnchorID + ':not(.dkDark) :hover, ' +
+            '.full-form-header__1_1 > #' + ticketLinkButtonID + ':not(.dkDark) :hover {background-color: ' + clipHoverLightModeBackground + ' !important}');
+GM_addStyle('#' + ticketLinkAnchorID + '.dkDark :hover, ' +
+            '.full-form-header__1_1 > #' + ticketLinkButtonID + '.dkDark :hover {background-color: ' + clipHoverDarkModeBackground + '40 !important}');
+GM_addStyle('#' + ticketLinkAnchorID + ' > #' + ticketLinkToastID + ' {font-size: 12px !important; margin-top: -1.015px !important}');
+GM_addStyle('.full-form-header__1_1 > #' + ticketLinkToastID + ' {font-size: 14px !important; padding-bottom: 2.0833px !important; font-weight: 400 !important}');
+GM_addStyle('#' + ticketLinkToastID + ', #' + ticketLinkToastID + ':hover, #' + ticketLinkToastID + ':focus {color: ' + clipTextColor + ' !important}');
 
 // FUNCTIONS
 
@@ -209,6 +214,7 @@ window.addEventListener('load', function () {
                                 ticketLinkAnchor.classList = alloyObjectDirectoyDivAnchor.classList;
                                 ticketLinkAnchor.style = "padding-inline: 4px";
                                 let ticketLinkButtonAnchor = ticketLinkAnchor.cloneNode(true);
+                                ticketLinkButtonAnchor.id = ticketLinkAnchorID;
                                 let ticketLinkToastAnchor = ticketLinkAnchor.cloneNode(true);
                                 ticketLinkToastAnchor.ariaSelected = "true";
                                 ticketLinkToastAnchor.style.background = "transparent";
