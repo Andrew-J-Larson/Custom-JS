@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.6
+// @version      1.0.7
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
-// @match        https://www.freecodecamp.org/learn/*/*/*/step-*
+// @match        https://www.freecodecamp.org/learn/*
 // @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/freeCodeCamp/Donation-Auto-Remind-Later.user.js
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/freeCodeCamp/Donation-Auto-Remind-Later.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=freecodecamp.org
