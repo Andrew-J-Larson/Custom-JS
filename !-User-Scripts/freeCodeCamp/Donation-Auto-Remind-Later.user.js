@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.1.0
+// @version      1.1.1
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -68,7 +68,7 @@ window.addEventListener('load', function () {
     */
 
     // must use `setInterval` instead
-    const minLoop = 200; // ms; the delay to keep checking for the donation model
+    const minLoop = 4; // ms; the delay to keep checking for the donation model
     setInterval(function() {
         // not ever going to clear this interval, so not assigning it a variable is fine for now
         let donationBtnGroup = document.querySelector('.' + DONATION_BTN_GROUP_CLASS);
