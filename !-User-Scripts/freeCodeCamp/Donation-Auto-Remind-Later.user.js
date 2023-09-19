@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.7
+// @version      1.0.8
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -68,8 +68,9 @@ window.addEventListener('load', function () {
     */
 
     // must use `setInterval` instead
-    const fps250 = 4; // ms; the delay to keep checking for the donation model
+    const minLoop = 200; // ms; the delay to keep checking for the donation model
     setInterval(function() {
+        console.log('looping');
         // not ever going to clear this interval, so not assigning it a variable is fine for now
         let donationLabelModel = document.querySelector('.' + DONATION_LABEL_MODEL_CLASS);
         if (donationLabelModel) {
@@ -79,5 +80,5 @@ window.addEventListener('load', function () {
             askMeLaterButton.click();
             lastActiveElement.focus();
         }
-    }, fps250);
+    }, minLoop);
 }, false);
