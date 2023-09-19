@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.9
+// @version      1.1.0
 // @description  try to take over the world!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -30,7 +30,7 @@
  */
 
 // Constants (CSS)
-const DONATION_LABEL_MODEL_CLASS = "donation-label-modal";
+const DONATION_BTN_GROUP_CLASS = "donate-btn-group";
 const ASK_ME_LATER_BUTTON_SELECTOR = "button.btn-link:last-of-type";
 
 // wait for the page to be fully loaded
@@ -71,10 +71,9 @@ window.addEventListener('load', function () {
     const minLoop = 200; // ms; the delay to keep checking for the donation model
     setInterval(function() {
         // not ever going to clear this interval, so not assigning it a variable is fine for now
-        let donationLabelModel = document.querySelector('.' + DONATION_LABEL_MODEL_CLASS);
-        if (donationLabelModel) {
-            let donationBodyModel = donationLabelModel.parentElement.parentElement.parentElement.parentElement;
-            let askMeLaterButton = donationBodyModel.querySelector(ASK_ME_LATER_BUTTON_SELECTOR);
+        let donationBtnGroup = document.querySelector('.' + DONATION_BTN_GROUP_CLASS);
+        let askMeLaterButton = donationBtnGroup ? (donationBtnGroup.parentElement).querySelector(ASK_ME_LATER_BUTTON_SELECTOR) : null;
+        if (askMeLaterButton) {
             let lastActiveElement = document.activeElement;
             askMeLaterButton.click();
             lastActiveElement.focus();
