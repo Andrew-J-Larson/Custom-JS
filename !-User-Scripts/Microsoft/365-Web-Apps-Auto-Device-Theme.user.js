@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -35,17 +35,26 @@
 
 // avoids breaking some websites that assume all errors are their own
 try {
-    // don't start script on old Exchange portal
+    // check if we loaded onto an Outlook/Exchange related page
     let uriLocation = window.location;
-    if ((uriLocation.hostname).startsWith('outlook.') && (uriLocation.pathname).startsWith('/ecp/')) throw new Error("[" + GM_info.script.name + "] Can't run on the old exchange portal, it doesn't have a dark theme.");
+    if ((uriLocation.hostname).startsWith('outlook.')) {
+        // don't start script on Outlook (it has built-in settings now system based theming) or on the old Exchange portal (doesn't have a dark mode)
+        if ((uriLocation.pathname).startsWith('/ecp/')) {
+            // is the old Exchange portal
+            throw new Error("[" + GM_info.script.name + "] Can't run on the old Exchange portal, it doesn't have a dark theme.");
+        } else {
+            // is Outlook
+            throw new Error("[" + GM_info.script.name + "] Can't run on Outlook, already has built-in system theme setting.");
+        }
+    }
 
     // Constants
 
     const INTERVAL_SPEED = 5; // ms
-    const OLD_PAGE_DELAY = 1500; // ms
 
     // required for checking theme
-    const contentRootSelector = (window.location.hostname).endsWith('sharepoint.com') ? '#appRoot' : 'body > ohp-app > div, body > div#app';
+    const isSharePoint = (window.location.hostname).endsWith('sharepoint.com');
+    const contentRootSelector = isSharePoint ? '#appRoot' : 'body > ohp-app > div, body > div#app';
 
     // needed when screen is small
     const maybeMoreButtonSelector = '#O365_MainLink_Affordance';
@@ -57,11 +66,6 @@ try {
     const flexPaneCloseButtonSelector = 'button#flexPaneCloseButton';
     const firstThemeCardSelector = '#themecardpanel > div > div';
     const themeToggleSwitchSelector = '#DarkModeSwitch';
-
-    // Outlook Web App: the following if found will need the page to be refreshed
-    const owaSettingsButtonSelector = '#owaSettingsButton';
-    const owaFirstThemeCardSelector = 'div[aria-label="Theme"] > div'
-    const owaThemeToggleSwitchSelector = 'button[aria-label="options-quick-darkMode"]';
 
     // used for checking subdomain
     let subdomain; // gets set later
@@ -83,7 +87,7 @@ try {
         if (theme != changeToScheme) {
             let waitForMoreAndSettings = setInterval(function () {
                 maybeMoreButton = document.querySelector(maybeMoreButtonSelector);
-                settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(maybeMoreSettingsButtonSelector) || document.querySelector(owaSettingsButtonSelector);
+                settingsButton = document.querySelector(settingsButtonSelector) || document.querySelector(maybeMoreSettingsButtonSelector);
                 if (maybeMoreButton && maybeMoreButton.ariaExpanded == "false") {
                     // more button needs to be pressed first
                     maybeMoreButton.click();
@@ -94,24 +98,18 @@ try {
                     settingsButton.click();
 
                     let waitForThemeToggle = setInterval(function () {
-                        let firstThemeCard = document.querySelector(firstThemeCardSelector) || document.querySelector(owaFirstThemeCardSelector);
-                        let themeToggleSwitch = document.querySelector(themeToggleSwitchSelector) || document.querySelector(owaThemeToggleSwitchSelector);
-                        if (firstThemeCard && themeToggleSwitch) {
+                        let firstThemeCard = document.querySelector(firstThemeCardSelector);
+                        let themeToggleSwitch = document.querySelector(themeToggleSwitchSelector);
+                        if (themeToggleSwitch && (firstThemeCard || isSharePoint)) {
                             clearInterval(waitForThemeToggle);
 
-                            firstThemeCard.click();
+                            if (!isSharePoint) firstThemeCard.click();
                             themeToggleSwitch.click();
 
-                            // need to wait a short bit for change to go through, only on old pages that need reloading (e.g. Outlook)
-                            if (window.userNormalizedTheme) {
-                                setTimeout(function () {
-                                    window.location.reload();
-                                }, OLD_PAGE_DELAY);
-                            } else { // click the close button on the settings pane
-                                let settingsPane = document.querySelector(settingsPaneSelector);
-                                let settingsPaneCloseButton = ((settingsPane.parentElement).parentElement).querySelector(flexPaneCloseButtonSelector);
-                                settingsPaneCloseButton.click();
-                            }
+                            // click the close button on the settings pane
+                            let settingsPane = document.querySelector(settingsPaneSelector);
+                            let settingsPaneCloseButton = ((settingsPane.parentElement).parentElement).querySelector(flexPaneCloseButtonSelector);
+                            settingsPaneCloseButton.click();
 
                             if (watchEventTriggered) activeElement.focus();
                         }
@@ -138,7 +136,7 @@ try {
 
                 let waitForThemeAndSettingsAvailable = setInterval(function () {
                     // need to wait for one of the required buttons
-                    if (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector) || document.querySelector(owaSettingsButtonSelector)) {
+                    if (document.querySelector(maybeMoreButtonSelector) || document.querySelector(settingsButtonSelector)) {
                         clearInterval(waitForThemeAndSettingsAvailable);
 
                         // now we can start
