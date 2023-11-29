@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Teams - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Makes Microsoft Teams match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -41,87 +41,87 @@ const closeButtonSelector = 'button[aria-label="Close Settings"]';
 const lightModeOptionSelector = 'li.theme-item[data-tid="default-theme"]';
 const darkModeOptionSelector = 'li.theme-item[data-tid="dark-theme"]';
 
-// if new Teams is sensed, abort script, since the new version already has built-in system theming
+// if new Teams is sensed, abort the script, since the new version already has built-in system theming
 if ((window.location.pathname).startsWith(NEW_TEAMS_PATHNAME_STARTER)) {
-    throw new Error('New Teams detected, Auto Device Theme script aborted.');
-}
-
-var watchEventTriggered = false;
-var activeElement = null;
-var settingsMenuButton; // gets set later
-
-function updateTheme(changeToScheme) {
-    let html = document.querySelector('html');
-
-    let theme = getStoredTheme();
-    if (theme.contains('dark')) {
-        theme = 'dark';
-    } else {
-        theme = 'light';
+    console.warn('New Teams detected, Auto Device Theme script aborted.')
+} else {
+    var watchEventTriggered = false;
+    var activeElement = null;
+    var settingsMenuButton; // gets set later
+    
+    function updateTheme(changeToScheme) {
+        let html = document.querySelector('html');
+    
+        let theme = getStoredTheme();
+        if (theme.contains('dark')) {
+            theme = 'dark';
+        } else {
+            theme = 'light';
+        }
+    
+        if (theme != changeToScheme && !document.hidden) { // teams settings won't always change when the window is hidden
+            settingsMenuButton.click();
+    
+            let waitForMoreSettings = setInterval(function () {
+                let settingsButton = document.querySelector(settingsButtonSelector);
+                if (settingsButton) {
+                    clearInterval(waitForMoreSettings);
+                    settingsButton.click();
+    
+                    let waitForSettingsModal = setInterval(function () {
+                        let generalTab = document.querySelector(generalTabSelector);
+                        if (generalTab) {
+                            clearInterval(waitForSettingsModal);
+                            generalTab.click();
+    
+                            let closeButton, lightModeOption, darkModeOption;
+                            let waitForGeneralSettings = setInterval(function () {
+                                closeButton = document.querySelector(closeButtonSelector);
+                                lightModeOption = document.querySelector(lightModeOptionSelector);
+                                darkModeOption = document.querySelector(darkModeOptionSelector);
+                                if (closeButton && lightModeOption && darkModeOption) {
+                                    clearInterval(waitForGeneralSettings);
+    
+                                    let changeThemeOption = document.querySelector(changeToScheme == 'dark' ? darkModeOptionSelector : lightModeOptionSelector);
+                                    changeThemeOption.click();
+                                    closeButton.click();
+    
+                                    if (watchEventTriggered) activeElement.focus();
+                                }
+                            }, INTERVAL_SPEED);
+                        }
+                    }, INTERVAL_SPEED);
+                }
+            }, INTERVAL_SPEED);
+        }
+    
+        watchEventTriggered = false;
     }
-
-    if (theme != changeToScheme && !document.hidden) { // teams settings won't always change when the window is hidden
-        settingsMenuButton.click();
-
-        let waitForMoreSettings = setInterval(function () {
-            let settingsButton = document.querySelector(settingsButtonSelector);
-            if (settingsButton) {
-                clearInterval(waitForMoreSettings);
-                settingsButton.click();
-
-                let waitForSettingsModal = setInterval(function () {
-                    let generalTab = document.querySelector(generalTabSelector);
-                    if (generalTab) {
-                        clearInterval(waitForSettingsModal);
-                        generalTab.click();
-
-                        let closeButton, lightModeOption, darkModeOption;
-                        let waitForGeneralSettings = setInterval(function () {
-                            closeButton = document.querySelector(closeButtonSelector);
-                            lightModeOption = document.querySelector(lightModeOptionSelector);
-                            darkModeOption = document.querySelector(darkModeOptionSelector);
-                            if (closeButton && lightModeOption && darkModeOption) {
-                                clearInterval(waitForGeneralSettings);
-
-                                let changeThemeOption = document.querySelector(changeToScheme == 'dark' ? darkModeOptionSelector : lightModeOptionSelector);
-                                changeThemeOption.click();
-                                closeButton.click();
-
-                                if (watchEventTriggered) activeElement.focus();
-                            }
-                        }, INTERVAL_SPEED);
-                    }
-                }, INTERVAL_SPEED);
+    
+    // wait for the page to be fully loaded
+    window.addEventListener('load', function () {
+        let waitForSettingsButton = setInterval(function () {
+            settingsMenuButton = document.querySelector(settingsMenuButtonSelector);
+            if (settingsMenuButton) {
+                clearInterval(waitForSettingsButton);
+    
+                // now we can start
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                    const newColorScheme = e.matches ? 'dark' : 'light';
+                    watchEventTriggered = true;
+                    activeElement = document.activeElement;
+                    updateTheme(newColorScheme);
+                });
+    
+                // first time run
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    // dark mode
+                    updateTheme('dark');
+                } else {
+                    // light mode
+                    updateTheme('light');
+                }
             }
         }, INTERVAL_SPEED);
-    }
-
-    watchEventTriggered = false;
+    }, false);
 }
-
-// wait for the page to be fully loaded
-window.addEventListener('load', function () {
-    let waitForSettingsButton = setInterval(function () {
-        settingsMenuButton = document.querySelector(settingsMenuButtonSelector);
-        if (settingsMenuButton) {
-            clearInterval(waitForSettingsButton);
-
-            // now we can start
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                const newColorScheme = e.matches ? 'dark' : 'light';
-                watchEventTriggered = true;
-                activeElement = document.activeElement;
-                updateTheme(newColorScheme);
-            });
-
-            // first time run
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                // dark mode
-                updateTheme('dark');
-            } else {
-                // light mode
-                updateTheme('light');
-            }
-        }
-    }, INTERVAL_SPEED);
-}, false);
