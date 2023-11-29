@@ -33,12 +33,18 @@
 /* globals getStoredTheme */
 
 const INTERVAL_SPEED = 5; // ms
+const NEW_TEAMS_PATHNAME_STARTER = '/v2/';
 const settingsMenuButtonSelector = '#settings-menu-button';
 const settingsButtonSelector = 'button[data-tid="settingsDropdownOptionsButton"]';
 const generalTabSelector = 'div[data-tid="optionsSettingsDialog-General"]';
 const closeButtonSelector = 'button[aria-label="Close Settings"]';
 const lightModeOptionSelector = 'li.theme-item[data-tid="default-theme"]';
 const darkModeOptionSelector = 'li.theme-item[data-tid="dark-theme"]';
+
+// if new Teams is sensed, abort script, since the new version already has built-in system theming
+if ((window.location.pathname).startsWith(NEW_TEAMS_PATHNAME_STARTER)) {
+    throw new Error('New Teams detected, Auto Device Theme script aborted.');
+}
 
 var watchEventTriggered = false;
 var activeElement = null;
