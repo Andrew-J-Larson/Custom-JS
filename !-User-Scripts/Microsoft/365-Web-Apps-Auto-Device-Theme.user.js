@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -33,9 +33,11 @@
 
 /* globals __themeState__ */
 
+const adminCenterScriptURL = 'https://github.com/Andrew-J-Larson/Custom-JS/blob/main/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js'
+
 // avoids breaking some websites that assume all errors are their own
 try {
-    // check if we loaded onto an Outlook/Exchange related page
+    // check if we loaded onto an Outlook/Exchange related page or on the M365 Admin Center Portal page
     let uriLocation = window.location;
     if ((uriLocation.hostname).startsWith('outlook.')) {
         // don't start script on Outlook (it has built-in settings now system based theming) or on the old Exchange portal (doesn't have a dark mode)
@@ -45,6 +47,12 @@ try {
         } else {
             // is Outlook
             throw new Error("[" + GM_info.script.name + "] Can't run on Outlook, already has built-in system theme setting.");
+        }
+    } else if ((uriLocation.hostname).startsWith('portal.')) { // because of @noframes, it should never get to this point anyways
+        // don't start on the Admin Center portal page, since it's taken care of in another script
+        if ((uriLocation.pathname).startsWith('/adminportal/')) {
+            // is Admin Center portal
+            throw new Error("[" + GM_info.script.name + "] Can't run on Admin Center portal, make sure you're using " + adminCenterScriptURL + " for this site.");
         }
     }
 
@@ -79,7 +87,7 @@ try {
         let contentRoot = document.querySelector(contentRootSelector);
 
         // window.__themeState__.theme is not always guaranteed to load , so need to check computed styles of Office and normal apps
-        let theme = window.getComputedStyle(contentRoot).getPropertyValue('--black') || window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1') || __themeState__.theme.themeName;
+        let theme = contentRoot ? (window.getComputedStyle(contentRoot).getPropertyValue('--black') || window.getComputedStyle(contentRoot).getPropertyValue('--colorNeutralForeground1')) : __themeState__.theme.themeName;
         theme = theme ? theme.toLowerCase().trim() : theme; // need to test against lowercase only, and remove extra whitespace
         theme = (theme == "#ffffff" || theme.includes('dark mode')) ? 'dark' : 'light';
 
