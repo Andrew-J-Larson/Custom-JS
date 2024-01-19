@@ -1,16 +1,18 @@
 // ==UserScript==
 // @name         Microsoft 365 admin center - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Makes Microsoft 365 admin center match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://admin.microsoft.com/*
 // @match        https://admin.microsoft365.com/*
+// @match        https://portal.office.com/adminportal/*
 // @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js
 // @icon         https://res.cdn.office.net/admincenter/admin-content/images/favicon_fluent.ico
 // @grant        none
+// @run-at       document-body
 // @noframes
 // ==/UserScript==
 
@@ -30,23 +32,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// unfortunately need these here on certain websites that disable the console
+const consoleLog = window.console.log;
+const consoleWarn = window.console.warn;
+const consoleDebug = window.console.debug;
+const consoleError = window.console.error;
+const consoleInfo = window.console.info;
+const consoleTrace = window.console.trace;
+
 const INTERVAL_SPEED = 100;
+const moreActionsBtnSelector = '#Dashboard-Header-CommandBar-More-Action';
 const themeBtnSelector = '#DarkLight';
-const themeNotIconSelector = themeBtnSelector + ' > span > i[data-icon-name]';
+const panelThemeBtnSelector = 'button[data-automation-id*=DarkLightBtn]';
+const themeNotIconSelector = themeBtnSelector + ' i[data-icon-name]';
 
 var watchEventTriggered = false;
 var activeElement = null;
-var themeButton = null;
-var themeNotIcon = null;
 
 function updateTheme(changeToScheme) {
-    themeNotIcon = document.querySelector(themeNotIconSelector);
     let theme = 'light';
+
+    // special case of theme selection when on homepage
+    if (((window.location.href).split('#')[1]).startsWith('/homepage')) {
+        let moreActionsBtn = document.querySelector(moreActionsBtnSelector);
+        if (moreActionsBtn) moreActionsBtn.click();
+    }
+
+    let themeNotIcon = document.querySelector(themeNotIconSelector);
     if (themeNotIcon.getAttribute('data-icon-name') == 'Light') theme = 'dark';
 
     if (theme != changeToScheme) {
         // click the theme switcher
-        themeButton = document.querySelector(themeBtnSelector);
+        let themeButton = document.querySelector(panelThemeBtnSelector) || document.querySelector(themeBtnSelector);
         themeButton.click();
 
         if (watchEventTriggered) activeElement.focus();
@@ -57,13 +74,13 @@ function updateTheme(changeToScheme) {
 
 // wait for the page to be fully loaded
 window.addEventListener('load', function () {
-    // need to wait for button & icon to be available
-    let waitingForThemeBtnAndIco = setInterval(function () {
-        themeButton = document.querySelector(themeBtnSelector);
-        themeNotIcon = document.querySelector(themeNotIconSelector);
+    let waitingForPageToLoad = setInterval(function () {
+        let testMoreActionsBtn = document.querySelector(moreActionsBtnSelector);
+        let testThemeButton = document.querySelector(themeBtnSelector);
+        let testThemeNotIcon = document.querySelector(themeNotIconSelector);
 
-        if (themeButton && themeNotIcon) {
-            clearInterval(waitingForThemeBtnAndIco);
+        if (testMoreActionsBtn || (testThemeButton && testThemeNotIcon)) {
+            clearInterval(waitingForPageToLoad);
 
             // now we can start
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -82,5 +99,5 @@ window.addEventListener('load', function () {
                 updateTheme('light');
             }
         }
-    }, INTERVAL_SPEED);
+   }, INTERVAL_SPEED);
 }, false);
