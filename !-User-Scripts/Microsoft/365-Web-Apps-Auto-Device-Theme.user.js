@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -13,7 +13,7 @@
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com
 // @grant        none
-// @run-at       document-start
+// @run-at       document-body
 // @noframes
 // ==/UserScript==
 
