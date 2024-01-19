@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -13,6 +13,7 @@
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Web-Apps-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=microsoft365.com
 // @grant        none
+// @run-at       document-start
 // @noframes
 // ==/UserScript==
 
@@ -33,6 +34,15 @@
 
 /* globals __themeState__ */
 
+// unfortunately need these here on certain websites that disable the console
+const consoleLog = window.console.log;
+const consoleWarn = window.console.warn;
+const consoleDebug = window.console.debug;
+const consoleError = window.console.error;
+const consoleInfo = window.console.info;
+const consoleTrace = window.console.trace;
+
+// only needed when on Admin Center via the portal
 const adminCenterScriptURL = 'https://github.com/Andrew-J-Larson/Custom-JS/blob/main/!-User-Scripts/Microsoft/365-Admin-Center-Auto-Device-Theme.user.js'
 
 // avoids breaking some websites that assume all errors are their own
@@ -48,10 +58,10 @@ try {
             // is Outlook
             throw new Error("[" + GM_info.script.name + "] Can't run on Outlook, already has built-in system theme setting.");
         }
-    } else if ((uriLocation.hostname).startsWith('portal.')) { // because of @noframes, it should never get to this point anyways
-        // don't start on the Admin Center portal page, since it's taken care of in another script
+    } else if ((uriLocation.hostname).startsWith('portal.')) {
+        // don't start on the Admin Center via the portal, since it's taken care of in another script
         if ((uriLocation.pathname).startsWith('/adminportal/')) {
-            // is Admin Center portal
+            // is Admin Center via the portal
             throw new Error("[" + GM_info.script.name + "] Can't run on Admin Center portal, make sure you're using " + adminCenterScriptURL + " for this site.");
         }
     }
@@ -172,5 +182,5 @@ try {
         }, 0);
     }, false);
 } catch (e) {
-    console.warn(e.message);
+    consoleWarn(e.message);
 }
