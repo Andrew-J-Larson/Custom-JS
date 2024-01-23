@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.4.8
+// @version      1.4.9
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -10,6 +10,7 @@
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Alloy/Navigator-Auto-Link-Tickets.user.js
 // @icon         https://hd.alloysoftware.com/helpdesk/favicon.ico
 // @grant        GM_addStyle
+// @noframes
 // ==/UserScript==
 
 /* Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
@@ -34,9 +35,12 @@
 const ticketPattern = /^[a-zA-Z]+[0-9]+$/
 const applicationNameSelector = 'meta[name="application-name"]';
 const alloyBreadcrumbsID = 'alloy-breadcrumbs';
-const headerWrapperSelector = '.full-form-header-wrapper';
-const headerSelector1 = '.full-form-header__1_1';
-const headerSelector2 = '.full-form-header__2_1';
+const headerWrapperSelector = '#form-container > div > div:first-of-type > div:first-of-type > div:last-of-type > div:first-of-type > div:last-of-type > div:first-of-type';
+const summaryPartialSelector = '.field--Summary';
+const ticketPartialSelector = '.field--Ticket';
+const oldHeaderWrapperSelector = '.full-form-header-wrapper';
+const oldHeaderSelector1 = '.full-form-header__1_1';
+const oldHeaderSelector2 = '.full-form-header__2_1';
 const COPY_TOOLTIP = 'Click to copy link to ticket';
 const NOT_ALLOY_NAVIGATOR = "[" + GM_info.script.name + "] Aborted script, this website is not running the Alloy Navigator web app.";
 const SPEED_SECOND = 1000; // ms
@@ -59,8 +63,8 @@ let ticketViewObjectURL = applicationUrl + "ViewObject.aspx?ID=";
 // VECTORS
 
 // link icon via https://fonts.gstatic.com/s/i/materialiconsoutlined/link/v19/24px.svg
-const googleFontLinkLightMode = '<svg style="display: inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z" fill="#333333"/><style xmlns="">@media print{.searchbar5011729485472345{display:none!important;}}</style></svg>';
-const googleFontLinkDarkMode = '<svg style="display: inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z" fill="#c8c3bc"/><style xmlns="">@media print{.searchbar5011729485472345{display:none!important;}}</style></svg>';
+const googleFontLinkLightMode = '<svg style="display: inline-block; vertical-align: middle; width: 24;" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z" fill="#333333"/><style xmlns="">@media print{.searchbar5011729485472345{display:none!important;}}</style></svg>';
+const googleFontLinkDarkMode = '<svg style="display: inline-block; vertical-align: middle; width: 24;" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm-3-4h8v2H8z" fill="#c8c3bc"/><style xmlns="">@media print{.searchbar5011729485472345{display:none!important;}}</style></svg>';
 
 // STYLES
 
@@ -123,13 +127,19 @@ window.addEventListener('load', function () {
 
         // need to wait for element(s) to be available
         let waitForAlloyElements = setInterval(function () {
-            let ticketHeader = document.querySelector(headerWrapperSelector);
+            let oldTicketHeader = document.querySelector(oldHeaderWrapperSelector);
+            let ticketHeader = oldTicketHeader || document.querySelector(headerWrapperSelector);
             let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
             if (ticketHeader && !document.hidden && (hasBreadcrumbs ? alloyBreadcrumbs : true)) {
                 clearInterval(waitForAlloyElements);
 
-                let ticketHeader1 = document.querySelector(headerSelector1);
-                let ticketHeader2 = document.querySelector(headerSelector2);
+                // Pre 2023.2 versions need to look at headers rather than fields in the newer versions
+                let oldTicketHeader1 = document.querySelector(oldHeaderSelector1);
+                let oldTicketHeader2 = document.querySelector(oldHeaderSelector2);
+                let summaryElement = oldTicketHeader1 || ticketHeader.querySelector(summaryPartialSelector);
+                let ticketElement = ticketHeader.querySelector(ticketPartialSelector); // leaving out oldTicketHeader2 from this is on purpose
+
+                // continue with the process
                 let alloyObjectDirectoryItems = alloyBreadcrumbs ? alloyBreadcrumbs.querySelectorAll('div > div > div > a > span') : null;
                 let ticketNumberElement; // gets set dynamically
 
@@ -140,27 +150,30 @@ window.addEventListener('load', function () {
                     ticketNumberElement = alloyObjectDirectoryItems[alloyObjectDirectoryItems.length - 1];
                     ticketNumber = ticketNumberElement.innerText;
                 }
-                if (!ticketNumber && ticketHeader2) {
+                // newer Alloy versions make finding the ticket number easy
+                if (!ticketNumber && ticketElement) ticketNumber = ticketElement.innerText;
+                // older Alloy versions are harder to figure out ticket numbers
+                if (!ticketNumber && oldTicketHeader2) {
                     // get ticket number from website title - format example: "T000001 - Title of Ticket" => T000001
                     let wordsWebsiteTitle = (document.title).split(' ');
                     let possibleTicketNumber = wordsWebsiteTitle[wordsWebsiteTitle.length - 1];
                     ticketNumber = ticketPattern.test(possibleTicketNumber) ? possibleTicketNumber : false;
                 }
-                if (!ticketNumber && ticketHeader2) {
+                if (!ticketNumber && oldTicketHeader2) {
                     // get ticket number from sub title - format example: "Incident T000001" => T000001
-                    let ticketHeader = ticketHeader2.innerText;
+                    let ticketHeader = oldTicketHeader2.innerText;
                     let wordsTicketHeader = ticketHeader.split(' ');
                     let possibleTicketNumber = wordsTicketHeader[wordsTicketHeader.length - 1];
                     ticketNumber = /^[a-zA-Z]+[0-9]+$/.test(possibleTicketNumber) ? possibleTicketNumber : false;
                 }
-                if (!ticketNumber && ticketHeader1) {
+                if (!ticketNumber && summaryElement) {
                     // set link text to ticket title - format example: "Title of Ticket" => Title of Ticket
-                    linkText = ticketHeader1.innerText;
+                    linkText = summaryElement.innerText;
                 }
                 if (!linkText) linkText = ticketNumber;
 
                 // create copy to clipboard button if we have the information we needed
-                if ((ticketNumberElement || ticketHeader1) && linkText) {
+                if ((ticketNumberElement || summaryElement) && linkText) {
                     // need to craft rich-text link
                     let linkURL = ticketNumber ? (ticketGoURL + ticketNumber) : (ticketViewObjectURL + window.GetIdFromURL(window.location.href));
                     let ticketRichTextLink = `<a href="${linkURL}">${linkText}</a>`;
@@ -233,8 +246,8 @@ window.addEventListener('load', function () {
                             }
                         }, INTERVAL_SLOW_SPEED);
                     } else {
-                        ticketHeader1.appendChild(ticketLinkButton);
-                        ticketHeader1.appendChild(ticketLinkToast);
+                        summaryElement.appendChild(ticketLinkButton);
+                        summaryElement.appendChild(ticketLinkToast);
                     }
 
                     // monitor page theme to change link button colors appropriately
