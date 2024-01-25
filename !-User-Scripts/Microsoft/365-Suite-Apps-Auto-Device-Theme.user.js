@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Suite Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Makes all Microsoft 365 suite (office) apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -62,21 +62,27 @@ try {
             // ribbon tabs need to be available first
             activeElement = document.activeElement;
             currentTab = document.querySelector(currentTabSelector);
-            viewTab = document.querySelector(viewTabSelector);
 
-            viewTab.click();
+            let waitForViewTabSelected = setInterval(function() {
+                viewTab = document.querySelector(viewTabSelector);
+                viewTab.click();
+                if (viewTab == document.querySelector(currentTabSelector)) {
+                    clearInterval(waitForViewTabSelected);
 
-            let waitForDarkModeToggle = setInterval(function() {
-                let viewTabDarkModeToggle = document.querySelector(viewTabDarkModeToggleSelector);
-                if (viewTabDarkModeToggle) {
-                    clearInterval(waitForDarkModeToggle);
 
-                    viewTabDarkModeToggle.click();
+                    let waitForDarkModeToggle = setInterval(function() {
+                        let viewTabDarkModeToggle = document.querySelector(viewTabDarkModeToggleSelector);
+                        if (viewTabDarkModeToggle) {
+                            clearInterval(waitForDarkModeToggle);
 
-                    // special ribbon tab 'reversal' procedure needed, strangely only works if inside a timeout, even if speed is 0
-                    setTimeout(function(){
-                        document.getElementById(currentTab.id).click();
-                        if (watchEventTriggered) activeElement.focus();
+                            viewTabDarkModeToggle.click();
+
+                            // special ribbon tab 'reversal' procedure needed, strangely only works if inside a timeout, even if speed is 0
+                            setTimeout(function(){
+                                document.getElementById(currentTab.id).click();
+                                if (watchEventTriggered) activeElement.focus();
+                            }, INTERVAL_SPEED);
+                        }
                     }, INTERVAL_SPEED);
                 }
             }, INTERVAL_SPEED);
