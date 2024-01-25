@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Suite Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes all Microsoft 365 suite (office) apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -41,7 +41,7 @@ try {
     // Constants
 
     const INTERVAL_SPEED = 5; // ms
-    const THEME_LOAD_SPEED = 1 // ms
+    const THEME_LOAD_SPEED = 5 // ms
 
     const darkModeClass = 'UxDarkMode'; // gets applied in the body for now
 
