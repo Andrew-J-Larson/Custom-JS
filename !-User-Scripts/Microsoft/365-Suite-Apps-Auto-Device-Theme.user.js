@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Suite Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes all Microsoft 365 suite (office) apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -40,13 +40,13 @@ const consoleTrace = window.console.trace;
 try {
     // Constants
 
-    const INTERVAL_SPEED = 5; // ms
-    const THEME_LOAD_SPEED = 1 // ms
+    const INTERVAL_SPEED = 1; // ms
 
-    const darkModeClass = 'UxDarkMode'; // gets applied in the body for now
+    const darkModeClassName = 'UxDarkMode'; // gets applied in the body for now
+
+    const styleDataLoadThemedStylesSelector = 'style[data-load-themed-styles]';
 
     // tab/button selectors
-    const settingsButtonSelector = '#O365_MainLink_Settings';
     const currentTabSelector = 'button[role="tab"][aria-selected="true"]';
     const viewTabSelector = 'button#View';
     const viewTabDarkModeToggleSelector = 'button#DarkModeToggle';
@@ -56,53 +56,49 @@ try {
     var currentTab = null;
     var viewTab = null;
 
-    function viewTabActionNoInterupt(actionCallback) {
+    function updateTheme(changeToScheme) {
+        let theme = (document.body).classList.contains(darkModeClassName) ? 'dark' : 'light';
+        if (theme != changeToScheme) {
             // ribbon tabs need to be available first
             activeElement = document.activeElement;
             currentTab = document.querySelector(currentTabSelector);
-        
+            viewTab = document.querySelector(viewTabSelector);
+
             viewTab.click();
 
-            function returnCallback() {
-                // special ribbon tab 'reversal' procedure needed, and a little delay is needed to allow theme to apply
-                setTimeout(function(){
-                    currentTab.click();
-                    if (watchEventTriggered) activeElement.focus();
-                }, THEME_LOAD_SPEED);
-            }
+            let waitForDarkModeToggle = setInterval(function() {
+                let viewTabDarkModeToggle = document.querySelector(viewTabDarkModeToggleSelector);
+                if (viewTabDarkModeToggle) {
+                    clearInterval(waitForDarkModeToggle);
 
-            return actionCallback(returnCallback);
-    }
+                    viewTabDarkModeToggle.click();
 
-    function viewTabhasDarkMode(returnCallback) {
-        returnCallback();
-        return (document.querySelector(viewTabDarkModeToggleSelector) ? true : false);
-    }
+                    // special ribbon tab 'reversal' procedure needed, strangely only works if inside a timeout, even if speed is 0
+                    setTimeout(function(){
+                        document.getElementById(currentTab.id).click();
+                        if (watchEventTriggered) activeElement.focus();
+                    }, INTERVAL_SPEED);
+                }
+            }, INTERVAL_SPEED);
+        }
 
-    function viewTabtoggleDarkMode(returnCallback) {
-        let viewTabDarkModeToggle = document.querySelector(viewTabDarkModeToggleSelector);
-        viewTabDarkModeToggle.click();
-        returnCallback();
-    }
-
-    function updateTheme(changeToScheme) {
-        let theme = (document.body).classList.contains(darkModeClass) ? 'dark' : 'light';
-        if (theme != changeToScheme) viewTabActionNoInterupt(viewTabtoggleDarkMode);
         watchEventTriggered = false;
     }
 
     // wait for the page to be fully loaded
     window.addEventListener('load', function () {
-        let waitForViewTabAndSettingsAvailable = setInterval(function () {
-            // need to wait for one of the required buttons
+        let waitForCurrentTabAndViewTab = setInterval(function () {
+            // need to wait for the required buttons
+            currentTab = document.querySelector(currentTabSelector);
             viewTab = document.querySelector(viewTabSelector);
-            if (viewTab && document.querySelector(settingsButtonSelector)) {
-                clearInterval(waitForViewTabAndSettingsAvailable);
+            if (currentTab && viewTab) {
+                clearInterval(waitForCurrentTabAndViewTab);
 
                 // only some apps are themeable at this time
-                if (!viewTabActionNoInterupt(viewTabhasDarkMode)) {
+                // NOTE: at time of writing script, only WORD seems to be compatible
+                let styleDataLoadThemedStyles = document.querySelector(styleDataLoadThemedStylesSelector);
+                if (!(styleDataLoadThemedStyles && (styleDataLoadThemedStyles.innerText).includes(`.${darkModeClassName}`))) {
                     // app not themeable
-                    // NOTE: at time of writing script, only WORD seems to be compatible
                     consoleWarn("[" + GM_info.script.name + "] Can't run on this web app, dark mode not yet supported.");
                     throw new Error(); // only needed to exit script prematurely... but can't capture error message for some reason
                 }
