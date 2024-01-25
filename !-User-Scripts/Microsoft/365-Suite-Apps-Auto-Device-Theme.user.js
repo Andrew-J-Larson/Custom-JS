@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Suite Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Makes all Microsoft 365 suite (office) apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -41,7 +41,7 @@ try {
     // Constants
 
     const INTERVAL_SPEED = 5; // ms
-    const THEME_LOAD_SPEED = 5 // ms
+    const THEME_LOAD_SPEED = 1 // ms
 
     const darkModeClass = 'UxDarkMode'; // gets applied in the body for now
 
@@ -53,36 +53,36 @@ try {
 
     var watchEventTriggered = false;
     var activeElement = null;
+    var currentTab = null;
     var viewTab = null;
 
     function viewTabActionNoInterupt(actionCallback) {
             // ribbon tabs need to be available first
             activeElement = document.activeElement;
-            let currentTab = document.querySelector(currentTabSelector);
-            if (currentTab) {
-                viewTab.click();
+            currentTab = document.querySelector(currentTabSelector);
+        
+            viewTab.click();
 
-                function returnCallback(originalTab) {
-                    // special ribbon tab 'reversal' procedure needed, and a little delay is needed to allow theme to apply
-                    setTimeout(function(){
-                        originalTab.click();
-                        if (watchEventTriggered) activeElement.focus();
-                    }, THEME_LOAD_SPEED);
-                }
+            function returnCallback() {
+                // special ribbon tab 'reversal' procedure needed, and a little delay is needed to allow theme to apply
+                setTimeout(function(){
+                    currentTab.click();
+                    if (watchEventTriggered) activeElement.focus();
+                }, THEME_LOAD_SPEED);
+            }
 
-                return actionCallback(currentTab, returnCallback);
-            } else return false;
+            return actionCallback(returnCallback);
     }
 
-    function viewTabhasDarkMode(originalTab, returnCallback) {
-        returnCallback(originalTab);
+    function viewTabhasDarkMode(returnCallback) {
+        returnCallback();
         return (document.querySelector(viewTabDarkModeToggleSelector) ? true : false);
     }
 
-    function viewTabtoggleDarkMode(originalTab, returnCallback) {
+    function viewTabtoggleDarkMode(returnCallback) {
         let viewTabDarkModeToggle = document.querySelector(viewTabDarkModeToggleSelector);
         viewTabDarkModeToggle.click();
-        returnCallback(originalTab);
+        returnCallback();
     }
 
     function updateTheme(changeToScheme) {
