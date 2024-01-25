@@ -102,6 +102,7 @@ try {
                 // only some apps are themeable at this time
                 if (!viewTabActionNoInterupt(viewTabhasDarkMode)) {
                     // app not themeable
+                    // NOTE: at time of writing script, only WORD seems to be compatible
                     consoleWarn("[" + GM_info.script.name + "] Can't run on this web app, dark mode not yet supported.");
                     throw new Error(); // only needed to exit script prematurely... but can't capture error message for some reason
                 }
