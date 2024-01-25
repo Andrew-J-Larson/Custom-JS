@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         Microsoft 365 (Personal Office Apps) - Auto Device Theme
+// @name         Microsoft 365 (Suite Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
 // @version      1.0.2
-// @description  Makes all Microsoft 365 personal office apps match the device theme at all times.
+// @description  Makes all Microsoft 365 suite (office) apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://*.officeapps.live.com/*/*.aspx*
-// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Personal-Office-Apps-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Personal-Office-Apps-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Suite-Apps-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/365-Suite-Apps-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=officeapps.live.com
 // @grant        none
 // @run-at       document-body
