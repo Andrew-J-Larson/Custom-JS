@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft 365 (Personal Office Apps) - Auto Device Theme
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes all Microsoft 365 personal office apps match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -27,8 +27,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-/* globals __themeState__ */
 
 // unfortunately need these here on certain websites that disable the console
 const consoleLog = window.console.log;
