@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.4.9
+// @version      1.5.0
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -37,7 +37,7 @@ const applicationNameSelector = 'meta[name="application-name"]';
 const alloyBreadcrumbsID = 'alloy-breadcrumbs';
 const headerWrapperSelector = '#form-container > div > div:first-of-type > div:first-of-type > div:last-of-type > div:first-of-type > div:last-of-type > div:first-of-type';
 const summaryPartialSelector = '.field--Summary';
-const ticketPartialSelector = '.field--Ticket';
+const ticketPartialSelector = '.field--Ticket, .field--OID'; // OID is for any non-tickets, like general objects
 const oldHeaderWrapperSelector = '.full-form-header-wrapper';
 const oldHeaderSelector1 = '.full-form-header__1_1';
 const oldHeaderSelector2 = '.full-form-header__2_1';
