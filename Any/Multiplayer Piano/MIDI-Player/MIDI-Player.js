@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-j-larson.github.io/";
-const VERSION = "3.9.98";
+const VERSION = "3.9.99";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
@@ -233,6 +233,7 @@ const DESCRIPTION_SEPARATOR = " - ";
 const CONSOLE_IMPORTANT_STYLE = "background-color: red; color: white; font-weight: bold";
 
 // Element constants
+const MPP_DYNAMIC_BUTTONS_SELECTOR = '#bottom > div.relative > #buttons';
 const CSS_VARIABLE_X_DISPLACEMENT = "--xDisplacement";
 const CSS_VARIABLE_Y_DISPLACEMENT = "--yDisplacement";
 const CSS_VARIABLE_X_INITIAL = "--xInitial";
@@ -263,6 +264,7 @@ let sustainState = { // needed for sustain tracking
     on: false,
     turnBackOn: false
 };
+let mppDynamicButtons = null; // newer versions of MPP can place the buttons dynamically, if this exists
 
 let loadingOption = false; // controls if loading music should be on or not
 let loadingProgress = 0; // updates when loading files
@@ -1036,150 +1038,23 @@ let createWebpageElements = function () {
         false
     );
     document.body.prepend(dragAndDropMIDI);
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// NEW CODE TODO !
 
-    // need the bottom area to append buttons to
-    let buttonContainer = document.querySelector("#bottom div");
-    // need the first button to setup upload button size correctly
+    // initialize button(s)
+    let buttonContainer = mppDynamicButtons || document.querySelector("#bottom div");
+
+    // need the first button to setup upload button style correctly
     let buttonStyle = getComputedStyle(document.querySelector('.ugly-button'));
     let buttonWidth = parseInt(buttonStyle.width);
     let buttonHeight = parseInt(buttonStyle.height);
     let buttonBorderRadius = parseInt(buttonStyle.borderRadius);
-    // we need to keep track of the next button locations
-    let nextLocationX = 1;
-    let nextLocationY = 0;
 
-    // need to initialize CSS variables: DISPLACEMENT & INITIAL for X and Y
-    document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
-    document.documentElement.style.setProperty(CSS_VARIABLE_Y_DISPLACEMENT, "0px");
-    document.documentElement.style.setProperty(CSS_VARIABLE_X_INITIAL, "0px");
-    document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, "0px");
-    document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, "0px");
-
-    // OPEN
-    // needs an internal div for the upload button, this is the only special button (for now)
-    let openDiv = document.createElement("div");
-    openDiv.id = PRE_ELEMENT_ID + "-open";
-    openDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    openDiv.classList.add("ugly-button");
-    buttonContainer.appendChild(openDiv);
-    // since we need upload files, there also needs to be an input element inside the open div
-    let uploadBtn = document.createElement("input");
-    let uploadBtnId = PRE_ELEMENT_ID + "-upload";
-    uploadBtn.id = uploadBtnId;
-    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:" + (buttonWidth + 10) + "px;height:" + (buttonHeight + 10) + "px;border-radius:" + (buttonBorderRadius + 1) + "px;-webkit-border-radius:" + (buttonBorderRadius + 1) + "px;-moz-border-radius:" + (buttonBorderRadius + 1) + "px;";
-    uploadBtn.title = " "; // removes the "No file choosen" tooltip
-    uploadBtn.type = "file";
-    uploadBtn.accept = ".mid,.midi";
-    uploadBtn.onchange = function () {
-        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files);
-        else console.log("No MIDI file selected");
-    }
-    // fix cursor on upload file button
-    let head = document.getElementsByTagName('HEAD')[0];
-    let uploadFileBtnFix = this.document.createElement('link');
-    uploadFileBtnFix.setAttribute('rel', 'stylesheet');
-    uploadFileBtnFix.setAttribute('type', 'text/css');
-    uploadFileBtnFix.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent('#' + uploadBtnId + ", #" + uploadBtnId + "::-webkit-file-upload-button {cursor:pointer}"));
-    head.appendChild(uploadFileBtnFix);
-    // continue with other html for open button
-    let openTxt = document.createTextNode("Open");
-    openDiv.appendChild(uploadBtn);
-    openDiv.appendChild(openTxt);
-    // then we need to let the rest of the script know it so it can reset it after loading files
-    uploadButton = uploadBtn;
-
-    // STOP
-    nextLocationX++;
-    let stopDiv = document.createElement("div");
-    stopDiv.id = PRE_ELEMENT_ID + "-stop";
-    stopDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    stopDiv.classList.add("ugly-button");
-    stopDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) stop();
-    }
-    let stopTxt = document.createTextNode("Stop");
-    stopDiv.appendChild(stopTxt);
-    buttonContainer.appendChild(stopDiv);
-    // REPEAT
-    nextLocationX++;
-    let repeatDiv = document.createElement("div");
-    repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
-    repeatDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    repeatDiv.classList.add("ugly-button");
-    repeatDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) repeat();
-    }
-    let repeatTxt = document.createTextNode("Repeat");
-    repeatDiv.appendChild(repeatTxt);
-    buttonContainer.appendChild(repeatDiv);
-    // SONG
-    nextLocationX++;
-    let songDiv = document.createElement("div");
-    songDiv.id = PRE_ELEMENT_ID + "-song";
-    songDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    songDiv.classList.add("ugly-button");
-    songDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) song();
-    }
-    let songTxt = document.createTextNode("Song");
-    songDiv.appendChild(songTxt);
-    buttonContainer.appendChild(songDiv);
-    // PAUSE
-    nextLocationX = 1;
-    nextLocationY++;
-    let pauseDiv = document.createElement("div");
-    pauseDiv.id = PRE_ELEMENT_ID + "-pause";
-    pauseDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    pauseDiv.classList.add("ugly-button");
-    pauseDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) pause();
-    }
-    let pauseTxt = document.createTextNode("Pause");
-    pauseDiv.appendChild(pauseTxt);
-    buttonContainer.appendChild(pauseDiv);
-    // RESUME
-    nextLocationX++;
-    let resumeDiv = document.createElement("div");
-    resumeDiv.id = PRE_ELEMENT_ID + "-resume";
-    resumeDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    resumeDiv.classList.add("ugly-button");
-    resumeDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) resume();
-    }
-    let resumeTxt = document.createTextNode("Resume");
-    resumeDiv.appendChild(resumeTxt);
-    buttonContainer.appendChild(resumeDiv);
-    // SUSTAIN
-    nextLocationX++;
-    let sustainDiv = document.createElement("div");
-    sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
-    sustainDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    sustainDiv.classList.add("ugly-button");
-    sustainDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) sustain();
-    }
-    let sustainTxt = document.createTextNode("Sustain");
-    sustainDiv.appendChild(sustainTxt);
-    buttonContainer.appendChild(sustainDiv);
-    // PUBLIC
-    nextLocationX++;
-    let publicDiv = document.createElement("div");
-    publicDiv.id = PRE_ELEMENT_ID + '-public';
-    publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-    publicDiv.classList.add("ugly-button");
-    publicDiv.onclick = function () { publicCommands(true, true) }
-    let publicTxt = document.createTextNode("Public");
-    publicDiv.appendChild(publicTxt);
-    buttonContainer.appendChild(publicDiv);
-
-    // one more button to toggle the visibility of the other buttons
-    nextLocationX = 0;
-    nextLocationY = 0;
+    // button to toggle the visibility of the other buttons
     let buttonsOn = false;
     let togglerDiv = document.createElement("div");
     togglerDiv.title = 'Use `' + PREFIX + 'help` for more commands'
     togglerDiv.id = TOGGLER_ELEMENT_ID;
-    togglerDiv.style = ELEM_POS + ELEM_ON + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_TOGGLE_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
     togglerDiv.classList.add("ugly-button");
     togglerDiv.onclick = function () {
         if (buttonsOn) { // if on, then turn off, else turn on
@@ -1207,6 +1082,152 @@ let createWebpageElements = function () {
     let togglerTxt = document.createTextNode(MOD_DISPLAYNAME);
     togglerDiv.appendChild(togglerTxt);
     buttonContainer.appendChild(togglerDiv);
+
+    // OPEN
+    // needs an internal div for the upload button, this is the only special button (for now)
+    let openDiv = document.createElement("div");
+    openDiv.id = PRE_ELEMENT_ID + "-open";
+    openDiv.classList.add("ugly-button");
+    buttonContainer.appendChild(openDiv);
+    // since we need to upload files, there also needs to be an input element inside the open div
+    let uploadBtn = document.createElement("input");
+    let uploadBtnId = PRE_ELEMENT_ID + "-upload";
+    uploadBtn.id = uploadBtnId;
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:" + (buttonWidth + 10) + "px;height:" + (buttonHeight + 10) + "px;border-radius:" + (buttonBorderRadius + 1) + "px;-webkit-border-radius:" + (buttonBorderRadius + 1) + "px;-moz-border-radius:" + (buttonBorderRadius + 1) + "px;";
+    uploadBtn.title = " "; // removes the "No file choosen" tooltip
+    uploadBtn.type = "file";
+    uploadBtn.accept = ".mid,.midi";
+    uploadBtn.onchange = function () {
+        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files);
+        else console.log("No MIDI file selected");
+    }
+    // fix cursor on upload file button
+    let head = document.getElementsByTagName('HEAD')[0];
+    let uploadFileBtnFix = this.document.createElement('link');
+    uploadFileBtnFix.setAttribute('rel', 'stylesheet');
+    uploadFileBtnFix.setAttribute('type', 'text/css');
+    uploadFileBtnFix.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent('#' + uploadBtnId + ", #" + uploadBtnId + "::-webkit-file-upload-button {cursor:pointer}"));
+    head.appendChild(uploadFileBtnFix);
+    // continue with other html for open button
+    let openTxt = document.createTextNode("Open");
+    openDiv.appendChild(uploadBtn);
+    openDiv.appendChild(openTxt);
+    // then we need to let the rest of the script know it so it can reset it after loading files
+    uploadButton = uploadBtn;
+    // STOP
+    let stopDiv = document.createElement("div");
+    stopDiv.id = PRE_ELEMENT_ID + "-stop";
+    stopDiv.classList.add("ugly-button");
+    stopDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) stop();
+    }
+    let stopTxt = document.createTextNode("Stop");
+    stopDiv.appendChild(stopTxt);
+    buttonContainer.appendChild(stopDiv);
+    // REPEAT
+    let repeatDiv = document.createElement("div");
+    repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
+    repeatDiv.classList.add("ugly-button");
+    repeatDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) repeat();
+    }
+    let repeatTxt = document.createTextNode("Repeat");
+    repeatDiv.appendChild(repeatTxt);
+    buttonContainer.appendChild(repeatDiv);
+    // SONG
+    let songDiv = document.createElement("div");
+    songDiv.id = PRE_ELEMENT_ID + "-song";
+    songDiv.classList.add("ugly-button");
+    songDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) song();
+    }
+    let songTxt = document.createTextNode("Song");
+    songDiv.appendChild(songTxt);
+    buttonContainer.appendChild(songDiv);
+    // PAUSE
+    let pauseDiv = document.createElement("div");
+    pauseDiv.id = PRE_ELEMENT_ID + "-pause";
+    pauseDiv.classList.add("ugly-button");
+    pauseDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) pause();
+    }
+    let pauseTxt = document.createTextNode("Pause");
+    pauseDiv.appendChild(pauseTxt);
+    buttonContainer.appendChild(pauseDiv);
+    // RESUME
+    let resumeDiv = document.createElement("div");
+    resumeDiv.id = PRE_ELEMENT_ID + "-resume";
+    resumeDiv.classList.add("ugly-button");
+    resumeDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) resume();
+    }
+    let resumeTxt = document.createTextNode("Resume");
+    resumeDiv.appendChild(resumeTxt);
+    buttonContainer.appendChild(resumeDiv);
+    // SUSTAIN
+    let sustainDiv = document.createElement("div");
+    sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
+    sustainDiv.classList.add("ugly-button");
+    sustainDiv.onclick = function () {
+        if (!MPP.client.preventsPlaying()) sustain();
+    }
+    let sustainTxt = document.createTextNode("Sustain");
+    sustainDiv.appendChild(sustainTxt);
+    buttonContainer.appendChild(sustainDiv);
+    // PUBLIC
+    let publicDiv = document.createElement("div");
+    publicDiv.id = PRE_ELEMENT_ID + '-public';
+    publicDiv.classList.add("ugly-button");
+    publicDiv.onclick = function () { publicCommands(true, true) }
+    let publicTxt = document.createTextNode("Public");
+    publicDiv.appendChild(publicTxt);
+    buttonContainer.appendChild(publicDiv);
+
+    // update button(s) with position information if dynamic buttons placement isn't available
+    if (!exists(mppDynamicButtons)) {
+        // bottom area is used to place and update the buttons manually
+
+        // we need to keep track of the next button locations
+        let nextLocationX = 1;
+        let nextLocationY = 0;
+
+        // need to initialize CSS variables: DISPLACEMENT & INITIAL for X and Y
+        document.documentElement.style.setProperty(CSS_VARIABLE_X_DISPLACEMENT, "0px");
+        document.documentElement.style.setProperty(CSS_VARIABLE_Y_DISPLACEMENT, "0px");
+        document.documentElement.style.setProperty(CSS_VARIABLE_X_INITIAL, "0px");
+        document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, "0px");
+        document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, "0px");
+        
+        // OPEN
+        openDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // STOP
+        nextLocationX++;
+        stopDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // REPEAT
+        nextLocationX++;
+        repeatDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // SONG
+        nextLocationX++;
+        songDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // PAUSE
+        nextLocationX = 1;
+        nextLocationY++;
+        pauseDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // RESUME
+        nextLocationX++;
+        resumeDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // SUSTAIN
+        nextLocationX++;
+        sustainDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        // PUBLIC
+        nextLocationX++;
+        publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+        
+        // one more button to toggle the visibility of the other buttons
+        nextLocationX = 0;
+        nextLocationY = 0;
+        togglerDiv.style = ELEM_POS + ELEM_ON + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_TOGGLE_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
+    }
 };
 
 // Shows limited message for user
@@ -1638,11 +1659,21 @@ let repeatingTasks = setInterval(function () {
     }
 }, 1);
 let dynamicButtonDisplacement = setInterval(function () {
+    // don't need when website supports this automatically
+    if (mppDynamicButtons) {
+        clearInterval(dynamicButtonDisplacement);
+        return;
+    }
+
     // required when other ugly-button's change visibility
     let allUglyBtns = [];
     [...document.querySelectorAll(QUERY_BOTTOM_UGLY_BTNS)].forEach(uglyBtn => {
         if (uglyBtn.offsetWidth > 0 || uglyBtn.offsetHeight > 0 || uglyBtn.getClientRects().length > 0) allUglyBtns.push(uglyBtn);
     });
+    if (!allUglyBtns || !allUglyBtns.length) {
+        // no buttons found, can't do anything yet
+        return;
+    }
     let topOffset = allUglyBtns[0].offsetTop;
     let bottomOffset = allUglyBtns[0].offsetTop;
     let moddedTopOffset = allUglyBtns[0].offsetTop;
@@ -1708,20 +1739,27 @@ let triedClickingPlayButton = false;
 let playButtonMaxAttempts = 10; // it'll try to find the button this many times, before continuing anyways
 let playButtonCheckCounter = 0;
 let clearSoundWarning = setInterval(function () {
-    let playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton) || playButtonCheckCounter >= playButtonMaxAttempts) {
+    let playButton = document.querySelector('#motd > button[i18next-orgval-0="PLAY"]') || document.querySelector("#sound-warning button");
+    let playButtonStyle = exists(playButton) ? window.getComputedStyle(playButton) : null;
+    let playButtonClickable = exists(playButtonStyle) ? (
+        // confirming the play button is clickable is just a little harder in newer MPP versions
+        playButtonStyle.display == "block" && playButtonStyle.height != "auto"
+    ) : false;
+    if (playButtonClickable || playButtonCheckCounter >= playButtonMaxAttempts) {
         clearInterval(clearSoundWarning);
 
         // only turn off sound warning if it hasn't already been turned off
-        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") {
-            playButton.click();
-            setTimeout(function () {
-                // delay by a little bit to let click register
-                triedClickingPlayButton = true;
-            }, HALF_SECOND);
+        if (exists(playButton)) {
+            if (playButtonStyle.display == "block" && playButtonStyle.opacity == "1") {
+                playButton.click();
+                setTimeout(function () {
+                    // delay by a little bit to let click register
+                    triedClickingPlayButton = true;
+                }, HALF_SECOND);
+            }
         }
     } else playButtonCheckCounter++;
-}, 1);
+}, 250);
 
 // wait for the client to come online, and piano keys to be fully loaded
 let waitForMPP = setInterval(function () {
@@ -1730,6 +1768,7 @@ let waitForMPP = setInterval(function () {
         clearInterval(waitForMPP);
 
         // initialize mod settings and elements
+        mppDynamicButtons = document.querySelector(MPP_DYNAMIC_BUTTONS_SELECTOR);
         currentRoom = mppGetRoom();
         if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
             // loadingOption = true;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://andrew-j-larson.github.io/
-// @version      3.9.98
+// @version      3.9.99
 // @description  Plays Minecraft music!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -1567,20 +1567,27 @@ let triedClickingPlayButton = false;
 let playButtonMaxAttempts = 10; // it'll try to find the button this many times, before continuing anyways
 let playButtonCheckCounter = 0;
 let clearSoundWarning = setInterval(function () {
-    let playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton) || playButtonCheckCounter >= playButtonMaxAttempts) {
+    let playButton = document.querySelector('#motd > button[i18next-orgval-0="PLAY"]') || document.querySelector("#sound-warning button");
+    let playButtonStyle = exists(playButton) ? window.getComputedStyle(playButton) : null;
+    let playButtonClickable = exists(playButtonStyle) ? (
+        // confirming the play button is clickable is just a little harder in newer MPP versions
+        playButtonStyle.display == "block" && playButtonStyle.height != "auto"
+    ) : false;
+    if (playButtonClickable || playButtonCheckCounter >= playButtonMaxAttempts) {
         clearInterval(clearSoundWarning);
 
         // only turn off sound warning if it hasn't already been turned off
-        if (exists(playButton) && window.getComputedStyle(playButton).display == "block") {
-            playButton.click();
-            setTimeout(function () {
-                // delay by a little bit to let click register
-                triedClickingPlayButton = true;
-            }, HALF_SECOND);
+        if (exists(playButton)) {
+            if (playButtonStyle.display == "block" && playButtonStyle.opacity == "1") {
+                playButton.click();
+                setTimeout(function () {
+                    // delay by a little bit to let click register
+                    triedClickingPlayButton = true;
+                }, HALF_SECOND);
+            }
         }
     } else playButtonCheckCounter++;
-}, 1);
+}, 250);
 
 // wait for the client to come online, and piano keys to be fully loaded
 let waitForMPP = setInterval(function () {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://andrew-j-larson.github.io/
-// @version      0.4.5
+// @version      0.4.6
 // @description  Greets users who join the room with a custom message!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -450,14 +450,62 @@ var slowRepeatingTasks = setInterval(function () {
     }
 }, SECOND);
 
+
 // Automatically turns off the sound warning (mainly for autoplay)
-var clearSoundWarning = setInterval(function () {
-    var playButton = document.querySelector("#sound-warning button");
-    if (exists(playButton)) {
+let triedClickingPlayButton = false;
+let playButtonMaxAttempts = 10; // it'll try to find the button this many times, before continuing anyways
+let playButtonCheckCounter = 0;
+let clearSoundWarning = setInterval(function () {
+    let playButton = document.querySelector('#motd > button[i18next-orgval-0="PLAY"]') || document.querySelector("#sound-warning button");
+    let playButtonStyle = exists(playButton) ? window.getComputedStyle(playButton) : null;
+    let playButtonClickable = exists(playButtonStyle) ? (
+        // confirming the play button is clickable is just a little harder in newer MPP versions
+        playButtonStyle.display == "block" && playButtonStyle.height != "auto"
+    ) : false;
+    if (playButtonClickable || playButtonCheckCounter >= playButtonMaxAttempts) {
         clearInterval(clearSoundWarning);
-        playButton.click();
+
+        // only turn off sound warning if it hasn't already been turned off
+        if (exists(playButton)) {
+            if (playButtonStyle.display == "block" && playButtonStyle.opacity == "1") {
+                playButton.click();
+                setTimeout(function () {
+                    // delay by a little bit to let click register
+                    triedClickingPlayButton = true;
+                }, HALF_SECOND);
+            }
+        }
+    } else playButtonCheckCounter++;
+}, 250);
+
+
+// Automatically turns off the sound warning (mainly for autoplay)
+let triedClickingPlayButton = false;
+let playButtonMaxAttempts = 10; // it'll try to find the button this many times, before continuing anyways
+let playButtonCheckCounter = 0;
+let clearSoundWarning = setInterval(function () {
+    let playButton = document.querySelector('#motd > button[i18next-orgval-0="PLAY"]') || document.querySelector("#sound-warning button");
+    let playButtonStyle = exists(playButton) ? window.getComputedStyle(playButton) : null;
+    let playButtonClickable = exists(playButtonStyle) ? (
+        // confirming the play button is clickable is just a little harder in newer MPP versions
+        playButtonStyle.display == "block" && playButtonStyle.height != "auto"
+    ) : false;
+    if (playButtonClickable || playButtonCheckCounter >= playButtonMaxAttempts) {
+        clearInterval(clearSoundWarning);
+
+        // only turn off sound warning if it hasn't already been turned off
+        if (exists(playButton)) {
+            if (playButtonStyle.display == "block" && playButtonStyle.opacity == "1") {
+                playButton.click();
+                setTimeout(function () {
+                    // delay by a little bit to let click register
+                    triedClickingPlayButton = true;
+                }, HALF_SECOND);
+            }
+        }
+
         // wait for the client to come online
-        var waitForMPP = setInterval(function () {
+        let waitForMPP = setInterval(function () {
             if (exists(MPP) && exists(MPP.client) && exists(MPP.client.channel) && exists(MPP.client.channel._id) && MPP.client.channel._id != "") {
                 clearInterval(waitForMPP);
 
@@ -467,5 +515,5 @@ var clearSoundWarning = setInterval(function () {
                 console.log(PRE_MSG + " Online!");
             }
         }, TENTH_OF_SECOND);
-    }
-}, TENTH_OF_SECOND);
+    } else playButtonCheckCounter++;
+}, 250);
