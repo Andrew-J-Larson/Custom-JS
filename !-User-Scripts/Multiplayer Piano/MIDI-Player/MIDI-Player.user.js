@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Multiplayer Piano - MIDI Player
 // @namespace    https://andrew-j-larson.github.io/
-// @version      3.9.991
+// @version      3.9.992
 // @description  Plays MIDI files!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
 // @match        *://*.multiplayerpiano.net/*
-// @match        *://mpp.hri7566.info/*
+// @match        *://mpp*.hri7566.info/*
 // @match        *://mpp.autoplayer.xyz/*
 // @match        *://mpp.lapishusky.dev/*
 // @match        *://mpp.yourfriend.lv/*

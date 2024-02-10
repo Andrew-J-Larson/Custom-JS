@@ -1,12 +1,12 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-j-larson.github.io/";
-const VERSION = "3.9.991";
+const VERSION = "3.9.992";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
 const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g,
-    /^https?:\/\/mpp\.hri7566\.info.*/g,
+    /^https?:\/\/mpp[^/.]+\.hri7566\.info.*/g,
     /^https?:\/\/mpp\.autoplayer\.xyz.*/g,
     /^https?:\/\/mpp\.lapishusky\.dev.*/g,
     /^https?:\/\/mpp\.yourfriend\.lv.*/g,
