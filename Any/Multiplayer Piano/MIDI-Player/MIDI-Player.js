@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-j-larson.github.io/";
-const VERSION = "3.9.993";
+const VERSION = "3.9.994";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
@@ -152,10 +152,6 @@ const GITHUB_ISSUE_TITLE = '[Feedback] ' + NAME + ' ' + VERSION;
 const GITHUB_ISSUE_BODY = '<!-- Please write your feedback below this line. -->';
 const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITHUB_ISSUE_TITLE) + '&body=' + encodeURIComponent(GITHUB_ISSUE_BODY);
 
-// Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = []; // empty for now
-const LIMITED_PLAYERS = []; // empty for now
-
 // Mod constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const PERCUSSION_CHANNELS = [10/*, 11*/]; // (DON'T CHANGE) TODO: figure out how General MIDI Level 2 works with channel 11
@@ -174,7 +170,6 @@ const MOD_SOLO_PLAY = true; // sets what play mode when the mod boots up on an o
 // Mod custom constants
 const PREFIX = "mp!";
 const PREFIX_LENGTH = PREFIX.length;
-const MOD_KEYWORD = "MIDI"; // this is used for auto enabling the public commands in a room that contains the keyword (character case doesn't matter)
 const MOD_DISPLAYNAME = "MIDI Player";
 const MOD_USERNAME = MOD_DISPLAYNAME + " (`" + PREFIX + "help`)";
 const MOD_NAMESPACE = '( ' + NAMESPACE + ' )';
@@ -186,6 +181,9 @@ const BASE_COMMANDS = [
     ["link", "get the download link for this mod"],
     ["feedback", "shows link to send feedback about the mod to the developer"],
     ["ping", "gets the milliseconds response time"]
+];
+const ROOM_OWNER_COMMANDS = [
+    ["consent [user id]", "toggles permission for this modded user to allow their mod to run in the current room"]
 ];
 const MOD_COMMANDS = [
     ["play [MIDI URL]", "plays a specific song (URL must be a direct link to a MIDI file)"],
@@ -207,9 +205,9 @@ const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
 const PRE_FEEDBACK = PRE_MSG + " [Feedback]";
 const PRE_PING = PRE_MSG + " Pong!";
+const PRE_CONSENT = PRE_MSG + " [Consent]";
 const PRE_SETTINGS = PRE_MSG + " [Settings]";
 const PRE_DOWNLOADING = PRE_MSG + " [Downloading]";
-const PRE_LIMITED = PRE_MSG + " Limited!";
 const PRE_ERROR = PRE_MSG + " Error!";
 const BAR_LEFT = '「';
 const BAR_RIGHT = '」';
@@ -251,11 +249,15 @@ const BTN_STYLE = ELEM_POS + ELEM_OFF;
 
 // =============================================== VARIABLES
 
+let consentOption = true; // allows room owners to turn off the mod in their rooms
 let publicOption = false; // turn off the public mod commands if needed
 let pinging = false; // helps aid in getting response time
 let pingTime = 0; // changes after each ping
 let fileSizeLimitBytes = MIDI_FILE_SIZE_LIMIT_BYTES; // updates if user has more than the highest standard quota, to allow playing black midi
-let currentRoom = null; // updates when it connects to room
+let currentRoom = { // updates when it connects to room
+    id: null,
+    authorized: true // disallows use to mod when room owner denies it
+};
 let chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 let endDelay; // used in multiline chats send commands
 
@@ -1108,8 +1110,15 @@ let createWebpageElements = function () {
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
     uploadBtn.onchange = function () {
-        if (!MPP.client.preventsPlaying() && uploadBtn.files.length > 0) playFile(uploadBtn.files);
-        else console.log("No MIDI file selected");
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+        
+        if (currentRoom.authorized) {
+            if (uploadBtn.files.length > 0) playFile(uploadBtn.files);
+            else console.log("No MIDI file selected");
+        } else requestConsent(yourId);
     }
     // fix cursor on upload file button
     let head = document.getElementsByTagName('HEAD')[0];
@@ -1126,7 +1135,13 @@ let createWebpageElements = function () {
     stopDiv.id = PRE_ELEMENT_ID + "-stop";
     stopDiv.classList.add("ugly-button");
     stopDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) stop();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) stop();
+        else requestConsent(yourId);
     }
     let stopTxt = document.createTextNode("Stop");
     stopDiv.appendChild(stopTxt);
@@ -1136,7 +1151,13 @@ let createWebpageElements = function () {
     repeatDiv.id = PRE_ELEMENT_ID + "-repeat";
     repeatDiv.classList.add("ugly-button");
     repeatDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) repeat();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) repeat();
+        else requestConsent(yourId);
     }
     let repeatTxt = document.createTextNode("Repeat");
     repeatDiv.appendChild(repeatTxt);
@@ -1146,7 +1167,13 @@ let createWebpageElements = function () {
     songDiv.id = PRE_ELEMENT_ID + "-song";
     songDiv.classList.add("ugly-button");
     songDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) song();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) song();
+        else requestConsent(yourId);
     }
     let songTxt = document.createTextNode("Song");
     songDiv.appendChild(songTxt);
@@ -1156,7 +1183,13 @@ let createWebpageElements = function () {
     pauseDiv.id = PRE_ELEMENT_ID + "-pause";
     pauseDiv.classList.add("ugly-button");
     pauseDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) pause();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) pause();
+        else requestConsent(yourId);
     }
     let pauseTxt = document.createTextNode("Pause");
     pauseDiv.appendChild(pauseTxt);
@@ -1166,7 +1199,13 @@ let createWebpageElements = function () {
     resumeDiv.id = PRE_ELEMENT_ID + "-resume";
     resumeDiv.classList.add("ugly-button");
     resumeDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) resume();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) resume();
+        else requestConsent(yourId);
     }
     let resumeTxt = document.createTextNode("Resume");
     resumeDiv.appendChild(resumeTxt);
@@ -1176,7 +1215,13 @@ let createWebpageElements = function () {
     sustainDiv.id = PRE_ELEMENT_ID + "-sustain";
     sustainDiv.classList.add("ugly-button");
     sustainDiv.onclick = function () {
-        if (!MPP.client.preventsPlaying()) sustain();
+        if (MPP.client.preventsPlaying()) return;
+
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) sustain();
+        else requestConsent(yourId);
     }
     let sustainTxt = document.createTextNode("Sustain");
     sustainDiv.appendChild(sustainTxt);
@@ -1185,7 +1230,13 @@ let createWebpageElements = function () {
     let publicDiv = document.createElement("div");
     publicDiv.id = PRE_ELEMENT_ID + '-public';
     publicDiv.classList.add("ugly-button");
-    publicDiv.onclick = function () { publicCommands(true, true) }
+    publicDiv.onclick = function () {
+        let yourParticipant = MPP.client.getOwnParticipant();
+        let yourId = yourParticipant._id;
+
+        if (currentRoom.authorized) publicCommands(true, true);
+        else requestConsent(yourId);
+    }
     let publicTxt = document.createTextNode("Public");
     publicDiv.appendChild(publicTxt);
     buttonContainer.appendChild(publicDiv);
@@ -1237,10 +1288,18 @@ let createWebpageElements = function () {
     }
 };
 
-// Shows limited message for user
-let playerLimited = function (username) {
-    // displays message with their name about being limited
-    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
+// Shows room owner consent message for room to see
+let requestConsent = function(yourId) {
+    // displays message with mod owner ID so that the room owner can act upon it
+    let roomOwnerId = mppGetRoomOwnerId();
+    let roomOwner = exists(roomOwnerId) ? MPP.client.ppl[roomOwnerId] : null;
+    let roomOwnerNameExists = exists(roomOwner) && exists(roomOwner.name) && roomOwner.name;
+    let unknownRoomOwner = 'the room owner';
+    roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
+    let preRequestConsent = PRE_CONSENT + ' ' + (roomOwnerName[0].toUpperCase() + roomOwnerName.substring(1))
+                            + (roomOwnerNameExists ? (', ' + unknownRoomOwner + ',') : '') + ' hasn\'t given this user (ID = `'
+                            + yourId + '`) consent to use the ' + MOD_DISPLAYNAME + " mod in this room."
+    mppChatSend(preRequestConsent);
 };
 
 // When there is an incorrect command, show this error
@@ -1252,13 +1311,16 @@ let cmdNotFound = function (cmd) {
 
 // Commands
 let help = function (command, userId, yourId) {
+    let roomOwnerId = mppGetRoomOwnerId();
+    let isRoomOwner = exists(roomOwnerId) && (userId == roomOwnerId);
     let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
-            + (publicOption ? ', ' + publicCommands : '')
-            + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
-                + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
+                    + (publicOption ? ', ' + publicCommands : '')
+                    + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
+                                          + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : '')
+                    + (isRoomOwner ? " | Room Owner Commands: " + formattedCommands(ROOM_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
         let commandIndex = null;
@@ -1290,6 +1352,18 @@ let help = function (command, userId, yourId) {
         if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
+};
+let consent = function (argsUserId, yourId) {
+    if (exists(argsUserId) && argsUserId) {
+        // test if input matches mod user
+        if (argsUserId == yourId) {
+            // toggle consent
+            let preConsentMsg = PRE_CONSENT + " This user's " + MOD_DISPLAYNAME + " mod is now ";
+            let postConsentMsg = "abled to run in this room.";
+            mppChatSend(preConsentMsg + (currentRoom.authorized ? 'en' : 'dis') + postConsentMsg);
+            currentRoom.authorized = !(currentRoom.authorized)
+        } else mppChatSend(PRE_ERROR + ' (consent) user ID entered doesn\'t match this mod owner\'s user ID (`' + yourId + '`).');
+    } else mppChatSend(PRE_ERROR + " (consent) no user ID was entered.");
 };
 let about = function () {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
@@ -1439,11 +1513,16 @@ let publicCommands = function (userId, yourId) {
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
 };
-let mppGetRoom = function () {
+let mppGetRoomId = function () {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
         return MPP.client.channel._id;
     } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
         return MPP.client.desiredChannelId;
+    } else return null;
+};
+let mppGetRoomOwnerId = function() {
+    if (MPP && MPP.client && MPP.client.channel && MPP.client.channel.crown && MPP.client.channel.crown.userId) {
+        return MPP.client.channel.crown.userId;
     } else return null;
 };
 
@@ -1544,60 +1623,66 @@ MPP.client.on('a', function (msg) { // on: new message
 
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
-        // don't allow banned or limited users to use the mod
-        let bannedPlayers = BANNED_PLAYERS.length;
-        if (bannedPlayers > 0) {
-            for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
-                if (BANNED_PLAYERS[i] == userId) {
-                    playerLimited(username);
-                    return;
-                }
-            }
-        }
-        let limitedPlayers = LIMITED_PLAYERS.length;
-        if (limitedPlayers > 0) {
-            for (let j = 0; j < LIMITED_PLAYERS.length; ++j) {
-                if (LIMITED_PLAYERS[j] == userId) {
-                    playerLimited(username);
-                    return;
-                }
-            }
-        }
         // evaluate input into command and possible arguments
         let message = input.substring(PREFIX_LENGTH).trim();
         let hasArgs = message.indexOf(' ');
         let command = (hasArgs != -1) ? message.substring(0, hasArgs) : message;
         let argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1).trim() : null;
         // look through commands
+        let roomOwnerId = mppGetRoomOwnerId();
+        let isRoomOwner = exists(roomOwnerId) && (userId == roomOwnerId);
         let isModOwner = userId == yourId;
         let preventsPlaying = MPP.client.preventsPlaying();
         switch (command.toLowerCase()) {
-            case "help": case "h": if ((isModOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if ((isModOwner || publicOption) && !preventsPlaying) about(); break;
-            case "link": case "li": if ((isModOwner || publicOption) && !preventsPlaying) link(); break;
+            case "help": case "h": if (isRoomOwner || isModOwner || publicOption) help(argumentsString, userId, yourId); break;
+            case "consent": case "c": if (isRoomOwner) consent(argumentsString); break;
+            case "about": case "ab": if (isModOwner || publicOption) about(); break;
+            case "link": case "li": if (isModOwner || publicOption) link(); break;
             case "feedback": case "fb": if (isModOwner || publicOption) feedback(); break;
             case "ping": case "pi": if (isModOwner || publicOption) ping(); break;
-            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) play(argumentsString); break;
-            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) pause(); break;
-            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) song(); break;
-            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) sustain(); break;
-            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) percussion(); break;
-            case "loading": case "lo": loading(userId, yourId); break;
-            case "public": publicCommands(userId, yourId); break;
+            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { play(argumentsString) } else { requestConsent(yourId) }
+            }; break;
+            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { stop() } else { requestConsent(yourId) }
+            }; break;
+            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { pause() } else { requestConsent(yourId) }
+            }; break;
+            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { resume() } else { requestConsent(yourId) }
+            }; break;
+            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { song() } else { requestConsent(yourId) }
+            }; break;
+            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { repeat() } else { requestConsent(yourId) }
+            }; break;
+            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { sustain() } else { requestConsent(yourId) }
+            }; break;
+            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { percussion() } else { requestConsent(yourId) }
+            }; break;
+            case "loading": case "lo": if (currentRoom.authorized) { loading(userId, yourId) } else { requestConsent(yourId) }; break;
+            case "public": if (currentRoom.authorized) { publicCommands(userId, yourId) } else { requestConsent(yourId) }; break;
         }
     }
 });
 MPP.client.on('ch', function (msg) { // on: room change
     // update current room info
-    let newRoom = mppGetRoom();
-    if (currentRoom != newRoom) {
-        currentRoom = newRoom;
-        // stop any songs that might have been playing before changing rooms
-        // only if we are not the owner of the room we are switching to
-        if (!MPP.client.isOwner() && (currentRoom.toUpperCase()).indexOf(MOD_KEYWORD) == -1 && !ended) stopSong(true);
+    let newRoomId = mppGetRoomId();
+    let roomHasOwner = exists((msg.ch).crown);
+    if (currentRoom.id != newRoomId) {
+        currentRoom.id = newRoomId;
+        // changes are made to permissions or current song based on ownership of the new room
+        if (MPP.client.isOwner() || !roomHasOwner) {
+            currentRoom.authorized = true;
+        } else {
+            currentRoom.authorized = false;
+            // stop any songs that might have been playing before changing rooms
+            if (!ended) stopSong(true);
+        }
     }
 });
 MPP.client.on('nq', function (msg) { // on: note quota change
@@ -1607,17 +1692,9 @@ MPP.client.on('nq', function (msg) { // on: note quota change
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
 });
-MPP.client.on('p', function (msg) { // on: player joins room
+/* MPP.client.on('p', function (msg) { // on: player joins room
     let userId = msg._id;
-    // kick ban all the banned players
-    let bannedPlayers = BANNED_PLAYERS.length;
-    if (bannedPlayers > 0) {
-        for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
-            let bannedPlayer = BANNED_PLAYERS[i];
-            if (userId == bannedPlayer) MPP.client.sendArray([{ m: "kickban", _id: bannedPlayer, ms: 3600000 }]);
-        }
-    }
-});
+}); */
 
 // =============================================== INTERVALS
 
@@ -1771,15 +1848,12 @@ let clearSoundWarning = setInterval(function () {
 // wait for the client to come online, and piano keys to be fully loaded
 let waitForMPP = setInterval(function () {
     let MPP_Fully_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.piano) && exists(MPP.piano.keys);
-    if (MPP_Fully_Loaded && mppGetRoom() && triedClickingPlayButton) {
+    if (MPP_Fully_Loaded && mppGetRoomId() && triedClickingPlayButton) {
         clearInterval(waitForMPP);
 
         // initialize mod settings and elements
         mppDynamicButtons = document.querySelector(MPP_DYNAMIC_BUTTONS_SELECTOR);
-        currentRoom = mppGetRoom();
-        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
-            // loadingOption = true;
-        }
+        currentRoom.id = mppGetRoomId();
         // attempt to create the Notification API, if it doesn't already exist
         if (!exists(MPP.Notification)) {
             // 2023-07-02T06:45:05Z - code modified via https://github.com/LapisHusky/mppclone/blob/main/client/script.js

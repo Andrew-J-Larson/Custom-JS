@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://andrew-j-larson.github.io/
-// @version      3.9.993
+// @version      3.9.994
 // @description  Plays Minecraft music!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -147,10 +147,6 @@ const GITHUB_ISSUE_TITLE = '[Feedback] ' + NAME + ' ' + VERSION;
 const GITHUB_ISSUE_BODY = '<!-- Please write your feedback below this line. -->';
 const FEEDBACK_URL = GITHUB_REPO + 'issues/new?title=' + encodeURIComponent(GITHUB_ISSUE_TITLE) + '&body=' + encodeURIComponent(GITHUB_ISSUE_BODY);
 
-// Players listed by IDs (these are the _id strings)
-const BANNED_PLAYERS = []; // empty for now
-const LIMITED_PLAYERS = []; // empty for now
-
 // Mod constants
 const CHAT_MAX_CHARS = 512; // there is a limit of this amount of characters for each message sent (DON'T CHANGE)
 const INNER_ROOM_COLOR = 0; // used in room color settings (DON'T CHANGE)
@@ -183,6 +179,9 @@ const BASE_COMMANDS = [
     ["feedback", "shows link to send feedback about the mod to the developer"],
     ["ping", "gets the milliseconds response time"]
 ];
+const ROOM_OWNER_COMMANDS = [
+    ["consent [user id]", "toggles permission for this modded user to allow their mod to run in the current room"]
+];
 const MOD_COMMANDS = [
     ["play (song)", "plays a specific song by name or number, no entry plays a random song"],
     ["skip", "skips the current song (if autoplay is on)"],
@@ -206,11 +205,11 @@ const PRE_ABOUT = PRE_MSG + " [About]";
 const PRE_LINK = PRE_MSG + " [Link]";
 const PRE_FEEDBACK = PRE_MSG + " [Feedback]";
 const PRE_PING = PRE_MSG + " Pong!";
+const PRE_CONSENT = PRE_MSG + " [Consent]";
 const PRE_SKIP = PRE_MSG + " [Skip]";
 const PRE_SETTINGS = PRE_MSG + " [Settings]";
 const PRE_ALBUM = PRE_MSG + " [Album]";
 const PRE_ART = PRE_MSG + " [Art]";
-const PRE_LIMITED = PRE_MSG + " Limited!";
 const PRE_ERROR = PRE_MSG + " Error!";
 const BAR_LEFT = '「';
 const BAR_RIGHT = '」';
@@ -645,10 +644,14 @@ const tntArtInverted = ["░░░░░░▓▓░░░░░░▓▓░░�
 
 // =============================================== VARIABLES
 
+let consentOption = true; // allows room owners to turn off the mod in their rooms
 let publicOption = false; // turn off the public mod commands if needed
 let pinging = false; // helps aid in getting response time
 let pingTime = 0; // changes after each ping
-let currentRoom = null; // updates when it connects to room
+let currentRoom = { // updates when it connects to room
+    id: null,
+    authorized: true // disallows use to mod when room owner denies it
+};
 let chatDelay = CHAT_DELAY; // for how long to wait until posting another message
 let endDelay; // used in multiline chats send commands
 
@@ -1048,10 +1051,18 @@ let setOwnerOnlyPlay = function (choice) {
     }
 };
 
-// Shows limited message for user
-let playerLimited = function (username) {
-    // displays message with their name about being limited
-    mppChatSend(PRE_LIMITED + " You must of done something to earn this " + quoteString(username) + " as you are no longer allowed to use the mod");
+// Shows room owner consent message for room to see
+let requestConsent = function(yourId) {
+    // displays message with mod owner ID so that the room owner can act upon it
+    let roomOwnerId = mppGetRoomOwnerId();
+    let roomOwner = exists(roomOwnerId) ? MPP.client.ppl[roomOwnerId] : null;
+    let roomOwnerNameExists = exists(roomOwner) && exists(roomOwner.name) && roomOwner.name;
+    let unknownRoomOwner = 'the room owner';
+    roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
+    let preRequestConsent = PRE_CONSENT + ' ' + (roomOwnerName[0].toUpperCase() + roomOwnerName.substring(1))
+                            + (roomOwnerNameExists ? (', ' + unknownRoomOwner + ',') : '') + ' hasn\'t given this user (ID = `'
+                            + yourId + '`) consent to use the ' + MOD_DISPLAYNAME + " mod in this room."
+    mppChatSend(preRequestConsent);
 };
 
 // When there is an incorrect command, show this error
@@ -1063,13 +1074,16 @@ let cmdNotFound = function (cmd) {
 
 // Commands
 let help = function (command, userId, yourId) {
+    let roomOwnerId = mppGetRoomOwnerId();
+    let isRoomOwner = exists(roomOwnerId) && (userId == roomOwnerId);
     let isOwner = MPP.client.isOwner();
     if (!exists(command) || command == "") {
         let publicCommands = formattedCommands(MOD_COMMANDS, PREFIX, true);
         mppChatSend(PRE_HELP + " Commands: " + formattedCommands(BASE_COMMANDS, PREFIX, true)
-            + (publicOption ? ', ' + publicCommands : '')
-            + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
-                + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : ''));
+                    + (publicOption ? ', ' + publicCommands : '')
+                    + (userId == yourId ? " | Mod Owner Commands: " + (publicOption ? '' : publicCommands + ', ')
+                                          + formattedCommands(MOD_OWNER_COMMANDS, PREFIX, true) : '')
+                    + (isRoomOwner ? " | Room Owner Commands: " + formattedCommands(ROOM_OWNER_COMMANDS, PREFIX, true) : ''));
     } else {
         let valid = null;
         let commandIndex = null;
@@ -1101,6 +1115,18 @@ let help = function (command, userId, yourId) {
         if (exists(valid)) mppChatSend(PRE_HELP + ' ' + formatCommandInfo(commandArray, commandIndex),);
         else cmdNotFound(command);
     }
+};
+let consent = function (argsUserId, yourId) {
+    if (exists(argsUserId) && argsUserId) {
+        // test if input matches mod user
+        if (argsUserId == yourId) {
+            // toggle consent
+            let preConsentMsg = PRE_CONSENT + " This user's " + MOD_DISPLAYNAME + " mod is now ";
+            let postConsentMsg = "abled to run in this room.";
+            mppChatSend(preConsentMsg + (currentRoom.authorized ? 'en' : 'dis') + postConsentMsg);
+            currentRoom.authorized = !(currentRoom.authorized)
+        } else mppChatSend(PRE_ERROR + ' (consent) user ID entered doesn\'t match this mod owner\'s user ID (`' + yourId + '`).');
+    } else mppChatSend(PRE_ERROR + " (consent) no user ID was entered.");
 };
 let about = function () {
     mppChatSend(PRE_ABOUT + ' ' + MOD_DESCRIPTION + ' ' + MOD_AUTHOR + ' ' + MOD_NAMESPACE);
@@ -1320,11 +1346,16 @@ let publicCommands = function (userId, yourId) {
     publicOption = !publicOption;
     mppChatSend(PRE_SETTINGS + " Public mod commands were turned " + (publicOption ? "on" : "off"));
 };
-let mppGetRoom = function () {
+let mppGetRoomId = function () {
     if (MPP && MPP.client && MPP.client.channel && MPP.client.channel._id) {
         return MPP.client.channel._id;
     } else if (MPP && MPP.client && MPP.client.desiredChannelId) {
         return MPP.client.desiredChannelId;
+    } else return null;
+};
+let mppGetRoomOwnerId = function() {
+    if (MPP && MPP.client && MPP.client.channel && MPP.client.channel.crown && MPP.client.channel.crown.userId) {
+        return MPP.client.channel.crown.userId;
     } else return null;
 };
 
@@ -1429,25 +1460,6 @@ MPP.client.on('a', function (msg) { // on: new message
 
     // make sure the start of the input matches prefix
     if (input.startsWith(PREFIX)) {
-        // don't allow banned or limited users to use the mod
-        let bannedPlayers = BANNED_PLAYERS.length;
-        if (bannedPlayers > 0) {
-            for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
-                if (BANNED_PLAYERS[i] == userId) {
-                    playerLimited(username);
-                    return;
-                }
-            }
-        }
-        let limitedPlayers = LIMITED_PLAYERS.length;
-        if (limitedPlayers > 0) {
-            for (let j = 0; j < LIMITED_PLAYERS.length; ++j) {
-                if (LIMITED_PLAYERS[j] == userId) {
-                    playerLimited(username);
-                    return;
-                }
-            }
-        }
         // evaluate input into command and possible arguments
         let message = input.substring(PREFIX_LENGTH).trim();
         let hasArgs = message.indexOf(' ');
@@ -1455,38 +1467,71 @@ MPP.client.on('a', function (msg) { // on: new message
         let argumentsString = (hasArgs != -1) ? message.substring(hasArgs + 1) : null;
         let arguments = (hasArgs != -1) ? argumentsString.split(' ') : null;
         // look through commands
+        let roomOwnerId = mppGetRoomOwnerId();
+        let isRoomOwner = exists(roomOwnerId) && (userId == roomOwnerId);
         let isModOwner = userId == yourId;
-        let preventsPlaying = MPP.client.preventsPlaying();
+        let preventsPlaying = MPP.client.preventsPlaying
         switch (command.toLowerCase()) {
-            case "help": case "h": if ((isModOwner || publicOption) && !preventsPlaying) help(argumentsString, userId, yourId); break;
-            case "about": case "ab": if ((isModOwner || publicOption) && !preventsPlaying) about(); break;
-            case "link": case "li": if ((isModOwner || publicOption) && !preventsPlaying) link(); break;
+            case "help": case "h": if (isRoomOwner || isModOwner || publicOption) help(argumentsString, userId, yourId); break;
+            case "consent": case "c": if (isRoomOwner) consent(argumentsString); break;
+            case "about": case "ab": if (isModOwner || publicOption) about(); break;
+            case "link": case "li": if (isModOwner || publicOption) link(); break;
             case "feedback": case "fb": if (isModOwner || publicOption) feedback(); break;
             case "ping": case "pi": if (isModOwner || publicOption) ping(); break;
-            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) play(arguments, argumentsString); break;
-            case "skip": case "sk": if ((isModOwner || publicOption) && !preventsPlaying) skip(); break;
-            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) stop(); break;
-            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) pause(); break;
-            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) resume(); break;
-            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) song(); break;
-            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) repeat(); break;
-            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) sustain(); break;
-            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) percussion(); break;
-            case "autoplay": case "ap": if ((isModOwner || publicOption) && !preventsPlaying) autoplay(argumentsString); break;
-            case "album": case "al": case "list": if (isModOwner || publicOption) album(); break;
-            case "art": if (isModOwner || publicOption) art(argumentsString, yourParticipant); break;
-            case "public": publicCommands(userId, yourId); break;
+            case "play": case "p": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { play(arguments, argumentsString) } else { requestConsent(yourId) }
+            }; break;
+            case "skip": case "sk": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { skip() } else { requestConsent(yourId) }
+            }; break;
+            case "stop": case "s": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { stop() } else { requestConsent(yourId) }
+            }; break;
+            case "pause": case "pa": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { pause() } else { requestConsent(yourId) }
+            }; break;
+            case "resume": case "r": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { resume() } else { requestConsent(yourId) }
+            }; break;
+            case "song": case "so": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { song() } else { requestConsent(yourId) }
+            }; break;
+            case "repeat": case "re": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { repeat() } else { requestConsent(yourId) }
+            }; break;
+            case "sustain": case "ss": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { sustain() } else { requestConsent(yourId) }
+            }; break;
+            case "percussion": case "pe": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { percussion() } else { requestConsent(yourId) }
+            }; break;
+            case "autoplay": case "ap": if ((isModOwner || publicOption) && !preventsPlaying) {
+                if (currentRoom.authorized) { autoplay(argumentsString) } else { requestConsent(yourId) }
+            }; break;
+            case "album": case "al": case "list": if (isModOwner || publicOption) {
+                if (currentRoom.authorized) { album() } else { requestConsent(yourId) }
+            }; break;
+            case "art": if (isModOwner || publicOption) {
+                if (currentRoom.authorized) { art(argumentsString, yourParticipant) } else { requestConsent(yourId) }
+            }; break;
+            case "public": if (currentRoom.authorized) { publicCommands(userId, yourId) } else { requestConsent(yourId) }; break;
         }
     }
 });
 MPP.client.on('ch', function (msg) { // on: room change
     // update current room info
-    let newRoom = mppGetRoom();
-    if (currentRoom != newRoom) {
-        currentRoom = newRoom;
-        // stop any songs that might have been playing before changing rooms
-        // only if we are not the owner of the room we are switching to
-        if (!MPP.client.isOwner() && (currentRoom.toUpperCase()).indexOf(MOD_KEYWORD) == -1 && !ended) stopSong(true);
+    let newRoomId = mppGetRoomId();
+    let roomHasOwner = exists((msg.ch).crown);
+    if (currentRoom.id != newRoomId) {
+        currentRoom.id = newRoomId;
+        // changes are made to permissions or current song based on ownership of the new room
+        if (MPP.client.isOwner() || !roomHasOwner) {
+            currentRoom.authorized = true;
+        } else {
+            currentRoom.authorized = false;
+            // stop any songs that might have been playing before changing rooms
+            if (!ended) stopSong(true);
+        }
     }
 });
 MPP.client.on('nq', function (msg) { // on: note quota change
@@ -1496,17 +1541,9 @@ MPP.client.on('nq', function (msg) { // on: note quota change
     if (!MPP.client.isOwner()) chatDelay = SLOW_CHAT_DELAY;
     else chatDelay = CHAT_DELAY;
 });
-MPP.client.on('p', function (msg) { // on: player joins room
+/* MPP.client.on('p', function (msg) { // on: player joins room
     let userId = msg._id;
-    // kick ban all the banned players
-    let bannedPlayers = BANNED_PLAYERS.length;
-    if (bannedPlayers > 0) {
-        for (let i = 0; i < BANNED_PLAYERS.length; ++i) {
-            let bannedPlayer = BANNED_PLAYERS[i];
-            if (userId == bannedPlayer) MPP.client.sendArray([{ m: "kickban", _id: bannedPlayer, ms: 3600000 }]);
-        }
-    }
-});
+}); */
 
 // =============================================== INTERVALS
 
@@ -1594,12 +1631,12 @@ let clearSoundWarning = setInterval(function () {
 // wait for the client to come online, and piano keys to be fully loaded
 let waitForMPP = setInterval(function () {
     let MPP_Fully_Loaded = exists(MPP) && exists(MPP.client) && exists(MPP.piano) && exists(MPP.piano.keys);
-    if (MPP_Fully_Loaded && mppGetRoom() && triedClickingPlayButton) {
+    if (MPP_Fully_Loaded && mppGetRoomId() && triedClickingPlayButton) {
         clearInterval(waitForMPP);
 
         // initialize mod settings and elements
-        currentRoom = mppGetRoom();
-        if (currentRoom.toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
+        currentRoom.id = mppGetRoomId();
+        if ((currentRoom.id).toUpperCase().indexOf(MOD_KEYWORD) >= 0) {
             publicOption = true;
             if (MOD_SOLO_PLAY) setOwnerOnlyPlay(MOD_SOLO_PLAY);
             autoplayOption = AUTOPLAY_RANDOM;
