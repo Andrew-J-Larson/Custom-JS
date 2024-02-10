@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-j-larson.github.io/";
-const VERSION = "3.9.99";
+const VERSION = "3.9.991";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
@@ -1038,17 +1038,18 @@ let createWebpageElements = function () {
         false
     );
     document.body.prepend(dragAndDropMIDI);
-    
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// NEW CODE TODO !
 
     // initialize button(s)
     let buttonContainer = mppDynamicButtons || document.querySelector("#bottom div");
 
     // need the first button to setup upload button style correctly
-    let buttonStyle = getComputedStyle(document.querySelector('.ugly-button'));
-    let buttonWidth = parseInt(buttonStyle.width);
-    let buttonHeight = parseInt(buttonStyle.height);
-    let buttonBorderRadius = parseInt(buttonStyle.borderRadius);
+    let buttonStyle = window.getComputedStyle(document.querySelector('.ugly-button'));
+    let buttonPadding = parseInt(buttonStyle.padding); // px
+    let buttonWidth = `calc(100% + ${buttonPadding*2}px)`;
+    let buttonHeight = `calc(100% + ${buttonPadding*2}px)`;
+    let buttonTop = `${-buttonPadding}px`;
+    let buttonLeft = buttonTop;
+    let buttonBorderRadius = parseInt(buttonStyle.borderRadius) + 1;
 
     // button to toggle the visibility of the other buttons
     let buttonsOn = false;
@@ -1084,16 +1085,24 @@ let createWebpageElements = function () {
     buttonContainer.appendChild(togglerDiv);
 
     // OPEN
-    // needs an internal div for the upload button, this is the only special button (for now)
+    // has special elements needed to work button positioning
     let openDiv = document.createElement("div");
     openDiv.id = PRE_ELEMENT_ID + "-open";
     openDiv.classList.add("ugly-button");
     buttonContainer.appendChild(openDiv);
-    // since we need to upload files, there also needs to be an input element inside the open div
+    // inner div required to position elements inside of it
+    let openInnerDiv = document.createElement("div");
+    openInnerDiv.style = "position:relative;";
+    openDiv.appendChild(openInnerDiv);
+    // need the text to appear as would normally
+    let openSpan = document.createElement("span");
+    openSpan.innerHTML = "Open"
+    openInnerDiv.appendChild(openSpan);
+    // since we need to upload files, it needs to be infront of the span element to work properly
     let uploadBtn = document.createElement("input");
     let uploadBtnId = PRE_ELEMENT_ID + "-upload";
     uploadBtn.id = uploadBtnId;
-    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:0;left:0;width:" + (buttonWidth + 10) + "px;height:" + (buttonHeight + 10) + "px;border-radius:" + (buttonBorderRadius + 1) + "px;-webkit-border-radius:" + (buttonBorderRadius + 1) + "px;-moz-border-radius:" + (buttonBorderRadius + 1) + "px;";
+    uploadBtn.style = "opacity:0;filter:alpha(opacity=0);position:absolute;top:" + buttonTop + ";left:" + buttonLeft + ";width:" + buttonWidth + ";height:" + buttonHeight + ";border-radius:" + buttonBorderRadius + "px;-webkit-border-radius:" + buttonBorderRadius + "px;-moz-border-radius:" + buttonBorderRadius + "px;";
     uploadBtn.title = " "; // removes the "No file choosen" tooltip
     uploadBtn.type = "file";
     uploadBtn.accept = ".mid,.midi";
@@ -1108,10 +1117,7 @@ let createWebpageElements = function () {
     uploadFileBtnFix.setAttribute('type', 'text/css');
     uploadFileBtnFix.setAttribute('href', 'data:text/css;charset=UTF-8,' + encodeURIComponent('#' + uploadBtnId + ", #" + uploadBtnId + "::-webkit-file-upload-button {cursor:pointer}"));
     head.appendChild(uploadFileBtnFix);
-    // continue with other html for open button
-    let openTxt = document.createTextNode("Open");
-    openDiv.appendChild(uploadBtn);
-    openDiv.appendChild(openTxt);
+    openInnerDiv.appendChild(uploadBtn);
     // then we need to let the rest of the script know it so it can reset it after loading files
     uploadButton = uploadBtn;
     // STOP
