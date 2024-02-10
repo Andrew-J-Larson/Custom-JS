@@ -1,14 +1,16 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
 // @namespace    https://andrew-j-larson.github.io/
-// @version      0.9.94
+// @version      0.9.95
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
 // @match        *://*.multiplayerpiano.net/*
-// @match        *://mpp*.hri7566.info/*
+// @match        *://*.singleplayerpiano.com/*
+// @match        *://mpp.hri7566.info/*
+// @match        *://mppclone.hri7566.info/*
 // @match        *://mpp.autoplayer.xyz/*
 // @match        *://mpp.lapishusky.dev/*
 // @match        *://mpp.yourfriend.lv/*
