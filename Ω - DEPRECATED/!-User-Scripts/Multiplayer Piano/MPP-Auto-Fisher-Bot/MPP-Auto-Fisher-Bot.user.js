@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Auto Fisher Bot
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.9.9
 // @description  Fishes for new colors!
 // @author       Andrew Larson

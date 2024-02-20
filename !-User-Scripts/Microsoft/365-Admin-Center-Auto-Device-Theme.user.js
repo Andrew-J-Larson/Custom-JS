@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Microsoft 365 admin center - Auto Device Theme
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.0.6
 // @description  Makes Microsoft 365 admin center match the device theme at all times.
 // @author       Andrew Larson

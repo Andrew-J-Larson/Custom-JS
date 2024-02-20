@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Microsoft Teams - Auto Device Theme
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.0.9
 // @description  Makes Microsoft Teams match the device theme at all times.
 // @author       Andrew Larson

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         freeCodeCamp - Donation Auto Remind Later
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.1.1
 // @description  try to take over the world!
 // @author       Andrew Larson

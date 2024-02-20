@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Microsoft 365 (Web Apps) - Auto Device Theme
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.2.2
 // @description  Makes all Microsoft 365 web apps match the device theme at all times.
 // @author       Andrew Larson

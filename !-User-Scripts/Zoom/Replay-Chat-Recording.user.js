@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Zoom - Replay Chat Recording
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.1.2
 // @description  Moves the chat history in "real time" against the recording's current time.
 // @author       Andrew Larson

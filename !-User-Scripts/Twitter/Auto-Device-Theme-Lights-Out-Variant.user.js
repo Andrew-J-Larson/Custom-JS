@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Lights Out Variant)
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.1.0
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Lights Out" variant.
 // @author       Andrew Larson

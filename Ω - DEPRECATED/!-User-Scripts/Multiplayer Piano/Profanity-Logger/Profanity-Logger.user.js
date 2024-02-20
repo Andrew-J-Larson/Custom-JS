@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Profanity Logger
-// @namespace    https://andrew-j-larson.github.io/
+// @namespace    https://andrew-larson.dev/
 // @version      1.2.7
 // @description  Logs anyone who cusses in the web console!
 // @author       Andrew Larson
