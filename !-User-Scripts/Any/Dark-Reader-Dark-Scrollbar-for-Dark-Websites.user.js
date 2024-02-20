@@ -1,21 +1,21 @@
 // ==UserScript==
 // @name         Dark Reader - Dark Scrollbar for Dark Websites
 // @namespace    https://andrew-j-larson.github.io/
-// @version      1.5.3
+// @version      1.5.4
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        http*://*/*
 // @exclude      http*://www.freecodecamp.org/learn/*/*/*/step-*
 // @exclude      http*://www.w3schools.com/*/*tryit.asp*
-// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
-// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Any/Dark-Reader-Dark-Scrollbar-for-Dark-Websites.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=darkreader.org
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
 // @grant        GM_getResourceURL
 // @require      https://unpkg.com/xregexp/xregexp-all.js
-// @resource     css https://raw.githubusercontent.com/Andrew-J-Larson/Custom-CSS/main/!-User-Styles/Any/Global-Dark-Scrollbar.user.css
+// @resource     css https://raw.githubusercontent.com/Andrew-J-Larson/Custom-CSS/main/%CE%A9%20-%20DEPRECATED/!-User-Styles/Any/Global-Dark-Scrollbar.user.css
 // @resource     config https://raw.githubusercontent.com/darkreader/darkreader/main/src/config/dark-sites.config
 // ==/UserScript==
 
