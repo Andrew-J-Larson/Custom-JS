@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
 // @namespace    https://andrew-larson.dev/
-// @version      0.4.8
+// @version      0.4.9
 // @description  Greets users who join the room with a custom message!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
+// @match        *://*.multiplayerpiano.net/*
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
-// @match        *://*.multiplayerpiano.net/*
 // @match        *://*.singleplayerpiano.com/*
 // @match        *://mpp.hri7566.info/*
 // @match        *://mppclone.hri7566.info/*

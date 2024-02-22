@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://andrew-larson.dev/
-// @version      3.9.995
+// @version      3.9.996
 // @description  Plays Minecraft music!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
+// @match        *://*.multiplayerpiano.net/*
 // @match        *://*.multiplayerpiano.org/*
 // @match        *://*.multiplayerpiano.dev/*
-// @match        *://*.multiplayerpiano.net/*
 // @match        *://*.singleplayerpiano.com/*
 // @match        *://mpp.hri7566.info/*
 // @match        *://mppclone.hri7566.info/*
@@ -1664,14 +1664,14 @@ let waitForMPP = setInterval(function () {
         console.log(PRE_MSG + " Online!");
 
         // notice for those using the AD riddled website
-        let mppcloneOfficialMain = "mppclone.com";
-        let mppcloneOfficialMirror = "www.multiplayerpiano.org";
+        let mppnetOfficialMain = "multiplayerpiano.net";
+        let mppnetOfficialMirror = "www.multiplayerpiano.org";
         let mppAdsWebsite = "multiplayerpiano.com";
         let mppAdsWebsiteNotice = '';
         if (window.location.hostname == mppAdsWebsite) {
             mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" +
-                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
-                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
+                ` ${LIST_BULLET} <a href="https://${mppnetOfficialMain}/">${mppnetOfficialMain}</a> (main website)<br>` +
+                ` ${LIST_BULLET} <a href="https://${mppnetOfficialMirror}/">${mppnetOfficialMirror}</a> (mirror website)<br><br>`;
         }
 
         // check if there's an update available

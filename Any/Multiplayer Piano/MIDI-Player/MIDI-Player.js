@@ -1,11 +1,11 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-larson.dev/";
-const VERSION = "3.9.995";
+const VERSION = "3.9.996";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
-const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(org|dev|net|com).*/g,
+const INCLUDE = [/^https?:\/\/([^/.]+\.)?multiplayerpiano\.(net|org|dev|com).*/g,
     /^https?:\/\/([^/.]+\.)?singleplayerpiano\.com.*/g,
     /^https?:\/\/mpp(clone)?\.hri7566\.info.*/g,
     /^https?:\/\/mpp\.autoplayer\.xyz.*/g,
@@ -1878,14 +1878,14 @@ let waitForMPP = setInterval(function () {
         console.log(PRE_MSG + " Online!");
 
         // notice for those using the AD riddled website
-        let mppcloneOfficialMain = "mppclone.com";
-        let mppcloneOfficialMirror = "www.multiplayerpiano.org";
+        let mppnetOfficialMain = "multiplayerpiano.net";
+        let mppnetOfficialMirror = "www.multiplayerpiano.org";
         let mppAdsWebsite = "multiplayerpiano.com";
         let mppAdsWebsiteNotice = '';
         if (window.location.hostname == mppAdsWebsite) {
             mppAdsWebsiteNotice = "It looks like you're on `" + mppAdsWebsite + "`, please consider switching over to one of the official, AD-free websites below:<br>" +
-                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMain}/">${mppcloneOfficialMain}</a> (main website)<br>` +
-                ` ${LIST_BULLET} <a href="https://${mppcloneOfficialMirror}/">${mppcloneOfficialMirror}</a> (mirror website)<br><br>`;
+                ` ${LIST_BULLET} <a href="https://${mppnetOfficialMain}/">${mppnetOfficialMain}</a> (main website)<br>` +
+                ` ${LIST_BULLET} <a href="https://${mppnetOfficialMirror}/">${mppnetOfficialMirror}</a> (mirror website)<br><br>`;
         }
 
         // check if there's an update available
