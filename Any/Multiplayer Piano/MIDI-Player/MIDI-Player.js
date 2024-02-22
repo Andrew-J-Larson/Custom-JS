@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
 const NAMESPACE = "https://andrew-larson.dev/";
-const VERSION = "3.9.996";
+const VERSION = "3.9.997";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";
@@ -1114,7 +1114,7 @@ let createWebpageElements = function () {
 
         let yourParticipant = MPP.client.getOwnParticipant();
         let yourId = yourParticipant._id;
-        
+
         if ((MPP.currentRoom).authorized) {
             if (uploadBtn.files.length > 0) playFile(uploadBtn.files);
             else console.log("No MIDI file selected");
@@ -1255,7 +1255,7 @@ let createWebpageElements = function () {
         document.documentElement.style.setProperty(CSS_VARIABLE_X_INITIAL, "0px");
         document.documentElement.style.setProperty(CSS_VARIABLE_Y_INITIAL, "0px");
         document.documentElement.style.setProperty(CSS_VARIABLE_Y_TOGGLE_INITIAL, "0px");
-        
+
         // OPEN
         openDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
         // STOP
@@ -1280,7 +1280,7 @@ let createWebpageElements = function () {
         // PUBLIC
         nextLocationX++;
         publicDiv.style = BTN_STYLE + "top:calc(" + nextLocationY + " * var(" + CSS_VARIABLE_Y_DISPLACEMENT + ") + var(" + CSS_VARIABLE_Y_INITIAL + "));left:calc(" + nextLocationX + " * var(" + CSS_VARIABLE_X_DISPLACEMENT + ") + var(" + CSS_VARIABLE_X_INITIAL + "));";
-        
+
         // one more button to toggle the visibility of the other buttons
         nextLocationX = 0;
         nextLocationY = 0;
@@ -1295,7 +1295,7 @@ let requestConsent = function(yourId) {
     let roomOwner = exists(roomOwnerId) ? MPP.client.ppl[roomOwnerId] : null;
     let roomOwnerNameExists = exists(roomOwner) && exists(roomOwner.name) && roomOwner.name;
     let unknownRoomOwner = 'the room owner';
-    roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
+    let roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
     let preRequestConsent = PRE_CONSENT + ' ' + (roomOwnerName[0].toUpperCase() + roomOwnerName.substring(1))
                             + (roomOwnerNameExists ? (', ' + unknownRoomOwner + ',') : '') + ' hasn\'t given this user (ID = `'
                             + yourId + '`) consent to use the ' + MOD_DISPLAYNAME + " mod in this room."

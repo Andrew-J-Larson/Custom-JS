@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
 // @namespace    https://andrew-larson.dev/
-// @version      3.9.996
+// @version      3.9.997
 // @description  Plays Minecraft music!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -1058,7 +1058,7 @@ let requestConsent = function(yourId) {
     let roomOwner = exists(roomOwnerId) ? MPP.client.ppl[roomOwnerId] : null;
     let roomOwnerNameExists = exists(roomOwner) && exists(roomOwner.name) && roomOwner.name;
     let unknownRoomOwner = 'the room owner';
-    roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
+    let roomOwnerName = roomOwnerNameExists ? ('`' + roomOwner.name + '`') : unknownRoomOwner;
     let preRequestConsent = PRE_CONSENT + ' ' + (roomOwnerName[0].toUpperCase() + roomOwnerName.substring(1))
                             + (roomOwnerNameExists ? (', ' + unknownRoomOwner + ',') : '') + ' hasn\'t given this user (ID = `'
                             + yourId + '`) consent to use the ' + MOD_DISPLAYNAME + " mod in this room."
