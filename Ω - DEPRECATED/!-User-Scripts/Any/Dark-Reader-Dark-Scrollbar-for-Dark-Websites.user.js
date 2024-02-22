@@ -19,7 +19,7 @@
 // @resource     config https://raw.githubusercontent.com/darkreader/darkreader/main/src/config/dark-sites.config
 // ==/UserScript==
 
-/* Copyright (C) 2024  Andrew Larson (andrew.j.larson18+github@gmail.com)
+/* Copyright (C) 2024  Andrew Larson (github@andrew-larson.dev)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
