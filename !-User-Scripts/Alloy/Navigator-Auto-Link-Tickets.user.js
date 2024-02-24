@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-larson.dev/
-// @version      1.5.0
+// @version      1.5.1
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -201,14 +201,6 @@ window.addEventListener('load', function () {
                             currentFade = setTimeout(function () { ticketLinkToast.style.display = 'none' }, SPEED_SECOND);
                         }, SPEED_SECOND);
                     };
-                    // hide an inferior Alloy button that provides the same function*
-                    // * this is non-standard/custom button, not created by Alloy, related to a single Navigator instance that adds this,
-                    //   however, this button requires an application to be installed on the PC to work, and adds an extra click to work,
-                    //   so this is why this button is hidden, when this script provides a better implementation without the use of extra
-                    //   installed programs.
-                    const alloyGetURLSelector = 'li[title="Get URL"]';
-                    let alloyGetURLButton = document.querySelector(alloyGetURLSelector);
-                    if (alloyGetURLButton) alloyGetURLButton.style.display = "none";
 
                     // button injection depends on if Alloy version has breadcrumbs
                     if (hasBreadcrumbs) {
