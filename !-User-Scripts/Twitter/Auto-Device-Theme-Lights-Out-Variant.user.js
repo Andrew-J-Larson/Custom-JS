@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Lights Out Variant)
 // @namespace    https://andrew-larson.dev/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Lights Out" variant.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -33,11 +33,10 @@ const INTERVAL_SPEED = 5;
 const BG_VAR = 'background-color';
 const DARK_BG = 'rgb(0, 0, 0)';
 const LIGHT_BG = 'rgb(255, 255, 255)';
-const hideMenusCSS = '#layers > div:nth-child(2) { display: none !important }';
 const moreMenuSelector = 'div[data-testid="AppTabBar_More_Menu"]';
-const settingsAndSupportSelector = 'div[data-testid="settingsAndSupport"]';
-const displayLinkSelector = 'a[href="/i/display"]';
-const displaySettingsSelector = '#layers > div:nth-child(2)';
+const settingsAndPrivacySelector = 'a[data-testid="settings"]';
+const accessibilityLinkSelector = 'a[data-testid="accessibilityLink"]';
+const displayLinkSelector = 'a[href="/settings/display"]';
 const lightModeSwitchSelector = 'input[aria-label="Light"]';
 const darkModeSwitchSelector = 'input[aria-label="Lights out"]';
 
@@ -51,14 +50,8 @@ function updateTheme(changeToScheme) {
     if (background == DARK_BG) theme = 'dark';
 
     if (theme != changeToScheme) {
-        let moreMenu, settingsAndSupport, displayLink, displayModeSwitch;
+        let moreMenu, settingsAndSupport, accessibilityLink, displayLink, displayModeSwitch;
         let displayModeSwitchSelector = changeToScheme == 'dark' ? darkModeSwitchSelector : lightModeSwitchSelector;
-
-        // need a custom style to keep certain menus hidden while changing theme
-        let hideMenusStyle = document.createElement('style');
-        hideMenusStyle.type = 'text/css';
-        hideMenusStyle.innerHTML = hideMenusCSS;
-        document.getElementsByTagName('head')[0].appendChild(hideMenusStyle);
 
         let waitForMoreMenu = setInterval(function () {
             try {
@@ -67,8 +60,12 @@ function updateTheme(changeToScheme) {
                     moreMenu.click();
                 }
                 if (!settingsAndSupport) {
-                    settingsAndSupport = document.querySelector(settingsAndSupportSelector);
+                    settingsAndSupport = document.querySelector(settingsAndPrivacySelector);
                     settingsAndSupport.click();
+                }
+                if (!accessibilityLink) {
+                    accessibilityLink = document.querySelector(accessibilityLinkSelector);
+                    accessibilityLink.click();
                 }
                 if (!displayLink) {
                     displayLink = document.querySelector(displayLinkSelector);
@@ -80,15 +77,12 @@ function updateTheme(changeToScheme) {
 
                     clearInterval(waitForMoreMenu);
                     // can't click button programmatically to exit, so window history back will have to do
-                    window.history.back();
-                    // need to remove the style theme is changed
-                    setTimeout(function () {
-                        hideMenusStyle.parentNode.removeChild(hideMenusStyle);
-
-                        if (watchEventTriggered) {
-                            activeElement.focus();
-                            watchEventTriggered = false;
-                        }
+                    let i = 0;
+                    let goBackToOriginalPage = setInterval(function() {
+                        if (i < 3) { // need to go back 3 times since going through the settings pages creates 3 history entries
+                            window.history.back();
+                        } else clearInterval(goBackToOriginalPage);
+                        i++;
                     }, INTERVAL_SPEED);
                 }
             } catch (error) {/* Error checking not needed */ }
@@ -121,4 +115,4 @@ window.addEventListener('load', function () {
             }
         }
     }, INTERVAL_SPEED);
-}, false);
+}, false);displaySettingsSelector
