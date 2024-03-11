@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
 // @namespace    https://andrew-larson.dev/
-// @version      1.2.9
+// @version      1.3.0
 // @description  Makes (new) Reddit match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -31,10 +31,8 @@
  */
 
 const loopInterval = 200; // ms
-const BG_VAR = '--background';
-const DARK_BG = '#1A1A1B';
-const LIGHT_BG = '#FFFFFF';
-const pageDivSelector = 'body > div > div';
+const THEME_DARK_CLASS_NAME = 'theme-dark';
+const THEME_LIGHT_CLASS_NAME = 'theme-light';
 const darkmodeSwitchSelector = 'faceplate-switch-input[name="darkmode-switch-name"]'
 
 var watchEventTriggered = false;
@@ -43,11 +41,10 @@ var activeElement = null;
 function updateTheme(changeToScheme) {
     // avoids breaking some websites that assume all errors are their own
     try {
-        let pageDiv = document.querySelector(pageDivSelector);
-        let background = getComputedStyle(pageDiv).getPropertyValue(BG_VAR);
+        let htmlElement = document.querySelector('html');
 
         let theme = 'light';
-        if (background == DARK_BG) theme = 'dark';
+        if (htmlElement.classList.contains(THEME_DARK_CLASS_NAME)) theme = 'dark';
 
         if (theme != changeToScheme) {
             let darkmodeSwitch = document.querySelector(darkmodeSwitchSelector);
