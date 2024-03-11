@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
 // @namespace    https://andrew-larson.dev/
-// @version      1.2.8
+// @version      1.2.9
 // @description  Makes (new) Reddit match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -51,7 +51,8 @@ function updateTheme(changeToScheme) {
 
         if (theme != changeToScheme) {
             let darkmodeSwitch = document.querySelector(darkmodeSwitchSelector);
-            darkmodeSwitch.click();
+            if (darkmodeSwitch) darkmodeSwitch.click();
+            else throw new Error("[" + GM_info.script.name + "] Must be logged in for this script to work properly.");
         }
 
         watchEventTriggered = false;
