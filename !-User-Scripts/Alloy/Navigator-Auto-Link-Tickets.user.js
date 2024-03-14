@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-larson.dev/
-// @version      1.5.1
+// @version      1.5.2
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -37,6 +37,9 @@ const applicationNameSelector = 'meta[name="application-name"]';
 const alloyBreadcrumbsID = 'alloy-breadcrumbs';
 const headerWrapperSelector = '#form-container > div > div:first-of-type > div:first-of-type > div:last-of-type > div:first-of-type > div:last-of-type > div:first-of-type';
 const summaryPartialSelector = '.field--Summary';
+const previewFrameSelector = '#PreviewFrame'
+const previewDivSelector = '#preview';
+const previewHeaderPartialSelector = '.kbarticle-header';
 const ticketPartialSelector = '.field--Ticket, .field--OID'; // OID is for any non-tickets, like general objects
 const oldHeaderWrapperSelector = '.full-form-header-wrapper';
 const oldHeaderSelector1 = '.full-form-header__1_1';
@@ -128,7 +131,8 @@ window.addEventListener('load', function () {
         // need to wait for element(s) to be available
         let waitForAlloyElements = setInterval(function () {
             let oldTicketHeader = document.querySelector(oldHeaderWrapperSelector);
-            let ticketHeader = oldTicketHeader || document.querySelector(headerWrapperSelector);
+            let previewFrame = document.querySelector(previewFrameSelector);
+            let ticketHeader = oldTicketHeader || document.querySelector(headerWrapperSelector) || (previewFrame ? previewFrame.contentDocument.querySelector(previewDivSelector) : null);
             let alloyBreadcrumbs = document.getElementById(alloyBreadcrumbsID);
             if (ticketHeader && !document.hidden && (hasBreadcrumbs ? alloyBreadcrumbs : true)) {
                 clearInterval(waitForAlloyElements);
@@ -136,7 +140,7 @@ window.addEventListener('load', function () {
                 // Pre 2023.2 versions need to look at headers rather than fields in the newer versions
                 let oldTicketHeader1 = document.querySelector(oldHeaderSelector1);
                 let oldTicketHeader2 = document.querySelector(oldHeaderSelector2);
-                let summaryElement = oldTicketHeader1 || ticketHeader.querySelector(summaryPartialSelector);
+                let summaryElement = oldTicketHeader1 || ticketHeader.querySelector(summaryPartialSelector) || ticketHeader.querySelector(previewHeaderPartialSelector);
                 let ticketElement = ticketHeader.querySelector(ticketPartialSelector); // leaving out oldTicketHeader2 from this is on purpose
 
                 // continue with the process
