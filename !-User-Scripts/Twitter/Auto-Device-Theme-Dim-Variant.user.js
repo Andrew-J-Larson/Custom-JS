@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Dim Variant)
 // @namespace    https://andrew-larson.dev/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Dim" variant.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -31,8 +31,10 @@
 
 const INTERVAL_SPEED = 5;
 const BG_VAR = 'background-color';
-const DIM_BG = 'rgb(21, 32, 43)';
 const LIGHT_BG = 'rgb(255, 255, 255)';
+const DIM_BG = 'rgb(21, 32, 43)';
+const LIGHTS_OUT_BG = 'rgb(0, 0, 0)';
+const DARK_BG = DIM_BG;
 const moreMenuSelector = 'div[data-testid="AppTabBar_More_Menu"]';
 const settingsAndPrivacySelector = 'a[data-testid="settings"]';
 const accessibilityLinkSelector = 'a[data-testid="accessibilityLink"]';
@@ -44,14 +46,11 @@ var watchEventTriggered = false;
 var activeElement = null;
 
 function updateTheme(changeToScheme) {
-    let background = getComputedStyle(document.body).getPropertyValue(BG_VAR);
-
-    let theme = 'light';
-    if (background == DIM_BG) theme = 'dark';
+    let theme = getComputedStyle(document.body).getPropertyValue(BG_VAR) || 'unknown';
 
     if (theme != changeToScheme) {
         let moreMenu, settingsAndSupport, accessibilityLink, displayLink, displayModeSwitch;
-        let displayModeSwitchSelector = changeToScheme == 'dark' ? darkModeSwitchSelector : lightModeSwitchSelector;
+        let displayModeSwitchSelector = changeToScheme == DARK_BG ? darkModeSwitchSelector : lightModeSwitchSelector;
 
         let waitForMoreMenu = setInterval(function () {
             try {
@@ -99,7 +98,7 @@ window.addEventListener('load', function () {
 
             // now we can start
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                const newColorScheme = e.matches ? 'dark' : 'light';
+                const newColorScheme = e.matches ? DARK_BG : LIGHT_BG;
                 watchEventTriggered = true;
                 activeElement = document.activeElement;
                 updateTheme(newColorScheme);
@@ -108,10 +107,10 @@ window.addEventListener('load', function () {
             // first time run
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 // dark mode
-                updateTheme('dark');
+                updateTheme(DARK_BG);
             } else {
                 // light mode
-                updateTheme('light');
+                updateTheme(LIGHT_BG);
             }
         }
     }, INTERVAL_SPEED);
