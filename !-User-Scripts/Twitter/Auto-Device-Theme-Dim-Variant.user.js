@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Dim Variant)
 // @namespace    https://andrew-larson.dev/
-// @version      1.1.2
+// @version      1.1.3
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Dim" variant.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -34,13 +34,16 @@ const BG_VAR = 'background-color';
 const LIGHT_BG = 'rgb(255, 255, 255)';
 const DIM_BG = 'rgb(21, 32, 43)';
 const LIGHTS_OUT_BG = 'rgb(0, 0, 0)';
-const DARK_BG = DIM_BG;
 const moreMenuSelector = 'div[data-testid="AppTabBar_More_Menu"]';
 const settingsAndPrivacySelector = 'a[data-testid="settings"]';
 const accessibilityLinkSelector = 'a[data-testid="accessibilityLink"]';
 const displayLinkSelector = 'a[href="/settings/display"]';
 const lightModeSwitchSelector = 'input[aria-label="Light"]';
-const darkModeSwitchSelector = 'input[aria-label="Dim"]';
+const dimModeSwitchSelector = 'input[aria-label="Dim"]';
+const lightsOutModeSwitchSelector = 'input[aria-label="Lights out"]';
+
+const DARK_BG = DIM_BG;
+const darkModeSwitchSelector = dimModeSwitchSelector;
 
 var watchEventTriggered = false;
 var activeElement = null;
