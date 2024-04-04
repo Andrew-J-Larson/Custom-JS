@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter/X - Auto Device Theme (Lights Out Variant)
 // @namespace    https://andrew-larson.dev/
-// @version      1.1.3
+// @version      1.1.5
 // @description  Makes the Twitter/X website match the device theme at all times. Dark theme uses "Lights Out" variant.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -78,14 +78,10 @@ function updateTheme(changeToScheme) {
                     displayModeSwitch.click();
 
                     clearInterval(waitForMoreMenu);
+
                     // can't click button programmatically to exit, so window history back will have to do
-                    let i = 0;
-                    let goBackToOriginalPage = setInterval(function() {
-                        if (i < 3) { // need to go back 3 times since going through the settings pages creates 3 history entries
-                            window.history.back();
-                        } else clearInterval(goBackToOriginalPage);
-                        i++;
-                    }, INTERVAL_SPEED);
+                    // need to go back 3 times since going through the settings pages creates 3 history entries
+                    window.history.go(-3); // can't use window.history.back(x), because of Safari, but was a worse implementation anyways
                 }
             } catch (error) {/* Error checking not needed */ }
         }, INTERVAL_SPEED);
