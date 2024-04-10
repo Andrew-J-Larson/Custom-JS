@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NICE InContact - Downloads Revealer
 // @namespace    https://andrew-larson.dev/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Avoids needing to authenticate a logon to view the downloads available.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
@@ -9,7 +9,7 @@
 // @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/NICE%20InContact/Downloads-Revealer.user.js
 // @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/NICE%20InContact/Downloads-Revealer.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=incontact.com
-// @grant        none
+// @grant        GM_addStyle
 // @noframes
 // ==/UserScript==
 
@@ -28,8 +28,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* globals $ */
-
-// Need to hide the noDownloads element, and show the downloads element
-$('#downloads').css("display", "block");
-$('#noDownloads').css("display", "none");
+// just add a style that forces the elements to show up properly
+GM_addStyle('#downloads { display: block !important; }');
+GM_addStyle('#noDownloads { display: none !important; }');
