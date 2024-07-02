@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] Alloy Navigator - Auto-Link Tickets
 // @namespace    https://andrew-larson.dev/
-// @version      1.5.4
+// @version      1.5.5
 // @description  When viewing a ticket, it will automatically create a button to the right of the ticket number, or title, that once pressed will copy the link, to the ticket in Alloy, to your clipboard.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
