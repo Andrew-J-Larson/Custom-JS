@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         Open in Microsoft Store
+// @name         [DEPRECATED] Open in Microsoft Store
 // @namespace    https://andrew-larson.dev/
-// @version      1.0.4
+// @version      1.0.5
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://apps.microsoft.com/store/detail/*
-// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
-// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Tampermonkey-Scripts/main/Microsoft/Open-in-Microsoft-Store.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Microsoft/Open-in-Microsoft-Store.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Microsoft/Open-in-Microsoft-Store.user.js
 // @icon         https://www.google.com/s2/favicons?domain=microsoft.com
 // @grant        none
 // @noframes

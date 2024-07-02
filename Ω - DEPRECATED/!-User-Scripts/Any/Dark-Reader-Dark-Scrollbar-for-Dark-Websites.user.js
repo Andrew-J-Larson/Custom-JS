@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Dark Reader - Dark Scrollbar for Dark Websites
+// @name         [DEPRECATED] Dark Reader - Dark Scrollbar for Dark Websites
 // @namespace    https://andrew-larson.dev/
 // @version      1.5.4
 // @description  Enables a dark scrollbar for every dark website in Dark Reader's list of global dark websites.
