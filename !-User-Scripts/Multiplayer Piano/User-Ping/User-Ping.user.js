@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Ping
-// @namespace    https://andrew-larson.dev/
-// @version      0.9.96
+// @namespace    https://drewj.la/
+// @version      0.9.97
 // @description  Sounds off a notification when the user of script gets a ping!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

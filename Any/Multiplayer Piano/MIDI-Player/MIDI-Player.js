@@ -1,7 +1,7 @@
 // ==JavaScript==
 const NAME = "Multiplayer Piano - MIDI Player";
-const NAMESPACE = "https://andrew-larson.dev/";
-const VERSION = "3.9.997";
+const NAMESPACE = "https://drewj.la/";
+const VERSION = "3.9.998";
 const DESCRIPTION = "Plays MIDI files!";
 const AUTHOR = "Andrew Larson";
 const LICENSE = "GPL-3.0-or-later";

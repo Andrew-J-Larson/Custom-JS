@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Seconds Tick Blink
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.6
+// @namespace    https://drewj.la/
+// @version      1.0.7
 // @description  Makes the colon blink to each second, originally made for a small screen Raspberry PI clock kiosk.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

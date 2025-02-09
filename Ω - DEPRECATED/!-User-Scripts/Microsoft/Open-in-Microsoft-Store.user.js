@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] Open in Microsoft Store
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.5
+// @namespace    https://drewj.la/
+// @version      1.0.6
 // @description  When visiting the webpage for a Microsoft Store app, there will now be an additional option to open the said app in the Microsoft Store.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

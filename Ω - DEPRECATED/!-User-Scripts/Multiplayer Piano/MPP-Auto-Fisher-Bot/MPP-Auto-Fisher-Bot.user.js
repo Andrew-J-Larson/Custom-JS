@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] Auto Fisher Bot
-// @namespace    https://andrew-larson.dev/
-// @version      1.9.9
+// @namespace    https://drewj.la/
+// @version      2.0.0
 // @description  Fishes for new colors!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

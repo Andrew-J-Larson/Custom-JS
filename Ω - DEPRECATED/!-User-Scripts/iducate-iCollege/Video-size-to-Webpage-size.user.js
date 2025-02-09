@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] iducate (iCollege) - Video size to Webpage size
-// @namespace    https://andrew-larson.dev/
-// @version      1.2.1
+// @namespace    https://drewj.la/
+// @version      1.2.2
 // @description  Allows maximizing a course video to the webpage size, and dims background.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

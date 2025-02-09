@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] Multiplayer Piano - Room Color Changer
-// @namespace    https://andrew-larson.dev/
-// @version      0.2.9
+// @namespace    https://drewj.la/
+// @version      0.3.0
 // @description  Advanced room color changing!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

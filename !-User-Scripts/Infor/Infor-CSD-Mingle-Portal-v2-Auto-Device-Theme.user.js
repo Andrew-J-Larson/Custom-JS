@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Infor CSD Mingle Portal (v2) - Auto Device Theme
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.0
+// @namespace    https://drewj.la/
+// @version      1.0.1
 // @description  Makes Infor CSD match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

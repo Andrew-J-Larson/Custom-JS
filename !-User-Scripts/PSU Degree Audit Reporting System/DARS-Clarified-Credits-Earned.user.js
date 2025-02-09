@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSU - DARS Clarified Credits Earned
-// @namespace    https://andrew-larson.dev/
-// @version      1.1.5
+// @namespace    https://drewj.la/
+// @version      1.1.6
 // @description  This will show the total number of credits earned, and how much of the earned credits were taken from PSU or external sources, along with showing the total amount from external sources (which may not have been transferred).
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

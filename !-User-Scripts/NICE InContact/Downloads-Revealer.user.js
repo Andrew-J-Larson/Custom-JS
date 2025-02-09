@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NICE InContact - Downloads Revealer
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.1
+// @namespace    https://drewj.la/
+// @version      1.0.2
 // @description  Avoids needing to authenticate a logon to view the downloads available.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

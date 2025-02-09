@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - User Greeter
-// @namespace    https://andrew-larson.dev/
-// @version      0.4.9
+// @namespace    https://drewj.la/
+// @version      0.5.0
 // @description  Greets users who join the room with a custom message!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         [DEPRECATED] Microsoft Sticky Notes - Dark Mode
-// @namespace    https://andrew-larson.dev/
-// @version      1.6.3
+// @namespace    https://drewj.la/
+// @version      1.6.4
 // @description  Enables official, but hidden, dark mode on the Sticky Notes website.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

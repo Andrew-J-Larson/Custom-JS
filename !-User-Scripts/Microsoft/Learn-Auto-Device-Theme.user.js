@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Microsoft Learn - Auto Device Theme
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.8
+// @namespace    https://drewj.la/
+// @version      1.0.9
 // @description  Makes Microsoft Learn match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

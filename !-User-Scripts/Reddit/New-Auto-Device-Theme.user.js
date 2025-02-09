@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Reddit (New) - Auto Device Theme
-// @namespace    https://andrew-larson.dev/
-// @version      1.3.0
+// @namespace    https://drewj.la/
+// @version      1.3.1
 // @description  Makes (new) Reddit match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

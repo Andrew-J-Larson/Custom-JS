@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Poolsuite FM - Minecraft DLC
-// @namespace    https://andrew-larson.dev/
-// @version      0.4.6
+// @namespace    https://drewj.la/
+// @version      0.4.7
 // @description  Allows toggling the video to a playable version of Minecraft Classic!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

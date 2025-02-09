@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Multiplayer Piano - Minecraft Music Auto Player
-// @namespace    https://andrew-larson.dev/
-// @version      3.9.997
+// @namespace    https://drewj.la/
+// @version      3.9.998
 // @description  Plays Minecraft music!
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

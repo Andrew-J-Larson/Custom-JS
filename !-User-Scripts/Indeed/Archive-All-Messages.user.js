@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Indeed - Archive All Messages
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.6
+// @namespace    https://drewj.la/
+// @version      1.0.7
 // @description  Archives all your messages in your Indeed inbox.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BitDay (Legacy) - Remove Leading Zeros
-// @namespace    https://andrew-larson.dev/
-// @version      1.0.6
+// @namespace    https://drewj.la/
+// @version      1.0.7
 // @description  Removes leading zeros (like normal clocks), originally made for a small screen Raspberry PI clock kiosk.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
