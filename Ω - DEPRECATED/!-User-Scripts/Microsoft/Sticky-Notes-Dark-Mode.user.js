@@ -16,7 +16,7 @@
 // @resource     cssDarkScrollbar https://raw.githubusercontent.com/Andrew-J-Larson/Custom-CSS/main/%CE%A9%20-%20DEPRECATED/!-User-Styles/Any/Global-Dark-Scrollbar.user.css
 // ==/UserScript==
 
-/* Copyright (C) 2024  Andrew Larson (github@andrew-larson.dev)
+/* Copyright (C) 2024  Andrew Larson (github@drewj.la)
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
