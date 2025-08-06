@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Microsoft Learn - Auto Device Theme
 // @namespace    https://drewj.la/
-// @version      1.0.9
+// @version      1.1.0
 // @description  Makes Microsoft Learn match the device theme at all times.
 // @author       Andrew Larson
 // @license      GPL-3.0-or-later
 // @match        https://learn.microsoft.com/*
-// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
-// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
+// @updateURL    https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
+// @downloadURL  https://raw.githubusercontent.com/Andrew-J-Larson/Custom-JS/main/%CE%A9%20-%20DEPRECATED/!-User-Scripts/Microsoft/Learn-Auto-Device-Theme.user.js
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=learn.microsoft.com
 // @grant        none
 // @noframes
@@ -29,50 +29,4 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const DARK_STYLE = 'theme-dark';
-const LIGHT_STYLE = 'theme-light';
-const themeModeSwitchSelector = '#footer button.theme-dropdown-trigger';
-const lightModeSwitchSelector = '#theme-menu button.theme-control[data-theme-to="light"]';
-const darkModeSwitchSelector = '#theme-menu button.theme-control[data-theme-to="dark"]';
-
-var watchEventTriggered = false;
-var activeElement = null;
-
-function updateTheme(changeToScheme) {
-    let html = document.querySelector('html');
-
-    let theme = 'dark';
-    if (html.classList.contains(LIGHT_STYLE)) theme = 'light';
-
-    if (theme != changeToScheme) {
-        let themeModeSwitch = document.querySelector(themeModeSwitchSelector);
-        themeModeSwitch.click();
-
-        let changeThemeModeSwitch = document.querySelector(changeToScheme == 'light' ? lightModeSwitchSelector : darkModeSwitchSelector);
-        changeThemeModeSwitch.click();
-
-        if (watchEventTriggered) activeElement.focus();
-    }
-
-    watchEventTriggered = false;
-}
-
-// wait for the page to be fully loaded
-window.addEventListener('load', function () {
-    // now we can start
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        const newColorScheme = e.matches ? 'dark' : 'light';
-        watchEventTriggered = true;
-        activeElement = document.activeElement;
-        updateTheme(newColorScheme);
-    });
-
-    // first time run
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // dark mode
-        updateTheme('dark');
-    } else {
-        // light mode
-        updateTheme('light');
-    }
-}, false);
+// DEPRECATED: Update the script again if you want to retain access
